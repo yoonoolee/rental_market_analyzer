@@ -2,6 +2,7 @@ import json
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from ..state import RentalState
+from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS
 from prompts.reducer_prompts import REDUCER_PROMPT
 
 
@@ -10,39 +11,41 @@ llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.4)
 
 async def reducer_node(state: RentalState) -> dict:
     """
-    This is the Reduce step. Takes all parallel search results + the full
-    preference state and synthesizes a ranked recommendation response.
+    Synthesizes structured listing profiles into ranked recommendations.
 
-    Key thing this needs to do well: apply interdependent trade-off rules.
-    Not just "here are apartments under $2500" but "this one is $2700 but
-    it's 8 min walk to BART so given your trade-off rule it's worth considering."
+    The key difference from the old approach: the reducer now receives real data
+    gathered by listing agents (actual prices, commute times from the Maps API,
+    nearby places from Places API, pet policy from the listing page). It reasons
+    from facts, not snippets.
 
-    The prompt (reducer_prompts.py) handles most of the reasoning instructions.
+    Trade-off rules are applied against real numbers - "willing to pay $200 more
+    if commute < 15 min" is evaluated against the actual commute_times in each profile.
     """
     preferences = state.get("preferences", {})
-    search_results = state.get("search_results", [])
+    listing_profiles = state.get("listing_profiles", [])
+    search_attempts = state.get("search_attempts", 0)
 
-    # format search results in a readable way for the LLM
-    # keeping the query alongside results so it knows what each result is for
-    formatted_results = ""
-    for item in search_results:
-        formatted_results += f"\n### Query: {item['query']}\n"
-        for r in item.get("results", []):
-            formatted_results += (
-                f"- **{r['title']}** ({r.get('source', '')})\n"
-                f"  {r.get('snippet', '')}\n"
-                f"  {r.get('link', '')}\n"
-            )
+    good_profiles = [p for p in listing_profiles if not p.get("disqualified")]
+    disqualified_profiles = [p for p in listing_profiles if p.get("disqualified")]
+
+    # surface a note if we ran out of retries without hitting the target result count
+    context_note = ""
+    if search_attempts >= MAX_SEARCH_ATTEMPTS and len(good_profiles) < MIN_GOOD_RESULTS:
+        context_note = (
+            f"\n\nNote: searched {search_attempts} rounds and found only {len(good_profiles)} "
+            f"listings matching the user's requirements (target was {MIN_GOOD_RESULTS}). "
+            f"The market may be thin for these criteria. Mention this honestly in your response."
+        )
 
     response = await llm.ainvoke([
         SystemMessage(content=REDUCER_PROMPT),
         HumanMessage(content=(
             f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            f"Search results:\n{formatted_results}\n\n"
-            "Synthesize these into ranked apartment recommendations. Apply the user's "
-            "trade-off rules explicitly - if something costs more but satisfies a condition "
-            "they said they'd pay for, call that out. Include links to listings. "
-            "Be specific about neighborhoods and commute implications."
+            f"Qualifying listings ({len(good_profiles)}):\n"
+            f"{json.dumps(good_profiles, indent=2)}\n\n"
+            f"Disqualified listings ({len(disqualified_profiles)}):\n"
+            f"{json.dumps(disqualified_profiles, indent=2)}"
+            + context_note
         ))
     ])
 

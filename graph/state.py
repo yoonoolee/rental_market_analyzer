@@ -36,15 +36,46 @@ class SearchNodeState(TypedDict):
     preferences: PreferenceState
 
 
+# ListingAgentState is the input to each ReAct listing agent.
+# Each agent receives one URL and the full user preference profile.
+# The agent then decides which tools to call based on what the user cares about -
+# someone with a pet triggers a pet policy check first; someone who didn't mention
+# grocery stores won't trigger a places lookup for them.
+class ListingAgentState(TypedDict):
+    url: str
+    preferences: PreferenceState
+
+
 class RentalState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     preferences: PreferenceState
+
+    # current round's queries - replaced each time planner runs
     search_queries: list[str]
 
-    # operator.add here is what makes map-reduce work:
-    # each parallel search_node appends its result to this list,
-    # and LangGraph merges them all before reducer runs
+    # all queries ever run across all rounds - used by planner on retry to avoid
+    # generating duplicate queries
+    all_search_queries: Annotated[list[str], operator.add]
+
+    # raw URL results from search nodes - operator.add lets parallel search nodes
+    # each append their results before supervisor processes them
     search_results: Annotated[list[dict], operator.add]
+
+    # URLs queued for listing agent processing this round (replaced each supervisor run)
+    pending_urls: list[str]
+
+    # all URLs ever sent to a listing agent - used by supervisor to avoid
+    # re-processing the same listing on retry rounds
+    searched_urls: Annotated[list[str], operator.add]
+
+    # structured per-listing profiles returned by listing agents.
+    # operator.add lets all parallel listing agents append their profile.
+    # each profile is either a full data object or {disqualified: true, reason: ...}
+    listing_profiles: Annotated[list[dict], operator.add]
+
+    # how many full search + listing cycles have completed.
+    # supervisor_check increments this and uses it to cap retries at MAX_SEARCH_ATTEMPTS.
+    search_attempts: int
 
     questions_asked: int
     ready_to_search: bool

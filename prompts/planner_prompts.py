@@ -1,25 +1,35 @@
 # Prompt for the planner node.
 #
-# The planner is the "brain" of the map-reduce pipeline - it decides what
-# to search for based on the user's preference state. This is what makes
-# the system feel intelligent vs. just a templated search.
+# The planner's job is now narrower than before: generate queries whose sole purpose
+# is to surface listing URLs (Craigslist, Zillow, Apartments.com, etc.).
+# Neighborhood context, commute times, and nearby places are no longer the planner's
+# concern - the ReAct listing agents handle all of that per-listing using real tools.
+#
+# On retry rounds (search_attempts > 0), the planner receives the queries already run
+# and must avoid repeating them. It should try different sites, different neighborhoods,
+# slightly relaxed constraints, or different query phrasings.
 #
 # TODO: experiment with few-shot examples here to improve query quality,
-# especially for commute-specific queries (Google Maps results vs organic)
+# especially for varied bedroom/price phrasings across different listing sites
 
 
-PLANNER_PROMPT = """You are planning search queries for an apartment recommendation system.
-Your goal is to generate specific, targeted Google search queries (via SerpAPI) that will
-surface real apartment listings and supporting neighborhood/commute context.
+PLANNER_PROMPT = """You are generating Google search queries to find apartment listing URLs.
+
+Your only goal is to surface real listing pages on sites like Craigslist, Zillow,
+Apartments.com, Trulia, HotPads, or similar. The listing agents will handle commute,
+neighborhood context, and amenity lookups - you just need to find the listings.
 
 Query writing guidelines:
-- Listings: include site: operators (craigslist.org, zillow.com, apartments.com),
-  bedroom count, max price, and city. Be specific.
-- Commute: format as "commute [neighborhood or city] to [destination] by [walking/transit/driving]"
-- Neighborhood context: ask about specific signals the user mentioned
-  (safety reviews, noise levels, walkability, nightlife, etc.)
-- Amenities: if the user mentioned needing a gym, grocery store, etc., search for those
-  near likely neighborhoods
+- Always include site: operators to target listing sites directly
+  e.g. site:craigslist.org, site:zillow.com, site:apartments.com, site:trulia.com
+- Include bedroom count, price range, and city in every query
+- Vary the sites and phrasings across queries - don't repeat the same site:operator
+- Be specific: "1BR Oakland $2000-$2500" beats "apartment Oakland"
+
+On retry rounds you will be given queries already run. Do not repeat them.
+Try different listing sites, different neighborhoods within the city, or slightly
+adjusted price ranges. The goal is to surface new URLs, not better versions of
+previous searches.
 
 Return JSON with key "search_queries" as a list of strings.
-Limit to 5-8 queries. Quality over quantity - a bad query wastes an API call."""
+Limit to 5-8 queries. Every query should be likely to return actual listing pages."""
