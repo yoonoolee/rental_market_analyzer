@@ -2,7 +2,7 @@ import json
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from ..state import RentalState
-from ...prompts.reducer_prompts import REDUCER_PROMPT
+from prompts.reducer_prompts import REDUCER_PROMPT
 
 
 llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.4)

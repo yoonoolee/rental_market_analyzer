@@ -3,7 +3,7 @@ import re
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..state import RentalState
-from ...prompts.planner_prompts import PLANNER_PROMPT
+from prompts.planner_prompts import PLANNER_PROMPT
 
 
 llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.2)

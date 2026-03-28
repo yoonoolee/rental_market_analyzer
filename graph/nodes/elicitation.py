@@ -3,7 +3,7 @@ import re
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from ..state import RentalState
-from ...prompts.elicitation_prompts import SYSTEM_PROMPT, EXTRACTION_PROMPT
+from prompts.elicitation_prompts import SYSTEM_PROMPT, EXTRACTION_PROMPT
 
 
 # stop asking questions after this many turns and just run the search with what we have.
