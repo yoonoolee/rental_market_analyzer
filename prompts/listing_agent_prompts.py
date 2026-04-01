@@ -34,13 +34,18 @@ User preferences:
 4. Only call find_nearby_places for place types the user actually mentioned in soft_constraints
    or lifestyle_notes (e.g. 'bars', 'grocery store', 'gym'). Skip everything else.
 
-5. Use search_web as a fallback when critical info is missing:
+5. After scraping, call analyze_listing_photos with the image URLs found in the scraped content.
+   - In focus_areas, pass any visual attributes the user mentioned: views, outdoor space, balcony, yard, etc.
+   - If the user mentioned nothing visual, pass an empty string for focus_areas.
+   - If no images were found in the scraped content, skip this tool.
+
+6. Use search_web as a fallback when critical info is missing:
    - Pet policy not stated on the page
    - Address is unclear or not parseable
    - Floor number or view details need verification
    - Building-specific reviews the user might care about
 
-6. Skip any tool that isn't relevant to this user's preferences. Do not make unnecessary calls.
+7. Skip any tool that isn't relevant to this user's preferences. Do not make unnecessary calls.
 
 --- Output format ---
 
@@ -61,6 +66,10 @@ When you have gathered everything relevant, return ONLY a JSON object. No explan
   "commute_times": {{"UC Berkeley": "14 min BART", "Downtown Oakland": "8 min BART"}},
   "nearby_places": {{"bars": "Temescal strip 0.1mi", "grocery": "Trader Joe's 0.3mi"}},
   "modern_finishes": true/false/null,
+  "natural_light": true/false/null,
+  "spacious": true/false/null,
+  "condition": "excellent/good/fair/poor or null",
+  "notes": "one sentence from photo analysis or null",
   "description": "brief plain-english summary of the unit"
 }}
 

@@ -8,17 +8,14 @@ from ..tools.scraper import scrape_listing
 from ..tools.commute import get_commute_time
 from ..tools.places import find_nearby_places
 from ..tools.search import search_web
+from ..tools.photos import analyze_listing_photos
 from prompts.listing_agent_prompts import build_listing_agent_prompt
 
 
 # all tools available to listing agents.
 # each agent decides which ones to call based on the user's preferences -
 # not every agent will use every tool.
-#
-# TODO: add analyze_listing_photos tool once scraping returns real image URLs.
-# would use Claude's vision capability to verify views, modern finishes, etc.
-# from actual listing photos rather than relying on text descriptions.
-LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web]
+LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web, analyze_listing_photos]
 
 llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.1)
 

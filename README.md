@@ -49,21 +49,22 @@ The result is a ranked recommendation list built from real data - actual commute
 ┌───────────────────────────────────────────────────┐       │
 │              Parallel ReAct Listing Agents        │       │
 │                                                   │       │
-│  ┌─────────────┐  ┌─────────────┐  ┌───────────┐ │       │
-│  │  Agent A    │  │   Agent B   │  │  Agent C  │ │       │
-│  │             │  │             │  │           │ │       │
-│  │ tools used  │  │ disqualified│  │tools used │ │       │
-│  │ based on    │  │ early (e.g. │  │based on   │ │       │
-│  │ user prefs  │  │ no pets)    │  │user prefs │ │       │
-│  └──────┬──────┘  └─────────────┘  └─────┬─────┘ │       │
-│         │                                │       │       │
-│    ┌────┴────────────────────────────────┴────┐  │       │
-│    │              Available Tools             │  │       │
-│    │  scrape_listing  │  get_commute_time     │  │       │
-│    │  find_nearby_places  │  search_web       │  │       │
-│    └──────────────────────────────────────────┘  │       │
+│  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │       │
+│  │  Agent A    │  │   Agent B   │  │  Agent C  │  │       │
+│  │             │  │             │  │           │  │       │
+│  │ tools used  │  │ disqualified│  │tools used │  │       │
+│  │ based on    │  │ early (e.g. │  │based on   │  │       │
+│  │ user prefs  │  │ no pets)    │  │user prefs │  │       │
+│  └──────┬──────┘  └─────────────┘  └─────┬─────┘  │       │
+│         │                                │        │       │
+│    ┌────┴────────────────────────────────┴────┐   │       │
+│    │              Available Tools             │   │       │
+│    │  scrape_listing  │  get_commute_time     │   │       │
+│    │  find_nearby_places  │  search_web       │   │       │
+│    │  analyze_listing_photos                  │   │       │
+│    └──────────────────────────────────────────┘   │       │
 └───────────────────────┬───────────────────────────┘       │
-                        │ structured profiles                │
+                        │ structured profiles               │
                         ▼                                   │
                 ┌───────────────┐                           │
                 │ Results Check │  counts good results      │
@@ -130,5 +131,6 @@ A different user with different preferences triggers a completely different set 
 | Graph / Orchestration | LangGraph |
 | LLM | Claude Haiku 4.5, Claude Sonnet 4.6 (Anthropic) |
 | Search | SerpAPI (Google) |
+| Scraping | Firecrawl |
 | LLM framework | LangChain |
 | Observability | LangSmith (planned) |
