@@ -77,10 +77,16 @@ The result is a ranked recommendation list built from real data - actual commute
                 │    Reducer    │  ranks with real structured data
                 │     Node      │  applies trade-off rules against actual numbers
                 └───────┬───────┘
+                        │ final profiles + disqualified profiles
+                        ▼
+                ┌───────────────┐
+                │    Analyzer   │  surfaces patterns across all results
+                │     Agent     │  e.g. budget too low, neighborhood commute mismatch
+                └───────┬───────┘
                         │
                         ▼
              ranked recommendations
-             with links + images
+             with links + images + insights
 ```
 
 ---
@@ -117,9 +123,14 @@ A different user with different preferences triggers a completely different set 
 
 ## TODO
 
+- Analyzer agent - after the reducer runs, a separate agent reviews both the final ranked listings and the disqualified ones to surface patterns that might be useful to the user (e.g. most listings in their budget don't allow pets, commute times are consistently longer than expected in their target neighborhood, disqualified listings were mostly due to price - maybe the budget needs adjusting)
+- `find_nearby_places` tool - currently a stub; implement using Google Places API (nearbysearch endpoint) with a geocode step to convert address to lat/lng first (requires `GOOGLE_PLACES_API_KEY`)
+- `get_commute_time` tool - currently a stub; implement using Google Maps Distance Matrix API via the `googlemaps` SDK (requires `GOOGLE_MAPS_API_KEY`)
 - LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
 - Evals - approach TBD, still deciding what "good" looks like (preference adherence, ranking quality, etc.)
-- Data persistence - conversations reset on server restart, need to hook into Chainlit's data layer
+- Data persistence - state is in-memory only (`cl.user_session`), so a page refresh or server restart loses all chat history and LLM context. Two things needed to fix this:
+  - **LLM context** - wire a LangGraph checkpointer (e.g. `SqliteSaver`) into `build_graph()` and pass a `thread_id` per user in the invoke config; the graph will automatically reload prior state on resume
+  - **Visual chat history** - configure Chainlit's data layer (LiteralAI or a custom adapter) so the UI replays past messages on reload; without this the page appears blank even if the LLM has context
 
 ---
 
