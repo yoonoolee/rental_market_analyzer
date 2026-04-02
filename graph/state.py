@@ -80,3 +80,4 @@ class RentalState(TypedDict):
     questions_asked: int
     ready_to_search: bool
     final_response: str
+    analysis_insights: str

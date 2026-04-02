@@ -40,6 +40,7 @@ async def start():
         "questions_asked": 0,
         "ready_to_search": False,
         "final_response": "",
+        "analysis_insights": "",
     }
     cl.user_session.set("state", initial_state)
     await cl.Message(content=WELCOME_MESSAGE).send()
@@ -67,6 +68,7 @@ async def on_message(message: cl.Message):
         state["listing_profiles"] = []
         state["search_attempts"] = 0
         state["final_response"] = ""
+        state["analysis_insights"] = ""
 
     # show a thinking indicator while the graph runs
     async with cl.Step(name="searching...") as step:
@@ -89,7 +91,10 @@ async def on_message(message: cl.Message):
     # final_response means the full pipeline ran and we have ranked recommendations.
     # otherwise it's a clarifying question from the elicitation node.
     if result.get("final_response"):
-        await cl.Message(content=result["final_response"]).send()
+        response = result["final_response"]
+        if result.get("analysis_insights"):
+            response += "\n\n---\n\n### Market Insights\n\n" + result["analysis_insights"]
+        await cl.Message(content=response).send()
     else:
         ai_messages = [m for m in result.get("messages", []) if isinstance(m, AIMessage)]
         if ai_messages:

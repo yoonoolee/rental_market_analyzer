@@ -5,6 +5,7 @@ from .nodes.elicitation import elicitation_node
 from .nodes.planner import planner_node
 from .nodes.search import search_node
 from .nodes.reducer import reducer_node
+from .nodes.analyzer import analyzer_node
 from .nodes.listing_agent import listing_agent_node
 from .nodes.supervisor import supervisor_node, results_check_node, route_after_results_check
 
@@ -69,6 +70,7 @@ def build_graph():
     builder.add_node("listing_agent", listing_agent_node)
     builder.add_node("results_check", results_check_node)
     builder.add_node("reducer", reducer_node)
+    builder.add_node("analyzer", analyzer_node)
 
     builder.add_edge(START, "elicitation")
 
@@ -98,6 +100,7 @@ def build_graph():
         ["reducer", "planner"]
     )
 
-    builder.add_edge("reducer", END)
+    builder.add_edge("reducer", "analyzer")
+    builder.add_edge("analyzer", END)
 
     return builder.compile()
