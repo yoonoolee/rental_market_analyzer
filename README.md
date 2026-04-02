@@ -1,4 +1,4 @@
-# Rental Market Analyzer
+# Rental Recommendation Agent: Personalized Apartment Search
 
 A conversational apartment-hunting agent built as part of INFO 290: Generative AI at UC Berkeley. The idea came from a pretty universal pain point - searching for a rental is tedious, results are scattered across a dozen sites, and standard search filters don't capture the nuance of what people actually care about (commute time, noise level, whether there's a good gym nearby, etc.).
 
@@ -118,6 +118,20 @@ done, returning profile
 ```
 
 A different user with different preferences triggers a completely different set of tool calls.
+
+---
+
+## Tools
+
+The listing agents have access to five tools. Which ones get called depends on the user's preferences — not every agent uses every tool.
+
+| Tool | API | Status |
+|---|---|---|
+| `scrape_listing` | Firecrawl | Implemented |
+| `search_web` | SerpAPI (Google) | Implemented |
+| `analyze_listing_photos` | Claude Sonnet 4.6 (vision) | Implemented |
+| `get_commute_time` | Google Maps Distance Matrix API | Stub |
+| `find_nearby_places` | Google Places API | Stub |
 
 ---
 
