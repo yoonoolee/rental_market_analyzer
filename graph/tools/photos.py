@@ -43,7 +43,7 @@ async def analyze_listing_photos(image_urls: list[str], focus_areas: str) -> dic
     content = [
         *[
             {"type": "image", "source": {"type": "url", "url": url}}
-            for url in image_urls[:5]  # cap at 5 to manage token cost
+            for url in image_urls
         ],
         {
             "type": "text",

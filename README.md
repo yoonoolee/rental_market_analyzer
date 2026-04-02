@@ -141,6 +141,11 @@ The listing agents have access to five tools. Which ones get called depends on t
 - `get_commute_time` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/commute.py` (supports driving, transit, bicycling, walking modes; returns structured dict). Uses same `GOOGLE_MAPS_API_KEY`.
 - LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
 - Evals - approach TBD, still deciding what "good" looks like (preference adherence, ranking quality, etc.)
+- Photo analysis token cost - `analyze_listing_photos` currently passes all available images to Claude vision. This gives the best analysis quality (no relevant photos get cut) but cost scales linearly with listing photo count — Zillow/Apartments.com listings commonly have 30–50 images. A few options worth considering:
+  - **Hard cap with relevance ranking**: do a cheap first-pass call to categorize/label all images, then pass only the top-N most relevant to `focus_areas` for the full analysis. Better quality than a naive slice, but adds a round-trip.
+  - **Single-pass expanded**: pass all images in one call but prompt the model to weight its analysis toward images most relevant to `focus_areas`. One call, higher token cost, no extra latency.
+  - **Naive cap (original)**: `image_urls[:N]` — cheapest but misses relevant photos that appear later in the listing's sequence.
+  Current choice favors analysis quality; revisit if per-listing API cost becomes a concern.
 - Data persistence - state is in-memory only (`cl.user_session`), so a page refresh or server restart loses all chat history and LLM context. Two things needed to fix this:
   - **LLM context** - wire a LangGraph checkpointer (e.g. `SqliteSaver`) into `build_graph()` and pass a `thread_id` per user in the invoke config; the graph will automatically reload prior state on resume
   - **Visual chat history** - configure Chainlit's data layer (LiteralAI or a custom adapter) so the UI replays past messages on reload; without this the page appears blank even if the LLM has context
