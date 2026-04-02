@@ -1,0 +1,56 @@
+[
+  {
+    "id": "img_set_001",
+    "listing_id": "listing_001",
+    "image_urls": [
+      "https://photos.zillowstatic.com/fp/example1.jpg",
+      "https://photos.zillowstatic.com/fp/example2.jpg",
+      "https://photos.zillowstatic.com/fp/example3.jpg"
+    ],
+    "human_labels": {
+      "modern_finishes": true,
+      "natural_light": true,
+      "spacious": false,
+      "condition": "good",
+      "notes": "Renovated kitchen with stainless appliances, large windows, but compact rooms"
+    },
+    "focus_areas": ["natural_light", "modern_finishes"],
+    "preferences_used": "pref_001"
+  },
+  {
+    "id": "img_set_002",
+    "listing_id": "listing_002",
+    "image_urls": [
+      "https://photos.zillowstatic.com/fp/example4.jpg",
+      "https://photos.zillowstatic.com/fp/example5.jpg"
+    ],
+    "human_labels": {
+      "modern_finishes": false,
+      "natural_light": false,
+      "spacious": true,
+      "condition": "dated",
+      "notes": "Older unit with original fixtures, dark rooms, but large square footage"
+    },
+    "focus_areas": ["spacious"],
+    "preferences_used": "pref_001"
+  },
+  {
+    "id": "img_set_003",
+    "listing_id": "listing_003",
+    "image_urls": [
+      "https://photos.zillowstatic.com/fp/example6.jpg",
+      "https://photos.zillowstatic.com/fp/example7.jpg",
+      "https://photos.zillowstatic.com/fp/example8.jpg",
+      "https://photos.zillowstatic.com/fp/example9.jpg"
+    ],
+    "human_labels": {
+      "modern_finishes": true,
+      "natural_light": true,
+      "spacious": true,
+      "condition": "excellent",
+      "notes": "New construction with floor-to-ceiling windows, open floor plan, high-end kitchen"
+    },
+    "focus_areas": ["in_unit_laundry", "natural_light"],
+    "preferences_used": "pref_002"
+  }
+]

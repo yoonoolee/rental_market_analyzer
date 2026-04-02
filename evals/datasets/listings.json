@@ -1,0 +1,64 @@
+[
+  {
+    "id": "listing_001",
+    "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-2br-2ba-soma/test",
+    "ground_truth": {
+      "price": 2800,
+      "bedrooms": 2,
+      "address": "SOMA, San Francisco, CA",
+      "pet_friendly": true,
+      "pet_deposit": 500,
+      "furnishing": "unfurnished",
+      "disqualified": false,
+      "disqualify_reason": null
+    },
+    "preferences_used": "pref_001",
+    "notes": "Valid listing, under budget, pet-friendly — should NOT be disqualified"
+  },
+  {
+    "id": "listing_002",
+    "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-no-pets-3200/test",
+    "ground_truth": {
+      "price": 3200,
+      "bedrooms": 2,
+      "address": "Mission District, San Francisco, CA",
+      "pet_friendly": false,
+      "disqualified": true,
+      "disqualify_reason": "Price exceeds max_price of $3000 and no pets allowed"
+    },
+    "preferences_used": "pref_001",
+    "notes": "Over budget AND no pets — should be disqualified on two hard constraints"
+  },
+  {
+    "id": "listing_003",
+    "url": "https://www.zillow.com/homedetails/test-brooklyn-studio/",
+    "ground_truth": {
+      "price": 2600,
+      "bedrooms": 1,
+      "address": "Williamsburg, Brooklyn, NY",
+      "in_unit_laundry": true,
+      "pet_friendly": false,
+      "furnishing": "unfurnished",
+      "disqualified": false,
+      "disqualify_reason": null
+    },
+    "preferences_used": "pref_002",
+    "notes": "Has in-unit laundry, $2600 is within the trade-off max of $2800 — should NOT be disqualified"
+  },
+  {
+    "id": "listing_004",
+    "url": "https://www.zillow.com/homedetails/test-brooklyn-no-laundry/",
+    "ground_truth": {
+      "price": 2700,
+      "bedrooms": 1,
+      "address": "Park Slope, Brooklyn, NY",
+      "in_unit_laundry": false,
+      "pet_friendly": false,
+      "furnishing": "unfurnished",
+      "disqualified": true,
+      "disqualify_reason": "Price exceeds base max_price of $2500 and does not have in-unit laundry to justify trade-off"
+    },
+    "preferences_used": "pref_002",
+    "notes": "Over base budget, no laundry — trade-off condition not met, should be disqualified"
+  }
+]

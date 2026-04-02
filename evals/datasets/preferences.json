@@ -1,0 +1,96 @@
+[
+  {
+    "id": "pref_001",
+    "description": "Clear requirements, single turn",
+    "conversation": [
+      {
+        "role": "user",
+        "content": "I'm looking for a 2-bedroom apartment in San Francisco, budget is $3000/month max. I have a cat. I work at Salesforce Tower so commute is important."
+      }
+    ],
+    "expected_preferences": {
+      "city": "San Francisco",
+      "bedrooms": 2,
+      "max_price": 3000,
+      "pet_friendly": true,
+      "commute_destinations": ["Salesforce Tower, San Francisco"],
+      "soft_constraints": ["pet-friendly", "good commute"],
+      "trade_off_rules": []
+    }
+  },
+  {
+    "id": "pref_002",
+    "description": "Trade-off rule present",
+    "conversation": [
+      {
+        "role": "user",
+        "content": "Looking for a studio or 1br in Brooklyn, ideally under $2500 but I'd go up to $2800 if it has in-unit laundry. No pets."
+      }
+    ],
+    "expected_preferences": {
+      "city": "Brooklyn",
+      "bedrooms": 1,
+      "max_price": 2800,
+      "min_price": null,
+      "soft_constraints": ["in-unit laundry"],
+      "trade_off_rules": ["willing to pay up to $2800 if in-unit laundry"],
+      "commute_destinations": []
+    }
+  },
+  {
+    "id": "pref_003",
+    "description": "Multi-turn conversation",
+    "conversation": [
+      {"role": "user", "content": "I want to find an apartment in Seattle."},
+      {"role": "assistant", "content": "Great! What's your budget and how many bedrooms do you need?"},
+      {"role": "user", "content": "2 bedrooms, around $2200 a month. I commute to downtown Seattle and also sometimes to Bellevue."},
+      {"role": "assistant", "content": "Got it! Any lifestyle preferences — gym, parking, outdoor space?"},
+      {"role": "user", "content": "Parking is a must. Gym would be nice but not required. I have a small dog."}
+    ],
+    "expected_preferences": {
+      "city": "Seattle",
+      "bedrooms": 2,
+      "max_price": 2200,
+      "pet_friendly": true,
+      "commute_destinations": ["downtown Seattle", "Bellevue"],
+      "soft_constraints": ["parking", "gym"],
+      "trade_off_rules": ["parking is a hard requirement"]
+    }
+  },
+  {
+    "id": "pref_004",
+    "description": "Minimal info provided",
+    "conversation": [
+      {"role": "user", "content": "I need an apartment in Austin."}
+    ],
+    "expected_preferences": {
+      "city": "Austin",
+      "bedrooms": null,
+      "max_price": null,
+      "commute_destinations": [],
+      "soft_constraints": [],
+      "trade_off_rules": []
+    }
+  },
+  {
+    "id": "pref_005",
+    "description": "Complex trade-offs and lifestyle signals",
+    "conversation": [
+      {
+        "role": "user",
+        "content": "Looking for 2br in Chicago's Wicker Park or Logan Square area. Max $2400/mo but I'd pay up to $2700 if I could walk to the Blue Line. I work remotely so commute doesn't matter. I value natural light and high ceilings. No smoking building. Currently have 2 cats."
+      }
+    ],
+    "expected_preferences": {
+      "city": "Chicago",
+      "bedrooms": 2,
+      "max_price": 2700,
+      "min_price": null,
+      "pet_friendly": true,
+      "commute_destinations": [],
+      "soft_constraints": ["Wicker Park or Logan Square", "natural light", "high ceilings", "no smoking building", "near Blue Line"],
+      "trade_off_rules": ["willing to pay up to $2700 if walkable to Blue Line"],
+      "lifestyle_notes": "remote worker, values natural light and high ceilings, 2 cats"
+    }
+  }
+]
