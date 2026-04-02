@@ -10,7 +10,7 @@ This project explores what a better version of that experience could look like w
 
 The system talks with you first. Rather than making you fill out a form, it asks a few targeted questions to understand your priorities - budget, location, commute destinations, lifestyle preferences, and importantly, how you'd trade those off against each other. Once it has enough to go on, it finds candidate listings, then spins up a research agent per listing that decides what tools to call based on your specific situation. Someone with a dog gets pet policy checked immediately. Someone who cares about a bar scene gets a places lookup for that. Someone who didn't mention grocery stores doesn't waste an API call on it.
 
-The result is a ranked recommendation list built from real data - actual commute times, actual nearby places, actual listing details - not inferred from search snippets.
+The result is a ranked recommendation list built from real data - actual commute times, actual nearby places, actual listing details - not inferred from search snippets. After ranking, an analyzer agent reviews both the recommended and disqualified listings to surface cross-cutting market patterns: whether your budget is realistic for the area, what's actually eliminating options, and concrete suggestions for adjusting the search.
 
 ---
 
@@ -123,7 +123,6 @@ A different user with different preferences triggers a completely different set 
 
 ## TODO
 
-- Analyzer agent - after the reducer runs, a separate agent reviews both the final ranked listings and the disqualified ones to surface patterns that might be useful to the user (e.g. most listings in their budget don't allow pets, commute times are consistently longer than expected in their target neighborhood, disqualified listings were mostly due to price - maybe the budget needs adjusting)
 - `find_nearby_places` tool - currently a stub; implement using Google Places API (nearbysearch endpoint) with a geocode step to convert address to lat/lng first (requires `GOOGLE_PLACES_API_KEY`)
 - `get_commute_time` tool - currently a stub; implement using Google Maps Distance Matrix API via the `googlemaps` SDK (requires `GOOGLE_MAPS_API_KEY`)
 - LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
