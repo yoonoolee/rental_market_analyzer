@@ -130,15 +130,15 @@ The listing agents have access to five tools. Which ones get called depends on t
 | `scrape_listing` | Firecrawl | Implemented |
 | `search_web` | SerpAPI (Google) | Implemented |
 | `analyze_listing_photos` | Claude Sonnet 4.6 (vision) | Implemented |
-| `get_commute_time` | Google Maps Distance Matrix API | Stub |
-| `find_nearby_places` | Google Places API | Stub |
+| `get_commute_time` | Google Maps Distance Matrix API | API tested, prototype ready |
+| `find_nearby_places` | Google Places API (+ Geocoding) | API tested, prototype ready |
 
 ---
 
 ## TODO
 
-- `find_nearby_places` tool - currently a stub; implement using Google Places API (nearbysearch endpoint) with a geocode step to convert address to lat/lng first (requires `GOOGLE_PLACES_API_KEY`)
-- `get_commute_time` tool - currently a stub; implement using Google Maps Distance Matrix API via the `googlemaps` SDK (requires `GOOGLE_MAPS_API_KEY`)
+- `find_nearby_places` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/places.py` (geocodes address internally, returns structured dict with nearby place details). Uses `GOOGLE_MAPS_API_KEY` — single key covers Places + Geocoding + Distance Matrix.
+- `get_commute_time` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/commute.py` (supports driving, transit, bicycling, walking modes; returns structured dict). Uses same `GOOGLE_MAPS_API_KEY`.
 - LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
 - Evals - approach TBD, still deciding what "good" looks like (preference adherence, ranking quality, etc.)
 - Data persistence - state is in-memory only (`cl.user_session`), so a page refresh or server restart loses all chat history and LLM context. Two things needed to fix this:
@@ -156,5 +156,6 @@ The listing agents have access to five tools. Which ones get called depends on t
 | LLM | Claude Haiku 4.5, Claude Sonnet 4.6 (Anthropic) |
 | Search | SerpAPI (Google) |
 | Scraping | Firecrawl |
+| Location / Commute | Google Maps Platform (Distance Matrix, Places, Geocoding) |
 | LLM framework | LangChain |
 | Observability | LangSmith (planned) |
