@@ -132,6 +132,7 @@ async def on_message(message: cl.Message):
         response = result["final_response"]
         if result.get("analysis_insights"):
             response += "\n\n---\n\n### Market Insights\n\n" + result["analysis_insights"]
+        result["messages"].append(AIMessage(content=response))
         await cl.Message(content=response).send()
     else:
         ai_messages = [m for m in result.get("messages", []) if isinstance(m, AIMessage)]

@@ -51,5 +51,4 @@ async def reducer_node(state: RentalState) -> dict:
 
     return {
         "final_response": response.content,
-        "messages": [AIMessage(content=response.content)],
     }
