@@ -1,4 +1,6 @@
 import os
+import asyncio
+import json
 import chainlit as cl
 from langchain_core.messages import HumanMessage, AIMessage
 from graph.builder import build_graph
@@ -48,6 +50,42 @@ async def start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
+    if message.content.strip().lower() == "/evals":
+        async with cl.Step(name="Running Evals (this may take a few minutes)...") as step:
+            # Run evals script as a subprocess
+            process = await asyncio.create_subprocess_exec(
+                "python3", "-m", "evals.run_evals",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await process.communicate()
+            
+            if process.returncode == 0:
+                step.output = stdout.decode("utf-8")
+                
+                # Check for summary.json
+                summary_path = "evals/results/summary.json"
+                if os.path.exists(summary_path):
+                    with open(summary_path, "r") as f:
+                        summary_data = json.load(f)
+                    
+                    md = "### Eval Summary\n\n"
+                    for exp_name, results in summary_data.items():
+                        md += f"**{exp_name.upper().replace('_', ' ')}**\n"
+                        for variant, data in results.items():
+                            agg = data.get("aggregate", {})
+                            metrics_str = " | ".join(f"{k}: {v}" for k, v in agg.items())
+                            md += f"- `{variant}`: {metrics_str}\n"
+                        md += "\n"
+                    
+                    await cl.Message(content=md).send()
+                else:
+                    await cl.Message(content="Evals ran successfully, but no summary file was found.").send()
+            else:
+                step.output = stderr.decode("utf-8")
+                await cl.Message(content=f"Evals failed. See steps for details.").send()
+        return
+
     state = cl.user_session.get("state")
 
     # append the new user message before invoking the graph

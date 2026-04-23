@@ -1,0 +1,20 @@
+{
+  "search": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkeJkWGvuEsn1pg3Q4'}"
+  },
+  "image": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkhCshyW5adcDoLiW1'}"
+  },
+  "elicitation": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkhsKNiUbwXztoEE3e'}"
+  },
+  "planner": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkiosHWny7i8TWaDpF'}"
+  },
+  "listing_agent": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkjVYfuUsSsBU9jJZd'}"
+  },
+  "reducer": {
+    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkkChquL8U9hk1mhb9'}"
+  }
+}
