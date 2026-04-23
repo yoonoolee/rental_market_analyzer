@@ -26,78 +26,78 @@ The result is a ranked recommendation list built from real data - actual commute
                     │ Intent Router │  Claude Haiku (classify intent)
                     │     Node      │  [Routing]
                     └───────┬───────┘
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-        ▼                   ▼                   ▼
- conversational     get recommendations       tool_call
- answer directly            │               run specific
- from context → END         │                tool → END
-                            ▼
-                    ┌───────────────┐
-                    │  Elicitation  │  Claude Haiku (extract prefs)
-                    │     Node      │  Claude Sonnet (generate question)  [Human in the Loop]
-                    └───────┬───────┘
-                            │ ready_to_search = True
-                            ▼
-                    ┌───────────────┐
-                    │    Planner    │◄──────────────────────┐  [Plan + Execute]  generates listing-discovery queries only
-                    │     Node      │                       │  retry-aware: avoids previously run queries
-                    └───────┬───────┘                       │
-                            │ search queries                │
-                            ▼                               │
-             ┌──────────────────────────────┐               │
-             │     Parallel Search Nodes    │  SerpAPI      │  [Map Reduce: map / fan-out]
-             │  [query1] [query2] [query3]  │               │
-             └──────────────┬───────────────┘               │
-                            │ candidate URLs                │
-                            ▼                               │
-                    ┌───────────────┐                       │
-                    │   Supervisor  │                       │  [Hierarchical] [Multi-agent orchestration]
-                    │     Node      │                       │
-                    └───────┬───────┘                       │
-                            │ spawns one agent per new URL  │
-                            ▼                               │
-┌───────────────────────────────────────────────────┐       │
-│              Parallel ReAct Listing Agents        │       │  [ReAct] [Map Reduce: map]
-│                                                   │       │
-│  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │       │
-│  │  Agent A    │  │   Agent B   │  │  Agent C  │  │       │
-│  │             │  │             │  │           │  │       │
-│  │ tools used  │  │ disqualified│  │tools used │  │       │
-│  │ based on    │  │ early (e.g. │  │based on   │  │       │
-│  │ user prefs  │  │ no pets)    │  │user prefs │  │       │
-│  └──────┬──────┘  └─────────────┘  └─────┬─────┘  │       │
-│         │                                │        │       │
-│    ┌────┴────────────────────────────────┴────┐   │       │
-│    │              Available Tools             │   │       │
-│    │  scrape_listing  │  get_commute_time     │   │       │
-│    │  find_nearby_places  │  search_web       │   │       │
-│    │  analyze_listing_photos                  │   │       │
-│    └──────────────────────────────────────────┘   │       │
-└───────────────────────┬───────────────────────────┘       │
-                        │ structured profiles               │
-                        ▼                                   │
-                ┌───────────────┐                           │
-                │ Results Check │  counts good results      │  [Routing]
-                │     Node      ├──── < 10 good? ───────────┘
-                │               │     retry with new queries
-                └───────┬───────┘
-                        │ >= 10 good results (or max attempts hit)
-                        ▼
-                ┌───────────────┐
-                │    Reducer    │  ranks with real structured data  [Map Reduce: reduce]
-                │     Node      │  applies trade-off rules against actual numbers
-                └───────┬───────┘
-                        │ final profiles + disqualified profiles
-                        ▼
-                ┌───────────────┐
-                │    Analyzer   │  surfaces patterns across all results  [Reflection]
-                │     Node      │  e.g. budget too low, neighborhood commute mismatch
-                └───────┬───────┘
-                        │
-                        ▼
-             ranked recommendations
-             with links + images + insights
+        ┌──────────┬────────┴───────────┬──────────┐
+        │          │                    │          │
+        ▼          ▼                    ▼          ▼
+ off_topic  conversational      get recommendations  tool_call
+ decline &  answer directly             │          run specific
+ END        from context → END          │          tool → END
+                                        ▼
+                                ┌───────────────┐
+                                │  Elicitation  │  Claude Haiku (extract prefs)
+                                │     Node      │  Claude Sonnet (generate question)  [Human in the Loop]
+                                └───────┬───────┘
+                                        │ ready_to_search = True
+                                        ▼
+                                ┌───────────────┐
+                                │    Planner    │◄──────────────────────┐  [Plan + Execute]  generates listing-discovery queries only
+                                │     Node      │                       │  retry-aware: avoids previously run queries
+                                └───────┬───────┘                       │
+                                        │ search queries                │
+                                        ▼                               │
+                        ┌──────────────────────────────┐               │
+                        │     Parallel Search Nodes    │  SerpAPI      │  [Map Reduce: map / fan-out]
+                        │  [query1] [query2] [query3]  │               │
+                        └──────────────┬───────────────┘               │
+                                        │ candidate URLs                │
+                                        ▼                               │
+                                ┌───────────────┐                       │
+                                │   Supervisor  │                       │  [Hierarchical] [Multi-agent orchestration]
+                                │     Node      │                       │
+                                └───────┬───────┘                       │
+                                        │ spawns one agent per new URL  │
+                                        ▼                               │
+                ┌───────────────────────────────────────────────────┐       │
+                │              Parallel ReAct Listing Agents        │       │  [ReAct] [Map Reduce: map]
+                │                                                   │       │
+                │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │       │
+                │  │  Agent A    │  │   Agent B   │  │  Agent C  │  │       │
+                │  │             │  │             │  │           │  │       │
+                │  │ tools used  │  │ disqualified│  │tools used │  │       │
+                │  │ based on    │  │ early (e.g. │  │based on   │  │       │
+                │  │ user prefs  │  │ no pets)    │  │user prefs │  │       │
+                │  └──────┬──────┘  └─────────────┘  └─────┬─────┘  │       │
+                │         │                                │        │       │
+                │    ┌────┴────────────────────────────────┴────┐   │       │
+                │    │              Available Tools             │   │       │
+                │    │  scrape_listing  │  get_commute_time     │   │       │
+                │    │  find_nearby_places  │  search_web       │   │       │
+                │    │  analyze_listing_photos                  │   │       │
+                │    └──────────────────────────────────────────┘   │       │
+                └───────────────────────┬───────────────────────────┘       │
+                                        │ structured profiles               │
+                                        ▼                                   │
+                                ┌───────────────┐                           │
+                                │ Results Check │  counts good results      │  [Routing]
+                                │     Node      ├──── < 10 good? ───────────┘
+                                │               │     retry with new queries
+                                └───────┬───────┘
+                                        │ >= 10 good results (or max attempts hit)
+                                        ▼
+                                ┌───────────────┐
+                                │    Reducer    │  ranks with real structured data  [Map Reduce: reduce]
+                                │     Node      │  applies trade-off rules against actual numbers
+                                └───────┬───────┘
+                                        │ final profiles + disqualified profiles
+                                        ▼
+                                ┌───────────────┐
+                                │    Analyzer   │  surfaces patterns across all results  [Reflection]
+                                │     Node      │  e.g. budget too low, neighborhood commute mismatch
+                                └───────┬───────┘
+                                        │
+                                        ▼
+                        ranked recommendations
+                        with links + images + insights
 ```
 
 
@@ -147,7 +147,7 @@ The listing agents have access to five tools. Which ones get called depends on t
 
 ## TODO
 
-- Intent Router node - currently every message goes straight to elicitation regardless of what the user is asking. A lightweight Haiku classifier should run first on every message and route to one of three paths: `needs_search` (user wants to find apartments → elicitation if prefs incomplete, planner if ready), `conversational` (general question, follow-up about results, etc. → answer directly from context), or `tool_call` (specific data request like commute time or nearby places for a known address → call the relevant tool directly and return). Examples of each: "find me a 2br in SF under $3k" → needs_search; "what's the difference between a studio and 1br?" → conversational; "how long is the commute from 123 Main St to UC Berkeley by transit?" → tool_call. Currently the app resets and reruns the full search pipeline on every follow-up message regardless of intent, which is wasteful and breaks simple conversational exchanges.
+- Intent Router node - currently every message goes straight to elicitation regardless of what the user is asking. A lightweight Haiku classifier should run first on every message and route to one of four paths: `needs_search` (user wants to find apartments → elicitation if prefs incomplete, planner if ready), `conversational` (general question, follow-up about results, etc. → answer directly from context), `tool_call` (specific data request like commute time or nearby places for a known address → call the relevant tool directly and return), or `off_topic` (message has nothing to do with apartment searching → respond that we can only help with rental search and end). Examples: "find me a 2br in SF under $3k" → needs_search; "what's the difference between a studio and 1br?" → conversational; "how long is the commute from 123 Main St to UC Berkeley by transit?" → tool_call; "write me a poem about cats" → off_topic. Currently the app resets and reruns the full search pipeline on every follow-up message regardless of intent, which is wasteful and breaks simple conversational exchanges.
 - `find_nearby_places` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/places.py` (geocodes address internally, returns structured dict with nearby place details). Uses `GOOGLE_MAPS_API_KEY` — single key covers Places + Geocoding + Distance Matrix.
 - `get_commute_time` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/commute.py` (supports driving, transit, bicycling, walking modes; returns structured dict). Uses same `GOOGLE_MAPS_API_KEY`.
 - LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
