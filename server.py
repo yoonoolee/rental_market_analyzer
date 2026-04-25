@@ -1,15 +1,14 @@
 import os
-from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+load_dotenv()
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from graph.builder import build_graph
-from dotenv import load_dotenv
-
-load_dotenv()
 
 _CHECKPOINT_DB = os.getenv("RENTAL_CHECKPOINT_DB", "rental_state.db")
 graph = None
@@ -33,8 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-WELCOME_MESSAGE = "Hi there! Ready to find your dream apartment?"
-
 
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
@@ -46,7 +43,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         "metadata": {"session_id": session_id},
     }
 
-    # Replay existing history or send welcome for new sessions
+    # Replay existing history for returning sessions; new sessions get no server message
     prior_state = await graph.aget_state(config)
     if prior_state and prior_state.values.get("messages"):
         for m in prior_state.values["messages"]:
@@ -54,8 +51,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 await websocket.send_json({"type": "message", "role": "user", "content": m.content})
             elif isinstance(m, AIMessage) and m.content:
                 await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
-    else:
-        await websocket.send_json({"type": "message", "role": "assistant", "content": WELCOME_MESSAGE})
 
     try:
         while True:

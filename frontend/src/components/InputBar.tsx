@@ -34,7 +34,7 @@ export function InputBar({ onSend, disabled, placeholder = 'Reply...' }: Props) 
 
   return (
     <div className="px-4 pb-4 pt-2">
-      <div className="max-w-3xl mx-auto flex items-center gap-3 bg-gray-100 rounded-full px-4 py-2">
+      <div className="max-w-3xl mx-auto flex items-center gap-3 bg-[#f7f6f3] rounded-3xl px-4">
         <textarea
           ref={textareaRef}
           value={value}
@@ -44,12 +44,12 @@ export function InputBar({ onSend, disabled, placeholder = 'Reply...' }: Props) 
           placeholder={placeholder}
           rows={1}
           disabled={disabled}
-          className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400 leading-relaxed max-h-40 disabled:opacity-50"
+          className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400 leading-relaxed max-h-40 disabled:opacity-50 py-2.5"
         />
         <button
           onClick={submit}
           disabled={disabled || !value.trim()}
-          className="w-9 h-9 rounded-full bg-[#1a3f6f] text-white flex items-center justify-center shrink-0 disabled:opacity-40 hover:opacity-90 transition-opacity"
+          className="flex items-center justify-center shrink-0 text-gray-600 disabled:opacity-30 hover:text-gray-900 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
             <path fillRule="evenodd" d="M12 20.25a.75.75 0 01-.75-.75V6.31l-4.72 4.72a.75.75 0 01-1.06-1.06l6-6a.75.75 0 011.06 0l6 6a.75.75 0 11-1.06 1.06L12.75 6.31V19.5a.75.75 0 01-.75.75z" clipRule="evenodd" />

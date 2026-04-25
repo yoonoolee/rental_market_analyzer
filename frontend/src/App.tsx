@@ -10,7 +10,7 @@ export default function App() {
   const { messages, isThinking, connected, sessions, sendMessage, newChat, switchSession } = useChat()
   const bottomRef = useRef<HTMLDivElement>(null)
   const currentId = localStorage.getItem('rental_session_id') ?? ''
-  const isInitial = messages.length <= 1
+  const isInitial = messages.length === 0
 
   useEffect(() => {
     if (!isInitial) {
@@ -42,7 +42,7 @@ export default function App() {
         ) : (
           // Normal scrolling layout once conversation starts
           <>
-            <main className="flex-1 overflow-y-auto px-4 py-8">
+            <main className="flex-1 overflow-y-auto px-4 pt-16 pb-8">
               <div className="max-w-3xl mx-auto flex flex-col gap-6">
                 {messages.map((m) => (
                   <MessageBubble key={m.id} message={m} />
