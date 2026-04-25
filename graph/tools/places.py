@@ -1,18 +1,19 @@
 import os
 import math
 import asyncio
+import httpx
 import googlemaps
 from langchain_core.tools import tool
 
 
-_client = None
+_gmaps_client = None
 
 
-def _get_client():
-    global _client
-    if _client is None:
-        _client = googlemaps.Client(key=os.getenv("GOOGLE_MAPS_API_KEY"))
-    return _client
+def _get_gmaps_client():
+    global _gmaps_client
+    if _gmaps_client is None:
+        _gmaps_client = googlemaps.Client(key=os.getenv("GOOGLE_MAPS_API_KEY"))
+    return _gmaps_client
 
 
 # Natural-language to Google Places type mapping. Listing agents often pass
@@ -53,35 +54,46 @@ def _haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> f
 
 
 def _places_sync(address: str, place_type: str, radius: int) -> dict:
-    client = _get_client()
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY")
     normalized_type = _normalize_place_type(place_type)
     try:
-        geo = client.geocode(address)
+        geo = _get_gmaps_client().geocode(address)
         if not geo:
-            return {
-                "error": f"Could not geocode address: {address}",
-                "query_type": place_type,
-                "address": address,
-            }
+            return {"error": f"Could not geocode address: {address}", "query_type": place_type, "address": address}
 
         loc = geo[0]["geometry"]["location"]
         origin_lat, origin_lng = loc["lat"], loc["lng"]
 
-        places = client.places_nearby(
-            location=(origin_lat, origin_lng),
-            radius=radius,
-            type=normalized_type,
+        resp = httpx.post(
+            "https://places.googleapis.com/v1/places:searchNearby",
+            headers={
+                "X-Goog-Api-Key": api_key,
+                "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.location",
+            },
+            json={
+                "includedTypes": [normalized_type],
+                "maxResultCount": 5,
+                "locationRestriction": {
+                    "circle": {
+                        "center": {"latitude": origin_lat, "longitude": origin_lng},
+                        "radius": float(radius),
+                    }
+                },
+            },
+            timeout=10,
         )
+        resp.raise_for_status()
+        data = resp.json()
 
         results = []
-        for place in places.get("results", [])[:5]:
-            ploc = place["geometry"]["location"]
-            dist = _haversine_distance(origin_lat, origin_lng, ploc["lat"], ploc["lng"])
+        for place in data.get("places", []):
+            ploc = place.get("location", {})
+            dist = _haversine_distance(origin_lat, origin_lng, ploc.get("latitude", 0), ploc.get("longitude", 0))
             results.append({
-                "name": place["name"],
-                "address": place.get("vicinity", ""),
+                "name": place.get("displayName", {}).get("text", ""),
+                "address": place.get("formattedAddress", ""),
                 "rating": place.get("rating"),
-                "total_ratings": place.get("user_ratings_total", 0),
+                "total_ratings": place.get("userRatingCount", 0),
                 "distance_meters": round(dist),
             })
 
@@ -90,7 +102,7 @@ def _places_sync(address: str, place_type: str, radius: int) -> dict:
             "resolved_type": normalized_type,
             "address": address,
             "radius_meters": radius,
-            "results_count": len(places.get("results", [])),
+            "results_count": len(results),
             "results": results,
         }
     except Exception as e:

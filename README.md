@@ -20,7 +20,7 @@ The result is a ranked recommendation list built from real data - actual commute
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Chainlit UI                             │  [Human in the Loop]
+│                     FastAPI + React UI                          │  [Human in the Loop]
 │              + AsyncSqliteSaver checkpointer                    │  [Persistence]
 └───────────────────────────┬─────────────────────────────────────┘
                             │ user message (thread_id scoped)
@@ -144,7 +144,7 @@ The listing agents have access to five tools. Which ones get called depends on t
 | `search_web` | SerpAPI (Google) | Implemented |
 | `analyze_listing_photos` | Claude Sonnet 4.6 (vision) | Implemented |
 | `get_commute_time` | Google Maps Distance Matrix API | Implemented |
-| `find_nearby_places` | Google Places API (+ Geocoding) | Implemented |
+| `find_nearby_places` | Google Places API (New) + Geocoding | Implemented |
 
 ---
 
@@ -209,24 +209,23 @@ The evaluation suite lives in [`evals/`](evals/) and covers six component-level 
 
 **LLM-as-judge:** all judges run on `claude-sonnet-4-6`. Rubrics live in [`evals/metrics/llm_judge.py`](evals/metrics/llm_judge.py).
 
-Run with `python -m evals.run_evals` or type `/evals` in the Chainlit UI. See [`evals/README.md`](evals/README.md) for full documentation.
+Run with `python -m evals.run_evals`. See [`evals/README.md`](evals/README.md) for full documentation.
 
 ---
 
 ## TODO
 
 - ~~Intent Router node~~ — **done.** Haiku classifier in [`graph/nodes/intent_router.py`](graph/nodes/intent_router.py) routes every message to one of: `needs_search` (→ elicitation), `conversational` (answer from context), `tool_call` (direct commute/places lookup), or `off_topic` (polite decline).
-- ~~`find_nearby_places` tool~~ — **done.** Geocodes + Places Nearby Search, maps natural-language types, returns structured results with distances.
+- ~~`find_nearby_places` tool~~ — **done.** Geocodes + Places Nearby Search (new API), maps natural-language types, returns structured results with distances.
 - ~~`get_commute_time` tool~~ — **done.** Distance Matrix across transit/driving/bicycling/walking.
 - ~~LangSmith observability~~ — **done.** Per-node run names tagged; enable via `LANGCHAIN_TRACING_V2=true` in `.env`.
 - ~~Evals datasets~~ — **done.** 30-listing static corpus, 10 preferences (5 validation / 5 test), 5 human-ranked preference-to-listing sets, end-to-end experiment registered.
-- ~~Data persistence~~ — **done (LLM context only).** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per Chainlit session. Visual chat history (Chainlit data layer) still deferred.
+- ~~Data persistence~~ — **done.** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per session. Session ID persisted in `localStorage`; full conversation history replayed on reconnect from SQLite.
 - Photo analysis token cost — `analyze_listing_photos` currently passes all available images to Claude vision. This gives the best analysis quality (no relevant photos get cut) but cost scales linearly with listing photo count — Zillow/Apartments.com listings commonly have 30–50 images. A few options worth considering:
   - **Hard cap with relevance ranking**: do a cheap first-pass call to categorize/label all images, then pass only the top-N most relevant to `focus_areas` for the full analysis. Better quality than a naive slice, but adds a round-trip.
   - **Single-pass expanded**: pass all images in one call but prompt the model to weight its analysis toward images most relevant to `focus_areas`. One call, higher token cost, no extra latency.
   - **Naive cap (original)**: `image_urls[:N]` — cheapest but misses relevant photos that appear later in the listing's sequence.
   Current choice favors analysis quality; revisit if per-listing API cost becomes a concern.
-- Chainlit visual chat replay — with `AsyncSqliteSaver` in place the LLM already has full context across refreshes, but the UI starts blank. Configure Chainlit's data layer (LiteralAI or a custom adapter) so past messages re-render on reload.
 - Scale static corpus to 50–100 — framework supports it; current 30 is the MVP.
 
 ---
@@ -235,12 +234,13 @@ Run with `python -m evals.run_evals` or type `/evals` in the Chainlit UI. See [`
 
 | Layer | Tool |
 |---|---|
-| Chat UI | Chainlit |
+| Frontend | React (Vite + TypeScript + Tailwind) |
+| Backend | FastAPI + WebSockets |
 | Graph / Orchestration | LangGraph |
 | LLM | Claude Haiku 4.5, Claude Sonnet 4.6 (Anthropic) |
 | Search | SerpAPI (Google) |
 | Scraping | Firecrawl |
-| Location / Commute | Google Maps Platform (Distance Matrix, Places, Geocoding) |
+| Location / Commute | Google Maps Platform (Distance Matrix, Places API New, Geocoding) |
 | LLM framework | LangChain |
 | Observability | LangSmith (per-node run names) |
 | Persistence | LangGraph AsyncSqliteSaver (thread-scoped checkpointer) |
