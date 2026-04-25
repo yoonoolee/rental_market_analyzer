@@ -33,11 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-WELCOME_MESSAGE = """Hey! I'm here to help you find your next apartment.
-
-Tell me what you're looking for - city, budget, vibe, anything. The more context you share (especially commute destinations and what you're willing to trade off), the more useful I can be.
-
-What are you looking for?"""
+WELCOME_MESSAGE = "Hi there! Ready to find your dream apartment?"
 
 
 @app.websocket("/ws/{session_id}")
