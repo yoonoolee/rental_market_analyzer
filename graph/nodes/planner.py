@@ -9,7 +9,9 @@ from prompts.planner_prompts import PLANNER_PROMPT
 llm = make_llm(model="claude-sonnet-4-6", temperature=0.2)
 
 
-def _extract_json(text: str) -> dict:
+def _extract_json(text) -> dict:
+    if isinstance(text, list):
+        text = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in text)
     match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
     if match:
         return json.loads(match.group(1).strip())

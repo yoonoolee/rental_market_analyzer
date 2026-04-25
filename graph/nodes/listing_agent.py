@@ -1,7 +1,8 @@
 import json
 import re
+import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage
-from ..llm import make_base_llm, RETRY_KWARGS
+from ..llm import make_base_llm
 from langgraph.prebuilt import create_react_agent
 from ..state import ListingAgentState
 from ..tools.scraper import scrape_listing
@@ -17,11 +18,17 @@ from prompts.listing_agent_prompts import build_listing_agent_prompt
 # not every agent will use every tool.
 LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web, analyze_listing_photos]
 
-llm = make_base_llm(model="claude-sonnet-4-6", temperature=0.1)
+llm = make_base_llm(model="claude-haiku-4-5-20251001", temperature=0.1)
+
+# cap concurrent Claude calls across all listing agents to avoid rate limit collisions.
+# raise this when on a higher API tier.
+_CONCURRENCY = asyncio.Semaphore(10)
 
 
-def _extract_json(text: str) -> dict:
-    """Pull JSON out of agent response, handles markdown code blocks."""
+def _extract_json(text) -> dict:
+    """Pull JSON out of agent response, handles markdown code blocks and content block lists."""
+    if isinstance(text, list):
+        text = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in text)
     match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
     if match:
         return json.loads(match.group(1).strip())
@@ -49,22 +56,19 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
     url = state["url"]
     preferences = state["preferences"]
 
-    agent = create_react_agent(
-        model=llm,
-        tools=LISTING_AGENT_TOOLS,
-    ).with_retry(**RETRY_KWARGS)
-
+    agent = create_react_agent(model=llm, tools=LISTING_AGENT_TOOLS)
     system_prompt = build_listing_agent_prompt(url, preferences)
 
-    result = await agent.ainvoke(
-        {
-            "messages": [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
-            ]
-        },
-        config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
-    )
+    async with _CONCURRENCY:
+        result = await agent.ainvoke(
+            {
+                "messages": [
+                    SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
+                ]
+            },
+            config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
+        )
 
     # last message from the agent should be the JSON profile
     final_content = result["messages"][-1].content

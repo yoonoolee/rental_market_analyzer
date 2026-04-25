@@ -17,8 +17,10 @@ extraction_llm = make_llm(model="claude-haiku-4-5-20251001", temperature=0.1)
 chat_llm = make_llm(model="claude-sonnet-4-6", temperature=0.5)
 
 
-def _extract_json(text: str) -> dict:
-    """Pull JSON out of LLM response, handles markdown code blocks."""
+def _extract_json(text) -> dict:
+    """Pull JSON out of LLM response, handles markdown code blocks and content block lists."""
+    if isinstance(text, list):
+        text = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in text)
     # LLMs love wrapping output in ```json blocks even when you ask them not to
     match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
     if match:
@@ -86,8 +88,9 @@ async def elicitation_node(state: RentalState) -> dict:
         parsed_q = _extract_json(question_response.content)
         question_text = parsed_q["question"]
         options = parsed_q.get("options", [])
-    except (json.JSONDecodeError, KeyError, ValueError):
-        question_text = question_response.content
+    except (json.JSONDecodeError, KeyError, ValueError, TypeError):
+        c = question_response.content
+        question_text = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in c) if isinstance(c, list) else c
         options = []
 
     return {

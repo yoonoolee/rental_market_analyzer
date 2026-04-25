@@ -1,5 +1,5 @@
 import os
-from firecrawl import Firecrawl
+from firecrawl import AsyncFirecrawl
 from langchain_core.tools import tool
 
 
@@ -15,8 +15,8 @@ async def scrape_listing(url: str) -> dict:
     disqualify the listing if scraping is not possible.
     """
     try:
-        app = Firecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
-        result = app.scrape(url, formats=["markdown"])
+        app = AsyncFirecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
+        result = await app.scrape(url, formats=["markdown"])
         return {"url": url, "raw_text": result.markdown}
     except Exception as e:
         return {"url": url, "error": str(e)}

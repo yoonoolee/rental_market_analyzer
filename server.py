@@ -129,6 +129,23 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             })
                         continue
 
+                    # rate limit wait — find which agent triggered it via parent_ids
+                    if kind == "on_custom_event" and name == "rate_limit_wait":
+                        wait = event.get("data", {}).get("wait", 0)
+                        parent_ids = event.get("parent_ids", [])
+                        url = next((agent_run_urls[pid] for pid in reversed(parent_ids) if pid in agent_run_urls), "")
+                        if url:
+                            hostname = urlparse(url).hostname or url
+                            await websocket.send_json({
+                                "type": "agent_update",
+                                "node": "listing_agents",
+                                "url": url,
+                                "hostname": hostname,
+                                "status": f"rate limited — retrying in {wait}s",
+                                "finished": False,
+                            })
+                        continue
+
                     # stream tool calls within listing agents
                     if kind == "on_tool_start" and name in TOOL_LABELS:
                         parent_ids = event.get("parent_ids", [])
