@@ -1,4 +1,24 @@
+from urllib.parse import urlparse
 from ..state import RentalState
+
+
+def _is_individual_listing(url: str) -> bool:
+    """
+    Heuristic filter to skip category/search pages and keep individual listing pages.
+    List pages tend to have short paths or query parameters; detail pages are deeper.
+    """
+    try:
+        parsed = urlparse(url)
+        # skip anything with query parameters (search/filter pages)
+        if parsed.query:
+            return False
+        # skip very short paths (fewer than 3 non-empty segments = category page)
+        segments = [s for s in parsed.path.split("/") if s]
+        if len(segments) < 3:
+            return False
+        return True
+    except Exception:
+        return False
 
 
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer
@@ -7,6 +27,9 @@ MIN_GOOD_RESULTS = 10
 # cap on how many search + listing cycles we'll run before giving up and going to reducer
 # with whatever we have. prevents infinite loops when the market is thin.
 MAX_SEARCH_ATTEMPTS = 3
+
+# max URLs to process per round — limits Firecrawl + Claude spend per cycle
+MAX_URLS_PER_ROUND = 15
 
 
 async def supervisor_node(state: RentalState) -> dict:
@@ -31,8 +54,11 @@ async def supervisor_node(state: RentalState) -> dict:
             if link:
                 all_urls.append(link)
 
-    # only queue URLs we haven't processed yet
-    new_urls = [url for url in all_urls if url not in already_searched]
+    # filter to individual listing pages, skip already-processed, cap per round
+    new_urls = [
+        url for url in all_urls
+        if url not in already_searched and _is_individual_listing(url)
+    ][:MAX_URLS_PER_ROUND]
 
     return {
         # pending_urls is a plain list (replaced each round) - fan_out reads from this

@@ -45,8 +45,8 @@ async def planner_node(state: RentalState) -> dict:
         SystemMessage(content=PLANNER_PROMPT),
         HumanMessage(content=(
             f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            "Generate SerpAPI search queries to find apartment listing URLs. "
-            "Target listing sites (Craigslist, Zillow, Apartments.com, Trulia, HotPads). "
+            "Generate SerpAPI search queries to find individual apartment listing URLs. "
+            "Target any reputable listing sites (Zillow, Apartments.com, Trulia, HotPads, Realtor.com, Rent.com, etc.). "
             "Return JSON with key 'search_queries' as a list of strings. "
             "5-8 queries max."
             + retry_context
@@ -64,9 +64,9 @@ async def planner_node(state: RentalState) -> dict:
         max_price = preferences.get("max_price", 2500)
         br_label = "studio" if bedrooms == 0 else f"{bedrooms} bedroom"
         queries = [
-            f"{br_label} apartment under ${max_price} {city} site:craigslist.org",
-            f"{br_label} apartment for rent {city} under {max_price} site:zillow.com",
-            f"{br_label} apartment {city} {max_price} site:apartments.com",
+            f"{br_label} apartment for rent {city} under ${max_price} site:zillow.com",
+            f"{br_label} apartment {city} under ${max_price} site:apartments.com",
+            f"{br_label} apartment {city} ${max_price} site:trulia.com",
         ]
 
     return {

@@ -20,10 +20,14 @@ Apartments.com, Trulia, HotPads, or similar. The listing agents will handle comm
 neighborhood context, and amenity lookups - you just need to find the listings.
 
 Query writing guidelines:
-- Always include site: operators to target listing sites directly
-  e.g. site:craigslist.org, site:zillow.com, site:apartments.com, site:trulia.com
-- Include bedroom count, price range, and city in every query
-- Vary the sites and phrasings across queries - don't repeat the same site:operator
+- Target a variety of listing sites — Zillow, Apartments.com, Trulia, HotPads,
+  Realtor.com, Rent.com, PadMapper, local property management sites, etc.
+  Do NOT use Craigslist.
+- Include the city, bedroom count, and price range in every query
+- Write queries that are likely to return individual apartment detail pages,
+  not category or search pages. Include the address-style phrasing or property
+  names in addition to site: operators where helpful.
+- Vary sites and phrasings across queries — don't repeat the same site: operator
 - Be specific: "1BR Oakland $2000-$2500" beats "apartment Oakland"
 
 On retry rounds you will be given queries already run. Do not repeat them.

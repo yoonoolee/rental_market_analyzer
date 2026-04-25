@@ -92,6 +92,7 @@ class RentalState(TypedDict):
     ready_to_search: bool
     final_response: str
     analysis_insights: str
+    elicitation_options: list[str]
 
     # set by the intent_router node on every message: one of
     # "needs_search", "conversational", "tool_call", "off_topic".

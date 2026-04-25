@@ -64,27 +64,37 @@ async def elicitation_node(state: RentalState) -> dict:
             "ready_to_search": True,
         }
 
-    # generate the next clarifying question.
-    # we ask the LLM to prioritize commute destinations and trade-off flexibility
-    # since those are the hardest things to infer and most impactful for ranking
+    # generate the next clarifying question with selectable options.
+    # structured output: {question, options[]} so the UI can render chips.
     question_response = await chat_llm.ainvoke(
         [
             SystemMessage(content=SYSTEM_PROMPT),
             *messages,
             HumanMessage(content=(
                 f"Preferences so far: {json.dumps(updated_prefs)}\n\n"
-                "Ask one focused follow-up question. Prioritize uncovering: commute "
-                "destinations, and what the user is willing to trade off under what conditions. "
-                "Be warm and direct - like a friend who knows the rental market, not a chatbot. "
-                "No bullet points or lists."
+                "Ask one focused follow-up question with 3-5 short answer options the user can tap. "
+                "Prioritize uncovering: commute destinations, budget, and trade-off flexibility. "
+                "Be warm and direct. Return ONLY valid JSON in this exact format:\n"
+                '{"question": "...", "options": ["option1", "option2", "option3"]}\n'
+                "The last option should always be \"Other\" if the other options don't cover all cases. "
+                "Options should be short (2-5 words max)."
             ))
         ],
         config={"run_name": "elicitation:ask_question", "tags": ["elicitation"]},
     )
 
+    try:
+        parsed_q = _extract_json(question_response.content)
+        question_text = parsed_q["question"]
+        options = parsed_q.get("options", [])
+    except (json.JSONDecodeError, KeyError, ValueError):
+        question_text = question_response.content
+        options = []
+
     return {
         "preferences": updated_prefs,
         "questions_asked": questions_asked + 1,
         "ready_to_search": False,
-        "messages": [AIMessage(content=question_response.content)],
+        "messages": [AIMessage(content=question_text)],
+        "elicitation_options": options,
     }
