@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ProcessStep } from '../hooks/useChat'
+import type { ProcessStep, AgentStatus } from '../hooks/useChat'
 
 type Props = {
   steps: ProcessStep[]
@@ -53,8 +53,8 @@ export function ProcessSteps({ steps, isRunning }: Props) {
 
               {hasDetail && (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                  className={`w-3 h-3 text-gray-400 ml-auto transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
-                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                  className={`w-3 h-3 text-gray-400 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                 </svg>
               )}
             </div>
@@ -79,6 +79,24 @@ export function ProcessSteps({ steps, isRunning }: Props) {
                   ) : (
                     <span key={j} className="text-xs text-gray-500">{item}</span>
                   )
+                ))}
+              </div>
+            )}
+
+            {step.agents && step.agents.length > 0 && (
+              <div className="ml-5 mt-1 mb-1 flex flex-col gap-0.5">
+                {step.agents.map((agent: AgentStatus, j: number) => (
+                  <div key={j} className="flex items-center gap-1.5 text-xs">
+                    {agent.finished ? (
+                      <span className={agent.disqualified ? 'text-red-400' : 'text-green-600'}>
+                        {agent.disqualified ? '✗' : '✓'}
+                      </span>
+                    ) : (
+                      <span className="w-2 h-2 border border-gray-300 border-t-gray-500 rounded-full animate-spin shrink-0" />
+                    )}
+                    <span className="text-gray-400 shrink-0 font-mono">{agent.hostname}</span>
+                    <span className="text-gray-500 truncate">{agent.status}</span>
+                  </div>
                 ))}
               </div>
             )}

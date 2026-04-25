@@ -1,7 +1,7 @@
 import json
 import re
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from ..llm import make_llm
 from ..state import RentalState
 from prompts.elicitation_prompts import SYSTEM_PROMPT, EXTRACTION_PROMPT
 
@@ -13,8 +13,8 @@ MAX_QUESTIONS = 5
 
 # haiku for extraction (cheap, fast, just needs to output clean JSON)
 # sonnet for question generation (needs to be more conversational and nuanced)
-extraction_llm = ChatAnthropic(model="claude-haiku-4-5-20251001", temperature=0.1)
-chat_llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.5)
+extraction_llm = make_llm(model="claude-haiku-4-5-20251001", temperature=0.1)
+chat_llm = make_llm(model="claude-sonnet-4-6", temperature=0.5)
 
 
 def _extract_json(text: str) -> dict:
@@ -76,7 +76,6 @@ async def elicitation_node(state: RentalState) -> dict:
                 "Prioritize uncovering: commute destinations, budget, and trade-off flexibility. "
                 "Be warm and direct. Return ONLY valid JSON in this exact format:\n"
                 '{"question": "...", "options": ["option1", "option2", "option3"]}\n'
-                "The last option should always be \"Other\" if the other options don't cover all cases. "
                 "Options should be short (2-5 words max)."
             ))
         ],

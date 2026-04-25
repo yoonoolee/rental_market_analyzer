@@ -1,18 +1,33 @@
 from urllib.parse import urlparse
 from ..state import RentalState
 
+TRUSTED_DOMAINS = {
+    "zillow.com",
+    "apartments.com",
+    "trulia.com",
+    "hotpads.com",
+    "realtor.com",
+    "rent.com",
+    "zumper.com",
+    "padmapper.com",
+}
 
-def _is_individual_listing(url: str) -> bool:
+
+def _is_valid_listing(url: str) -> bool:
     """
-    Heuristic filter to skip category/search pages and keep individual listing pages.
-    List pages tend to have short paths or query parameters; detail pages are deeper.
+    Keep only individual listing pages from trusted rental sites.
+    Filters out search/category pages (query params, short paths) and unknown domains.
     """
     try:
         parsed = urlparse(url)
-        # skip anything with query parameters (search/filter pages)
+        # must be from a trusted listing site
+        hostname = parsed.hostname or ""
+        if not any(hostname == d or hostname.endswith("." + d) for d in TRUSTED_DOMAINS):
+            return False
+        # skip search/filter pages that have query parameters
         if parsed.query:
             return False
-        # skip very short paths (fewer than 3 non-empty segments = category page)
+        # skip category pages (fewer than 3 path segments = not a detail page)
         segments = [s for s in parsed.path.split("/") if s]
         if len(segments) < 3:
             return False
@@ -28,8 +43,8 @@ MIN_GOOD_RESULTS = 10
 # with whatever we have. prevents infinite loops when the market is thin.
 MAX_SEARCH_ATTEMPTS = 3
 
-# max URLs to process per round — limits Firecrawl + Claude spend per cycle
-MAX_URLS_PER_ROUND = 15
+# how many top listings to surface in the final response
+MAX_SHOWN = 15
 
 
 async def supervisor_node(state: RentalState) -> dict:
@@ -54,11 +69,13 @@ async def supervisor_node(state: RentalState) -> dict:
             if link:
                 all_urls.append(link)
 
-    # filter to individual listing pages, skip already-processed, cap per round
-    new_urls = [
-        url for url in all_urls
-        if url not in already_searched and _is_individual_listing(url)
-    ][:MAX_URLS_PER_ROUND]
+    # filter to trusted listing sites and individual detail pages, deduplicate, skip already-processed
+    seen = set()
+    new_urls = []
+    for url in all_urls:
+        if url not in already_searched and url not in seen and _is_valid_listing(url):
+            seen.add(url)
+            new_urls.append(url)
 
     return {
         # pending_urls is a plain list (replaced each round) - fan_out reads from this

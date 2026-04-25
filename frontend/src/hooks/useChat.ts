@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+export type AgentStatus = {
+  url: string
+  hostname: string
+  status: string
+  finished: boolean
+  disqualified?: boolean
+}
+
 export type ProcessStep = {
   node: string
   label: string
   detail: string[]
   done?: number
   total?: number
+  agents?: AgentStatus[]
 }
 
 export type Message = {
@@ -100,8 +109,30 @@ export function useChat() {
         setMessages(prev => prev.map(m => m.id === pid ? {
           ...m,
           steps: m.steps?.map(s => s.node === data.node
-            ? { ...s, label: data.label, done: data.done, total: data.total }
+            ? {
+                ...s,
+                label: data.label,
+                done: data.done,
+                total: data.total,
+                detail: data.detail_item ? [...(s.detail || []), data.detail_item] : s.detail,
+              }
             : s) || []
+        } : m))
+
+      } else if (data.type === 'agent_update') {
+        const pid = processId.current
+        if (!pid) return
+        setMessages(prev => prev.map(m => m.id === pid ? {
+          ...m,
+          steps: m.steps?.map(s => s.node === data.node ? {
+            ...s,
+            agents: (() => {
+              const existing = (s.agents || [])
+              const idx = existing.findIndex(a => a.url === data.url)
+              const updated: AgentStatus = { url: data.url, hostname: data.hostname, status: data.status, finished: data.finished ?? false, disqualified: data.disqualified }
+              return idx >= 0 ? existing.map((a, i) => i === idx ? updated : a) : [...existing, updated]
+            })()
+          } : s) || []
         } : m))
 
       } else if (data.type === 'process_end') {

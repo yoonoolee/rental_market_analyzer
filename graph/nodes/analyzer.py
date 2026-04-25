@@ -1,11 +1,11 @@
 import json
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
+from ..llm import make_llm
 from ..state import RentalState
 from prompts.analyzer_prompts import ANALYZER_PROMPT
 
 
-llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.3)
+llm = make_llm(model="claude-sonnet-4-6", temperature=0.3)
 
 
 async def analyzer_node(state: RentalState) -> dict:

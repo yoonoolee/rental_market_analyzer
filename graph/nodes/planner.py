@@ -1,12 +1,12 @@
 import json
 import re
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
+from ..llm import make_llm
 from ..state import RentalState
 from prompts.planner_prompts import PLANNER_PROMPT
 
 
-llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.2)
+llm = make_llm(model="claude-sonnet-4-6", temperature=0.2)
 
 
 def _extract_json(text: str) -> dict:
@@ -36,19 +36,37 @@ async def planner_node(state: RentalState) -> dict:
     if search_attempts > 0 and past_queries:
         retry_context = (
             f"\n\nThis is retry round {search_attempts}. The following queries were already run "
-            f"- do not repeat them. Generate different queries targeting new sites, "
-            f"adjacent neighborhoods, or slightly adjusted price ranges:\n"
+            f"- do not repeat them. Target different neighborhoods or features:\n"
             + "\n".join(f"- {q}" for q in past_queries)
         )
+
+    city = preferences.get("city", "")
+    bedrooms = preferences.get("bedrooms")
+    max_price = preferences.get("max_price")
+    min_price = preferences.get("min_price")
+
+    price_str = ""
+    if min_price and max_price:
+        price_str = f"${min_price}–${max_price}"
+    elif max_price:
+        price_str = f"under ${max_price}"
+    elif min_price:
+        price_str = f"over ${min_price}"
+
+    br_str = ""
+    if bedrooms is not None:
+        br_str = "studio" if bedrooms == 0 else f"{bedrooms} bedroom"
+
+    hard_requirements = f"City: {city}" + (f" | Bedrooms: {br_str}" if br_str else "") + (f" | Price: {price_str}" if price_str else "")
 
     response = await llm.ainvoke([
         SystemMessage(content=PLANNER_PROMPT),
         HumanMessage(content=(
-            f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            "Generate SerpAPI search queries to find individual apartment listing URLs. "
-            "Target any reputable listing sites (Zillow, Apartments.com, Trulia, HotPads, Realtor.com, Rent.com, etc.). "
-            "Return JSON with key 'search_queries' as a list of strings. "
-            "5-8 queries max."
+            f"Hard requirements (must appear in every query): {hard_requirements}\n\n"
+            f"Full preferences (use soft constraints to vary queries):\n{json.dumps(preferences, indent=2)}\n\n"
+            "Generate search queries where the hard requirements are locked in every query, "
+            "but each query targets a different neighborhood or feature (e.g. pet-friendly, modern, near a landmark). "
+            "Return JSON with key 'search_queries' as a list of strings. Up to 30 queries."
             + retry_context
         ))
     ])

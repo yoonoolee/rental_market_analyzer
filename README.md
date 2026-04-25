@@ -1,4 +1,4 @@
-# Rental Recommendation Agent: Personalized Apartment Search
+# Real Estate AIgent: Personalized Apartment Search
 
 **New here?** Start with [SETUP.md](SETUP.md) for install + run + test instructions.
 
@@ -50,7 +50,7 @@ The result is a ranked recommendation list built from real data - actual commute
                                         ▼                               │
                         ┌──────────────────────────────┐               │
                         │     Parallel Search Nodes    │  SerpAPI      │  [Map Reduce: map / fan-out]
-                        │  [query1] [query2] [query3]  │               │
+                        │  [q1] [q2] ... [up to q30]   │               │
                         └──────────────┬───────────────┘               │
                                         │ candidate URLs                │
                                         ▼                               │
@@ -58,7 +58,7 @@ The result is a ranked recommendation list built from real data - actual commute
                                 │   Supervisor  │                       │  [Hierarchical] [Multi-agent orchestration]
                                 │     Node      │                       │
                                 └───────┬───────┘                       │
-                                        │ spawns one agent per new URL  │
+                                        │ spawns one agent per unique URL │
                                         ▼                               │
                 ┌───────────────────────────────────────────────────┐       │
                 │              Parallel ReAct Listing Agents        │       │  [ReAct] [Map Reduce: map]
@@ -131,6 +131,16 @@ done, returning profile
 ```
 
 A different user with different preferences triggers a completely different set of tool calls.
+
+---
+
+## Search Strategy
+
+The planner generates up to 30 queries as a **site × neighborhood grid**: each query targets one trusted listing site plus a specific neighborhood or feature angle (e.g. "site:zillow.com 1 bed Elmwood Berkeley $1500", "site:apartments.com 1 bed North Berkeley modern $1500"). Hard requirements (city, bedrooms, price) are locked in every query; only the neighborhood/feature varies. This ensures each query returns a distinct slice of listings rather than the same search repeated across sites.
+
+Trusted listing sites: Zillow, Apartments.com, Trulia, HotPads, Realtor.com, Rent.com, Zumper, PadMapper. The planner picks the subset most relevant to the target region.
+
+The supervisor deduplicates URLs across all query results before spawning listing agents, so the same listing surfaced by multiple queries is only researched once. All filtering is done at the URL level (trusted domain + individual listing page heuristic). The final response surfaces the top 15 results from however many listings were researched.
 
 ---
 
@@ -220,13 +230,14 @@ Run with `python -m evals.run_evals`. See [`evals/README.md`](evals/README.md) f
 - ~~`get_commute_time` tool~~ — **done.** Distance Matrix across transit/driving/bicycling/walking.
 - ~~LangSmith observability~~ — **done.** Per-node run names tagged; enable via `LANGCHAIN_TRACING_V2=true` in `.env`.
 - ~~Evals datasets~~ — **done.** 30-listing static corpus, 10 preferences (5 validation / 5 test), 5 human-ranked preference-to-listing sets, end-to-end experiment registered.
-- ~~Data persistence~~ — **done.** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per session. Session ID persisted in `localStorage`; full conversation history replayed on reconnect from SQLite.
+- ~~Data persistence~~ — **done.** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per session. Session ID persisted in `localStorage`; full conversation history + final search results replayed on reconnect from SQLite.
 - Photo analysis token cost — `analyze_listing_photos` currently passes all available images to Claude vision. This gives the best analysis quality (no relevant photos get cut) but cost scales linearly with listing photo count — Zillow/Apartments.com listings commonly have 30–50 images. A few options worth considering:
   - **Hard cap with relevance ranking**: do a cheap first-pass call to categorize/label all images, then pass only the top-N most relevant to `focus_areas` for the full analysis. Better quality than a naive slice, but adds a round-trip.
   - **Single-pass expanded**: pass all images in one call but prompt the model to weight its analysis toward images most relevant to `focus_areas`. One call, higher token cost, no extra latency.
   - **Naive cap (original)**: `image_urls[:N]` — cheapest but misses relevant photos that appear later in the listing's sequence.
   Current choice favors analysis quality; revisit if per-listing API cost becomes a concern.
 - Scale static corpus to 50–100 — framework supports it; current 30 is the MVP.
+- Error handling — errors throughout the codebase currently surface raw to the user. Should catch and return friendly messages instead. Leaving raw for now to make errors visible during testing.
 
 ---
 

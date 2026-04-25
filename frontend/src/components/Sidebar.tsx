@@ -16,7 +16,7 @@ export function Sidebar({ sessions, currentId, onNewChat, onSwitch, onDelete }: 
       <div className="flex items-center gap-2 px-3 pt-4 pb-2 shrink-0">
         <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain shrink-0" />
         <span className="opacity-0 group-hover:opacity-100 transition-opacity text-sm font-semibold text-gray-700 whitespace-nowrap">
-          TEMP NAME
+          Real Estate AIgent
         </span>
       </div>
 

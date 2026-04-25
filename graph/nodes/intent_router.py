@@ -1,7 +1,7 @@
 import json
 import re
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from ..llm import make_llm
 from ..state import RentalState
 from ..tools.commute import get_commute_time
 from ..tools.places import find_nearby_places
@@ -12,8 +12,8 @@ from prompts.intent_router_prompts import (
 )
 
 
-classifier_llm = ChatAnthropic(model="claude-haiku-4-5-20251001", temperature=0.0)
-chat_llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.4)
+classifier_llm = make_llm(model="claude-haiku-4-5-20251001", temperature=0.0)
+chat_llm = make_llm(model="claude-sonnet-4-6", temperature=0.4)
 
 
 def _extract_json(text: str) -> dict:

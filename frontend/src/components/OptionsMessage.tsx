@@ -43,43 +43,57 @@ export function OptionsMessage({ id, content, options, answered, onSend }: Props
     <div className="flex flex-col gap-3">
       <p className="text-sm text-gray-800 leading-relaxed">{content}</p>
 
-      {/* Option chips */}
       <div className="flex flex-col gap-2">
         {options.map((opt) => (
-          <button
+          <label
             key={opt}
             onClick={() => toggle(opt)}
-            className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-              selected.has(opt)
-                ? 'bg-[#1a3f6f] text-white border-[#1a3f6f]'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-[#1a3f6f] hover:text-[#1a3f6f]'
-            }`}
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            {opt}
-          </button>
+            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+              selected.has(opt)
+                ? 'bg-[#1a3f6f] border-[#1a3f6f]'
+                : 'border-gray-300 group-hover:border-[#1a3f6f]'
+            }`}>
+              {selected.has(opt) && (
+                <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
+                  <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">{opt}</span>
+          </label>
         ))}
+
+        {/* Type your own row */}
+        <div className="flex items-center gap-2.5">
+          <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+            text.trim() ? 'bg-[#1a3f6f] border-[#1a3f6f]' : 'border-gray-300'
+          }`}>
+            {text.trim() && (
+              <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
+                <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="Type your own..."
+            className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
+          />
+        </div>
       </div>
 
-      {/* Free text + send */}
-      <div className="flex items-center gap-2 bg-[#f7f6f3] rounded-3xl px-4 py-2">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder="Or type your own..."
-          className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
-        />
-        <button
-          onClick={submit}
-          disabled={selected.size === 0 && !text.trim()}
-          className="text-gray-600 disabled:opacity-30 hover:text-gray-900 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-            <path fillRule="evenodd" d="M12 20.25a.75.75 0 01-.75-.75V6.31l-4.72 4.72a.75.75 0 01-1.06-1.06l6-6a.75.75 0 011.06 0l6 6a.75.75 0 11-1.06 1.06L12.75 6.31V19.5a.75.75 0 01-.75.75z" clipRule="evenodd" />
-          </svg>
-        </button>
-      </div>
+      <button
+        onClick={submit}
+        disabled={selected.size === 0 && !text.trim()}
+        className="self-start px-4 py-1.5 rounded-full text-sm bg-[#1a3f6f] text-white disabled:opacity-30 hover:bg-[#15315a] transition-colors"
+      >
+        Submit
+      </button>
     </div>
   )
 }

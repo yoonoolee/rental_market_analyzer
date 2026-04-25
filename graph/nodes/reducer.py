@@ -1,12 +1,12 @@
 import json
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
+from ..llm import make_llm
 from ..state import RentalState
-from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS
+from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS, MAX_SHOWN
 from prompts.reducer_prompts import REDUCER_PROMPT
 
 
-llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.4)
+llm = make_llm(model="claude-sonnet-4-6", temperature=0.4)
 
 
 async def reducer_node(state: RentalState) -> dict:
@@ -44,7 +44,8 @@ async def reducer_node(state: RentalState) -> dict:
             f"Qualifying listings ({len(good_profiles)}):\n"
             f"{json.dumps(good_profiles, indent=2)}\n\n"
             f"Disqualified listings ({len(disqualified_profiles)}):\n"
-            f"{json.dumps(disqualified_profiles, indent=2)}"
+            f"{json.dumps(disqualified_profiles, indent=2)}\n\n"
+            f"Show the top {MAX_SHOWN} results maximum in your final response."
             + context_note
         ))
     ])

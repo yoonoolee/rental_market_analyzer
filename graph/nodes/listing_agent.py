@@ -1,7 +1,7 @@
 import json
 import re
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
+from ..llm import make_base_llm, RETRY_KWARGS
 from langgraph.prebuilt import create_react_agent
 from ..state import ListingAgentState
 from ..tools.scraper import scrape_listing
@@ -17,7 +17,7 @@ from prompts.listing_agent_prompts import build_listing_agent_prompt
 # not every agent will use every tool.
 LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web, analyze_listing_photos]
 
-llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.1)
+llm = make_base_llm(model="claude-sonnet-4-6", temperature=0.1)
 
 
 def _extract_json(text: str) -> dict:
@@ -52,7 +52,7 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
     agent = create_react_agent(
         model=llm,
         tools=LISTING_AGENT_TOOLS,
-    )
+    ).with_retry(**RETRY_KWARGS)
 
     system_prompt = build_listing_agent_prompt(url, preferences)
 
