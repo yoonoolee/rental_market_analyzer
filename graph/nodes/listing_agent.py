@@ -22,7 +22,7 @@ llm = make_base_llm(model="claude-haiku-4-5-20251001", temperature=0.1)
 
 # cap concurrent Claude calls across all listing agents to avoid rate limit collisions.
 # raise this when on a higher API tier.
-_CONCURRENCY = asyncio.Semaphore(10)
+_CONCURRENCY = asyncio.Semaphore(2)
 
 
 def _extract_json(text) -> dict:
@@ -77,8 +77,6 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
         profile = _extract_json(final_content)
         profile["url"] = url  # always ensure URL is set even if agent omitted it
     except (json.JSONDecodeError, ValueError):
-        # if the agent returned something unparseable, disqualify gracefully
-        # rather than crashing the whole graph
         profile = {
             "url": url,
             "disqualified": True,
