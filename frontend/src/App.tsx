@@ -3,6 +3,8 @@ import { useChat } from './hooks/useChat'
 import { MessageBubble } from './components/MessageBubble'
 import { InputBar } from './components/InputBar'
 import { Sidebar } from './components/Sidebar'
+import { ListingCard } from './components/ListingCard'
+import type { ListingProfile } from './hooks/useChat'
 import './index.css'
 
 export default function App() {
@@ -10,6 +12,10 @@ export default function App() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const currentId = localStorage.getItem('rental_session_id') ?? ''
   const isInitial = messages.length === 0
+
+  // extract latest listings from message history for the right panel
+  const latestListings: ListingProfile[] = messages.findLast(m => m.role === 'listings')?.listings ?? []
+  const hasListings = latestListings.length > 0
 
   useEffect(() => {
     if (!isInitial) {
@@ -27,6 +33,7 @@ export default function App() {
         onDelete={deleteSession}
       />
 
+      {/* Chat area */}
       <div className="flex flex-col flex-1 min-w-0 relative">
         {/* Delete all button top-right */}
         <div className="absolute top-3 right-4 z-10">
@@ -51,8 +58,8 @@ export default function App() {
         ) : (
           <>
             <main className="flex-1 overflow-y-auto px-4 pt-16 pb-8">
-              <div className="max-w-3xl mx-auto flex flex-col gap-6">
-                {messages.map((m) => (
+              <div className="max-w-2xl mx-auto flex flex-col gap-6">
+                {messages.filter(m => m.role !== 'listings').map((m) => (
                   <MessageBubble key={m.id} message={m} onSend={sendMessage} />
                 ))}
                 <div ref={bottomRef} />
@@ -62,6 +69,20 @@ export default function App() {
           </>
         )}
       </div>
+
+      {/* Listings panel */}
+      {hasListings && (
+        <div className="w-96 shrink-0 border-l border-gray-200 bg-[#f7f6f3] flex flex-col h-screen">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-200 shrink-0">
+            <p className="text-sm font-semibold text-gray-700">{latestListings.length} listings found</p>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+            {latestListings.map((l, i) => (
+              <ListingCard key={i} listing={l} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

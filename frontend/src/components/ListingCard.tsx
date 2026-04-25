@@ -6,7 +6,7 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
   const images = listing.images?.filter(Boolean) ?? []
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden w-72 shrink-0 flex flex-col">
+    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col">
 
       {/* Image carousel */}
       {images.length > 0 ? (
