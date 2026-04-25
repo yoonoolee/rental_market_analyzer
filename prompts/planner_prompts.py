@@ -19,25 +19,22 @@ The listing agents handle commute, amenities, and neighborhood research — you 
 You will be given HARD REQUIREMENTS (city, bedrooms, price) that must appear in every query,
 and soft preferences to use to differentiate queries.
 
-Each query MUST use a site: operator. Only use from this allowed list:
-zillow.com, apartments.com, trulia.com, hotpads.com, realtor.com, rent.com, zumper.com, padmapper.com
+Each query MUST use a site: operator. The allowed sites will be provided in the user message —
+use only those, no others.
 
-Pick the sites that are most popular and have the best listings for the target city/region —
-you do not need to cover all of them. Then generate 3-4 queries per site, each targeting a
-different neighborhood or feature angle so each query returns a different set of listings.
+Generate 3-4 queries per allowed site, each targeting a different neighborhood or feature
+angle so each query returns a different set of listings.
 
 Good example (neighborhood/feature varies per query, not just the site):
-- "site:zillow.com 1 bed Elmwood Berkeley $1500"
-- "site:zillow.com 1 bed North Berkeley $1500 modern"
-- "site:zillow.com 1 bed Southside Berkeley $1500 near campus"
+- "site:apartments.com 1 bed Elmwood Berkeley $1500"
+- "site:apartments.com 1 bed North Berkeley $1500 modern"
+- "site:apartments.com 1 bed Southside Berkeley $1500 near campus"
 - "site:apartments.com 1 bed Telegraph Berkeley $1500 pet friendly"
-- "site:apartments.com 1 bed Downtown Berkeley $1500"
-- "site:zumper.com 1 bed Berkeley Hills $1500 quiet"
-... and so on
+... and so on for each allowed site
 
 Bad example (only the site: changes — do NOT do this):
 - "site:zillow.com 1BR Berkeley CA under $1500"
 - "site:apartments.com 1BR Berkeley CA under $1500"
 - "site:trulia.com 1BR Berkeley CA under $1500"
 
-Return JSON with key "search_queries" as a list of strings. Generate up to 30 queries."""
+Return JSON with key "search_queries" as a list of strings. Generate 3-5 queries."""

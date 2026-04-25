@@ -2,14 +2,14 @@ from urllib.parse import urlparse
 from ..state import RentalState
 
 TRUSTED_DOMAINS = {
-    "zillow.com",
+    # "zillow.com",
     "apartments.com",
-    "trulia.com",
-    "hotpads.com",
-    "realtor.com",
-    "rent.com",
-    "zumper.com",
-    "padmapper.com",
+    # "trulia.com",
+    # "hotpads.com",
+    # "realtor.com",
+    # "rent.com",
+    # "zumper.com",
+    # "padmapper.com",
 }
 
 

@@ -4,6 +4,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.planner_prompts import PLANNER_PROMPT
+from ..nodes.supervisor import TRUSTED_DOMAINS
 
 
 llm = make_llm(model="claude-sonnet-4-6", temperature=0.2)
@@ -66,9 +67,10 @@ async def planner_node(state: RentalState) -> dict:
         HumanMessage(content=(
             f"Hard requirements (must appear in every query): {hard_requirements}\n\n"
             f"Full preferences (use soft constraints to vary queries):\n{json.dumps(preferences, indent=2)}\n\n"
+            f"Allowed site: operators (use only these): {', '.join(sorted(TRUSTED_DOMAINS))}\n\n"
             "Generate search queries where the hard requirements are locked in every query, "
             "but each query targets a different neighborhood or feature (e.g. pet-friendly, modern, near a landmark). "
-            "Return JSON with key 'search_queries' as a list of strings. Up to 30 queries."
+            "Return JSON with key 'search_queries' as a list of strings. 3-5 queries."
             + retry_context
         ))
     ])
@@ -84,9 +86,8 @@ async def planner_node(state: RentalState) -> dict:
         max_price = preferences.get("max_price", 2500)
         br_label = "studio" if bedrooms == 0 else f"{bedrooms} bedroom"
         queries = [
-            f"{br_label} apartment for rent {city} under ${max_price} site:zillow.com",
-            f"{br_label} apartment {city} under ${max_price} site:apartments.com",
-            f"{br_label} apartment {city} ${max_price} site:trulia.com",
+            f"{br_label} apartment for rent {city} under ${max_price} site:{d}"
+            for d in sorted(TRUSTED_DOMAINS)
         ]
 
     return {
