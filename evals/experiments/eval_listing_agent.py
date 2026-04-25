@@ -23,9 +23,6 @@ Metrics:
   - cost_usd                : estimated token cost per listing
 """
 import json
-import time
-from pathlib import Path
-from typing import Any
 from anthropic import Anthropic
 
 from evals.config import RESULTS_DIR, LISTING_AGENT_VARIANTS, DATASETS_DIR, SONNET_MODEL, HAIKU_MODEL

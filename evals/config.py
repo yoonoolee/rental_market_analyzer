@@ -61,3 +61,9 @@ REDUCER_VARIANTS = {
     "low_temp":  {"temperature": 0.1, "chain_of_thought": False},
     "cot":       {"temperature": 0.4, "chain_of_thought": True},
 }
+
+END_TO_END_VARIANTS = {
+    "baseline":    {"reducer_temperature": 0.4, "analyzer_enabled": True},
+    "low_temp":    {"reducer_temperature": 0.1, "analyzer_enabled": True},
+    "no_analyzer": {"reducer_temperature": 0.4, "analyzer_enabled": False},
+}

@@ -4,6 +4,18 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 
 
+def append_or_reset(existing: list, new: list | None) -> list:
+    """
+    Custom reducer for list-typed state fields that need both accumulate and reset semantics.
+    - Passing a list: appends to existing (like operator.add)
+    - Passing None: resets to [] (used by intent_router when starting a new search session
+      after the user already has prior ranked results)
+    """
+    if new is None:
+        return []
+    return (existing or []) + list(new)
+
+
 # PreferenceState is the core data structure we build up during Q&A.
 #
 # Design note: trade_off_rules stores natural language conditional preferences
@@ -54,24 +66,23 @@ class RentalState(TypedDict):
     search_queries: list[str]
 
     # all queries ever run across all rounds - used by planner on retry to avoid
-    # generating duplicate queries
-    all_search_queries: Annotated[list[str], operator.add]
+    # generating duplicate queries. Pass None to reset for a new search session.
+    all_search_queries: Annotated[list[str], append_or_reset]
 
-    # raw URL results from search nodes - operator.add lets parallel search nodes
-    # each append their results before supervisor processes them
-    search_results: Annotated[list[dict], operator.add]
+    # raw URL results from search nodes. Parallel search nodes append here;
+    # intent_router resets by passing None when starting a new search.
+    search_results: Annotated[list[dict], append_or_reset]
 
     # URLs queued for listing agent processing this round (replaced each supervisor run)
     pending_urls: list[str]
 
     # all URLs ever sent to a listing agent - used by supervisor to avoid
-    # re-processing the same listing on retry rounds
-    searched_urls: Annotated[list[str], operator.add]
+    # re-processing the same listing on retry rounds. Reset on new search.
+    searched_urls: Annotated[list[str], append_or_reset]
 
     # structured per-listing profiles returned by listing agents.
-    # operator.add lets all parallel listing agents append their profile.
-    # each profile is either a full data object or {disqualified: true, reason: ...}
-    listing_profiles: Annotated[list[dict], operator.add]
+    # Parallel listing agents append here; intent_router resets on new search.
+    listing_profiles: Annotated[list[dict], append_or_reset]
 
     # how many full search + listing cycles have completed.
     # supervisor_check increments this and uses it to cap retries at MAX_SEARCH_ATTEMPTS.
@@ -81,3 +92,9 @@ class RentalState(TypedDict):
     ready_to_search: bool
     final_response: str
     analysis_insights: str
+
+    # set by the intent_router node on every message: one of
+    # "needs_search", "conversational", "tool_call", "off_topic".
+    # Only "needs_search" proceeds through elicitation → planner → ...; the
+    # other intents short-circuit with a direct response.
+    intent: str

@@ -1,103 +1,99 @@
 # Rental Market Analyzer Evaluations
 
-This directory contains the evaluation suite for the Rental Market Analyzer agent. The evals are designed to test the performance, reasoning, and adherence to preferences across different components of the architecture.
+This directory contains the evaluation suite for the Rental Market Analyzer agent. It mixes **component-level experiments** (one per major node) with an **end-to-end experiment** on a static corpus for reproducibility.
 
 ## Overview
 
-The evaluation suite tests individual nodes (e.g., elicitation, planner, search) to ensure they produce high-quality and expected outputs. 
+The evaluation suite tests individual nodes and the full pipeline. Available experiments:
 
-The available experiments are:
-- `search`: Evaluates the URL discovery and search query logic.
-- `image`: Evaluates the vision analysis of listing photos.
-- `elicitation`: Evaluates how well the agent extracts preferences and asks clarifying questions.
-- `planner`: Evaluates the generation of search strategies based on user constraints.
-- `listing_agent`: Evaluates the ReAct agents that research specific listings.
-- `reducer`: Evaluates the final ranking and trade-off analysis.
+- `search`       — SerpAPI URL discovery and search query logic
+- `image`        — vision analysis of listing photos
+- `elicitation`  — preference extraction and clarifying-question quality
+- `planner`      — search query generation
+- `listing_agent`— ReAct agents that research specific listings (tool selection + extraction)
+- `reducer`      — final ranking and trade-off analysis
+- `end_to_end`   — **full-pipeline evaluation on a static corpus** (reproducible across runs)
 
-## How the Evals Validate the System
+## Dataset split (validation / test)
 
-Because this agent pipeline involves open-ended LLM outputs, the evaluation framework validates the system using a combination of **LLM-as-a-Judge** heuristics and **deterministic checks** over predefined test datasets. 
+`datasets/preferences.json` is explicitly split via a `"split"` field on each row:
 
-For each module, the framework injects mocked inputs (such as synthetic user preferences, candidate listings, or simulated chats) and measures key metrics to ensure reliability:
-1. **Adherence to Constraints**: Verifies if the planner and search nodes generate queries that strictly respect the user's hard constraints (e.g., budget caps, commute limits).
-2. **Preference Extraction Accuracy**: Checks if the `elicitation` node correctly parses out both hard and soft constraints from raw conversational text.
-3. **Tool Selection Accuracy**: Evaluates the `listing_agent` to ensure it invokes the correct APIs (like the Google Maps or Places API) *only* when the user's preferences warrant it, preventing wasteful API calls.
-4. **Ranking Quality**: The `reducer` eval scores whether the final ranked output logically applies trade-offs, successfully disqualifying listings that fail dealbreakers while appropriately boosting those that hit soft constraints.
-5. **Efficiency Metrics**: Tracks token usage and latency across variants to ensure prompt or architecture changes don't degrade the system's speed or cost.
+- **Validation** (5 rows: `pref_001` … `pref_005`) — used during prompt tuning. Shape decisions about prompts/models should be based on these.
+- **Test** (5 rows: `pref_006` … `pref_010`) — held out for final reporting. Avoid iterating against these to prevent overfitting.
 
-## Running Evaluations
+`datasets/static_listings.json` is a fixed snapshot of 30 apartment profiles across SF, Oakland, and Chicago. Every field matches what a production `listing_agent_node` would return (price, bedrooms, address, pet policy, commute_times, nearby_places, photo-analysis fields, disqualified flag, etc.). This corpus is the reason the end-to-end experiment is reproducible — live Firecrawl/SerpAPI/Google Maps responses change daily and would otherwise break comparison across runs.
 
-You can run the evaluations from the terminal or directly from the front-end chat interface.
+`datasets/preference_rankings.json` contains human-ranked ideal orderings for 5 preference-to-listing sets. Used by the end-to-end experiment for ranking alignment metrics.
 
-> **Important**: Ensure your `.env` file is properly configured with valid API keys (`ANTHROPIC_API_KEY`, etc.), or the evals will fail with an authentication error.
+## LLM-as-judge model and rubric
 
-### 1. Via the Terminal
+All judges run on **`claude-sonnet-4-6`** (defined as `JUDGE_MODEL` in `config.py`). Every judge rubric lives in `metrics/llm_judge.py` — each method has a system prompt that defines scoring criteria (score range, what earns high vs low). Scores are always `{score: 0-1 or 1-10, rationale: str}`.
 
-Run the master eval script from the project root:
+## How the evals validate the system
+
+1. **Adherence to constraints** — planner and listing agents respect hard constraints (budget caps, pet policy, etc.).
+2. **Preference extraction accuracy** — elicitation correctly parses hard + soft constraints from raw text (field-level F1).
+3. **Tool selection accuracy** — listing agent invokes expensive APIs only when warranted.
+4. **Ranking quality** — reducer applies trade-offs, disqualifies dealbreakers, boosts soft-constraint matches. Measured via ROUGE-L, top-1 accuracy, and LLM judge.
+5. **End-to-end pipeline** — the full graph produces rankings aligned with human gold-standard rankings (Kendall tau), doesn't surface disqualified listings (hard-constraint violation rate), and stays within reasonable latency and cost.
+6. **Efficiency** — tokens and latency tracked across variants to catch prompt/architecture regressions.
+
+## Running evaluations
+
+Ensure `.env` has valid API keys (`ANTHROPIC_API_KEY`, `SERPAPI_API_KEY`, `FIRECRAWL_API_KEY`, `GOOGLE_MAPS_API_KEY` for live tools — the end-to-end experiment only needs `ANTHROPIC_API_KEY` since it uses the static corpus).
+
+### Terminal
 
 ```bash
-# Run all experiments
+# Run everything
 python -m evals.run_evals
 
-# Run specific experiments
-python -m evals.run_evals --experiments search image
+# Run one experiment (the end-to-end pipeline eval)
+python -m evals.run_evals --experiments end_to_end
 
-# Run specific variants (e.g., baseline vs. low temperature)
-python -m evals.run_evals --variants baseline low_temp
-
-# Combine both
-python -m evals.run_evals --experiments search --variants baseline_5 expanded_10
+# Specific variants across selected experiments
+python -m evals.run_evals --experiments reducer --variants baseline low_temp
+python -m evals.run_evals --experiments end_to_end --variants baseline
 ```
 
-### 2. Via the Chainlit Front-end
+### Chainlit front-end
 
-If the app is running (`chainlit run app.py -w`), you can simply type the following command into the chat box:
-
-```text
-/evals
-```
-
-The server will asynchronously run the full suite in the background and print a nicely formatted markdown summary directly in the chat window once it's finished.
+With the app running (`chainlit run app.py -w`), type `/evals` in the chat. The full suite runs in the background; a markdown summary renders when complete.
 
 ## Results
 
-Evaluation results are automatically saved to the `evals/results/` directory:
-- **Individual Reports**: `evals/results/<experiment>_eval.json`
-- **Aggregate Summary**: `evals/results/summary.json`
+- Per-experiment: `results/<experiment>_eval.json`
+- Combined summary: `results/summary.json`
 
-If an evaluation encounters an error (like missing API keys), the error message will be recorded in the summary file for easy debugging.
+## End-to-end experiment details
 
-### Example Run
+`eval_end_to_end.py` is the experiment that addresses reproducibility directly:
 
-Here is an example of what an evaluation summary (`evals/results/summary.json`) looks like after a successful run:
+1. For each preference in `preferences.json` that has a gold ranking in `preference_rankings.json`, candidate listings are selected from `static_listings.json` by city match.
+2. The real `reducer_node` and `analyzer_node` are run against these profiles (no live APIs).
+3. Metrics:
+   - **Kendall tau** — normalized rank correlation against human-labeled order.
+   - **Top-1 accuracy** — did the #1 gold listing appear first?
+   - **Hard-constraint violations** — recommending a ground-truth-disqualified listing.
+   - **LLM-judge** recommendation quality and trade-off adherence.
+   - Latency and cost per session.
+
+Variants compared: `baseline` (temp=0.4, analyzer on), `low_temp` (temp=0.1), `no_analyzer` (measures analyzer's marginal contribution).
+
+### Example summary
 
 ```json
 {
-  "search": {
+  "end_to_end": {
     "baseline": {
       "aggregate": {
-        "precision": 0.85,
-        "recall": 0.92,
-        "latency_ms": 1250,
-        "token_usage": 1400
-      }
-    }
-  },
-  "elicitation": {
-    "baseline": {
-      "aggregate": {
-        "questions_asked": 3.2,
-        "preference_extraction_accuracy": 0.95
+        "mean_kendall_tau": 0.67,
+        "top1_accuracy_rate": 0.8,
+        "mean_hard_constraint_violations": 0.0,
+        "mean_recommendation_quality": 8.2,
+        "mean_trade_off_adherence": 7.8
       }
     }
   }
 }
 ```
-
-When run through the Chainlit front-end using `/evals`, the agent automatically formats this raw data and renders a clean, human-readable summary in the chat:
-
-**SEARCH**
-- `baseline`: precision: 0.85 | recall: 0.92 | latency_ms: 1250 | token_usage: 1400
-
-**ELICITATION**
-- `baseline`: questions_asked: 3.2 | preference_extraction_accuracy: 0.95

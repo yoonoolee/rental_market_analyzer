@@ -21,7 +21,6 @@ Metrics:
   - cost_usd_per_session  : total token cost for one full elicitation session
 """
 import json
-from pathlib import Path
 from anthropic import Anthropic
 
 from evals.config import RESULTS_DIR, ELICITATION_VARIANTS, DATASETS_DIR

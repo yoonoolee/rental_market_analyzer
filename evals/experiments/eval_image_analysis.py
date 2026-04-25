@@ -23,7 +23,6 @@ Metrics:
 import json
 import base64
 import urllib.request
-from pathlib import Path
 
 from anthropic import Anthropic
 

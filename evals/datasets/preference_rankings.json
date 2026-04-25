@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "description": "Human-ranked ideal ordering of static_listings.json entries for a given preference. Used by eval_reducer.py and eval_end_to_end.py to measure ranking alignment (Kendall tau or top-1 accuracy) between predicted order and this gold ranking. Listings not in a preference's ranked list are either disqualified or deemed irrelevant for that preference.",
+    "ranking_rationale_per_pref": {
+      "pref_001": "SF 2BR under $3000, cat, commute to Salesforce Tower. Rank by commute quality + pet-friendliness + unit quality.",
+      "pref_005": "Chicago 2BR, Wicker Park/Logan Square preferred, walkable to Blue Line trade-off, 2 cats, natural light/high ceilings.",
+      "pref_006": "Oakland 1BR under $2100, grad student with cat, close to BART, likes bars/coffee.",
+      "pref_008": "Oakland 2BR under $2500, works from home with dog, multi-destination commute (Berkeley + Downtown Oakland), natural light priority.",
+      "pref_010": "SF 2BR stretch to $3100 for views/modern, dog, commute to UCSF Mission Bay, quiet + walkable + near park."
+    }
+  },
+  "rankings": [
+    {
+      "preference_id": "pref_001",
+      "ranked_listing_ids": ["SL001", "SL003", "SL005", "SL009", "SL002"],
+      "disqualified_listing_ids": ["SL004", "SL008"],
+      "rationale": "SL001 best: 8min walk, modern, pet-ok, $2750. SL003 second: 12min walk, spacious, pet-ok, $2950. SL005 third: 18min Muni, views, $2850. SL009 Noe Valley pet-ok but 25min. SL002 Mission, cheap but 22min commute. SL004 no-pets. SL008 studio (wrong bedrooms)."
+    },
+    {
+      "preference_id": "pref_005",
+      "ranked_listing_ids": ["SL021", "SL022", "SL026"],
+      "disqualified_listing_ids": ["SL024"],
+      "rationale": "SL021 Wicker Park walk to Blue Line, modern, light, $2300 — best. SL022 Logan Square, non-smoking hint, hardwood, high ceilings, $2150 — strong. SL026 Bucktown, modern, rooftop, $2450. SL024 Lincoln Park $2900 over budget even with trade-off max $2700."
+    },
+    {
+      "preference_id": "pref_006",
+      "ranked_listing_ids": ["SL011", "SL013", "SL016", "SL019"],
+      "disqualified_listing_ids": ["SL015"],
+      "rationale": "SL011 Temescal best: 14min BART, bars+coffee adjacent, pet-ok, $1950. SL013 Adams Point: lake+walkable, $1650. SL016 Grand Lake, renovated, $2100. SL019 Jack London, waterfront, $2050. SL015 no-pets."
+    },
+    {
+      "preference_id": "pref_008",
+      "ranked_listing_ids": ["SL012", "SL014", "SL017", "SL020"],
+      "disqualified_listing_ids": ["SL018"],
+      "rationale": "SL012 Rockridge: 10min Berkeley BART + 12min Downtown Oakland, bright, pet-ok, $2400. SL014 Piedmont Ave: bright, 12min bus Berkeley, pet-ok, $2250. SL017 Uptown: 15min Berkeley + 2min walk Downtown, but low natural light. SL020 Temescal: 13min Berkeley, spacious yard, $2350. SL018 Montclair $2900 over budget."
+    },
+    {
+      "preference_id": "pref_010",
+      "ranked_listing_ids": ["SL005", "SL003", "SL001"],
+      "disqualified_listing_ids": ["SL004", "SL008"],
+      "rationale": "SL005 Potrero Hill: Bay views, modern finishes, 8min walk to UCSF Mission Bay, $2850 — matches trade-off for view/modern. SL003 SoMa modern but dark. SL001 South Beach modern, Salesforce-centric not UCSF. SL004 no-pets, SL008 studio."
+    }
+  ]
+}

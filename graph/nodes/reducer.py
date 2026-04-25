@@ -1,6 +1,6 @@
 import json
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from ..state import RentalState
 from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS
 from prompts.reducer_prompts import REDUCER_PROMPT

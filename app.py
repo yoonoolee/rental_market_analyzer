@@ -3,8 +3,8 @@ import asyncio
 import json
 import chainlit as cl
 from langchain_core.messages import HumanMessage, AIMessage
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from graph.builder import build_graph
-from graph.state import RentalState
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,8 +14,22 @@ load_dotenv()
 # import time, so load_dotenv() must run before any langchain imports.
 TRACING_ENABLED = os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true"
 
-# build the graph once at startup - no need to rebuild per message
-graph = build_graph()
+# SqliteSaver persists conversation state across Chainlit sessions.
+# Each user session gets its own thread_id; the checkpointer reloads prior state
+# automatically on graph.ainvoke(..., config={"configurable": {"thread_id": ...}}).
+_CHECKPOINT_DB = os.getenv("RENTAL_CHECKPOINT_DB", "rental_state.db")
+_checkpoint_ctx = AsyncSqliteSaver.from_conn_string(_CHECKPOINT_DB)
+checkpointer = None
+graph = None
+
+
+async def _ensure_graph():
+    global graph, checkpointer
+    if graph is None:
+        checkpointer = await _checkpoint_ctx.__aenter__()
+        graph = build_graph(checkpointer=checkpointer)
+    return graph
+
 
 WELCOME_MESSAGE = """Hey! I'm here to help you find your next apartment.
 
@@ -28,23 +42,7 @@ What are you looking for?"""
 
 @cl.on_chat_start
 async def start():
-    # fresh state for each new chat session
-    initial_state: RentalState = {
-        "messages": [],
-        "preferences": {},
-        "search_queries": [],
-        "all_search_queries": [],
-        "search_results": [],
-        "pending_urls": [],
-        "searched_urls": [],
-        "listing_profiles": [],
-        "search_attempts": 0,
-        "questions_asked": 0,
-        "ready_to_search": False,
-        "final_response": "",
-        "analysis_insights": "",
-    }
-    cl.user_session.set("state", initial_state)
+    await _ensure_graph()
     await cl.Message(content=WELCOME_MESSAGE).send()
 
 
@@ -52,23 +50,21 @@ async def start():
 async def on_message(message: cl.Message):
     if message.content.strip().lower() == "/evals":
         async with cl.Step(name="Running Evals (this may take a few minutes)...") as step:
-            # Run evals script as a subprocess
             process = await asyncio.create_subprocess_exec(
                 "python3", "-m", "evals.run_evals",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await process.communicate()
-            
+
             if process.returncode == 0:
                 step.output = stdout.decode("utf-8")
-                
-                # Check for summary.json
+
                 summary_path = "evals/results/summary.json"
                 if os.path.exists(summary_path):
                     with open(summary_path, "r") as f:
                         summary_data = json.load(f)
-                    
+
                     md = "### Eval Summary\n\n"
                     for exp_name, results in summary_data.items():
                         md += f"**{exp_name.upper().replace('_', ' ')}**\n"
@@ -77,64 +73,51 @@ async def on_message(message: cl.Message):
                             metrics_str = " | ".join(f"{k}: {v}" for k, v in agg.items())
                             md += f"- `{variant}`: {metrics_str}\n"
                         md += "\n"
-                    
+
                     await cl.Message(content=md).send()
                 else:
                     await cl.Message(content="Evals ran successfully, but no summary file was found.").send()
             else:
                 step.output = stderr.decode("utf-8")
-                await cl.Message(content=f"Evals failed. See steps for details.").send()
+                await cl.Message(content="Evals failed. See steps for details.").send()
         return
 
-    state = cl.user_session.get("state")
+    g = await _ensure_graph()
 
-    # append the new user message before invoking the graph
-    state["messages"].append(HumanMessage(content=message.content))
+    # thread_id scopes the checkpointer to this user session, so state reloads
+    # automatically across page refreshes / server restarts
+    thread_id = cl.user_session.get("id")
+    config = {
+        "configurable": {"thread_id": thread_id},
+        "run_name": "rental-market-analyzer",
+        "metadata": {"session_id": thread_id},
+    }
 
-    # if we already returned results in a previous turn, reset the search state
-    # so a follow-up message triggers a fresh search with updated preferences.
-    # TODO: handle follow-ups more gracefully - right now re-running the full pipeline
-    # is wasteful if the user just wants to ask about a specific listing from the results.
-    # could add a "clarification" branch that skips elicitation if prefs are already set.
-    if state.get("final_response"):
-        state["ready_to_search"] = False
-        state["search_queries"] = []
-        state["all_search_queries"] = []
-        state["search_results"] = []
-        state["pending_urls"] = []
-        state["searched_urls"] = []
-        state["listing_profiles"] = []
-        state["search_attempts"] = 0
-        state["final_response"] = ""
-        state["analysis_insights"] = ""
+    # count of AI messages before invoking — used to find only the NEW ones after.
+    # Without this, the fallback path would keep re-sending the last historical AI
+    # message on every turn once the checkpointer accumulates history.
+    prior_state = await g.aget_state(config)
+    prior_ai_count = sum(
+        1 for m in (prior_state.values.get("messages", []) if prior_state else [])
+        if isinstance(m, AIMessage)
+    )
 
-    # show a thinking indicator while the graph runs
-    async with cl.Step(name="searching...") as step:
-        result = await graph.ainvoke(
-            state,
-            config={
-                "run_name": "rental-market-analyzer",
-                "metadata": {
-                    "session_id": cl.user_session.get("id"),
-                    "questions_asked": state.get("questions_asked", 0),
-                    "ready_to_search": state.get("ready_to_search", False),
-                },
-            },
-        )
-        step.output = "done"
+    # send only the newest user message; checkpointer merges with prior state
+    input_state = {"messages": [HumanMessage(content=message.content)]}
 
-    # persist updated state for the next turn
-    cl.user_session.set("state", result)
+    async with cl.Step(name="searching..."):
+        result = await g.ainvoke(input_state, config=config)
 
-    # final_response means the full pipeline ran and we have ranked recommendations.
-    # otherwise it's a clarifying question from the elicitation node.
+    # final_response means the full search pipeline ran and we have recommendations.
+    # Otherwise an AI message was appended by intent_router or elicitation — send only
+    # the newly-added AI messages (those beyond prior_ai_count).
     if result.get("final_response"):
         response = result["final_response"]
         if result.get("analysis_insights"):
             response += "\n\n---\n\n### Market Insights\n\n" + result["analysis_insights"]
-        result["messages"].append(AIMessage(content=response))
         await cl.Message(content=response).send()
     else:
         ai_messages = [m for m in result.get("messages", []) if isinstance(m, AIMessage)]
-        if ai_messages:
-            await cl.Message(content=ai_messages[-1].content).send()
+        new_ai_messages = ai_messages[prior_ai_count:]
+        for m in new_ai_messages:
+            await cl.Message(content=m.content).send()

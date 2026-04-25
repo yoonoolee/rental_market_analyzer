@@ -20,8 +20,6 @@ Metrics:
   - api_credits_used    : estimated SerpAPI credits (1 per query, tracked manually)
 """
 import json
-import time
-from pathlib import Path
 
 from evals.config import SERPAPI_KEY, RESULTS_DIR, SEARCH_VARIANTS
 from evals.metrics.nlp import LatencyTimer, embedding_similarity

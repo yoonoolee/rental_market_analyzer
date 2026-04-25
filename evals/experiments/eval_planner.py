@@ -23,7 +23,6 @@ Metrics:
 import json
 import re
 import itertools
-from pathlib import Path
 from anthropic import Anthropic
 
 from evals.config import RESULTS_DIR, PLANNER_VARIANTS, DATASETS_DIR, SONNET_MODEL

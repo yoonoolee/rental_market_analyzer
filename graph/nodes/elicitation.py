@@ -34,16 +34,19 @@ async def elicitation_node(state: RentalState) -> dict:
     # first, extract any structured preference info from the latest message.
     # we only send the last 4 messages to keep token count reasonable -
     # the preferences dict already captures everything important from earlier turns
-    extraction_response = await extraction_llm.ainvoke([
-        SystemMessage(content=EXTRACTION_PROMPT),
-        *messages[-4:],
-        HumanMessage(content=(
-            f"Preferences gathered so far: {json.dumps(preferences)}\n\n"
-            "Extract any new preference info from the conversation and return JSON. "
-            "Set ready_to_search to true if we have at minimum a city and some "
-            "indication of price range or bedroom count."
-        ))
-    ])
+    extraction_response = await extraction_llm.ainvoke(
+        [
+            SystemMessage(content=EXTRACTION_PROMPT),
+            *messages[-4:],
+            HumanMessage(content=(
+                f"Preferences gathered so far: {json.dumps(preferences)}\n\n"
+                "Extract any new preference info from the conversation and return JSON. "
+                "Set ready_to_search to true if we have at minimum a city and some "
+                "indication of price range or bedroom count."
+            ))
+        ],
+        config={"run_name": "elicitation:extract", "tags": ["elicitation"]},
+    )
 
     try:
         parsed = _extract_json(extraction_response.content)
@@ -64,17 +67,20 @@ async def elicitation_node(state: RentalState) -> dict:
     # generate the next clarifying question.
     # we ask the LLM to prioritize commute destinations and trade-off flexibility
     # since those are the hardest things to infer and most impactful for ranking
-    question_response = await chat_llm.ainvoke([
-        SystemMessage(content=SYSTEM_PROMPT),
-        *messages,
-        HumanMessage(content=(
-            f"Preferences so far: {json.dumps(updated_prefs)}\n\n"
-            "Ask one focused follow-up question. Prioritize uncovering: commute "
-            "destinations, and what the user is willing to trade off under what conditions. "
-            "Be warm and direct - like a friend who knows the rental market, not a chatbot. "
-            "No bullet points or lists."
-        ))
-    ])
+    question_response = await chat_llm.ainvoke(
+        [
+            SystemMessage(content=SYSTEM_PROMPT),
+            *messages,
+            HumanMessage(content=(
+                f"Preferences so far: {json.dumps(updated_prefs)}\n\n"
+                "Ask one focused follow-up question. Prioritize uncovering: commute "
+                "destinations, and what the user is willing to trade off under what conditions. "
+                "Be warm and direct - like a friend who knows the rental market, not a chatbot. "
+                "No bullet points or lists."
+            ))
+        ],
+        config={"run_name": "elicitation:ask_question", "tags": ["elicitation"]},
+    )
 
     return {
         "preferences": updated_prefs,

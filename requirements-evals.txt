@@ -1,0 +1,12 @@
+# Optional — install ONLY if you want embedding-based similarity scores in evals.
+# The eval framework gracefully falls back to a Jaccard token-overlap if these aren't
+# installed (see evals/metrics/nlp.py).
+#
+# Install with:
+#   pip install -r requirements-evals.txt
+#
+# Note: sentence-transformers pulls in torch (~1GB); only worth it if you plan to
+# run the full eval suite with rigorous similarity metrics.
+-r requirements.txt
+sentence-transformers>=2.2.0
+numpy>=1.24.0

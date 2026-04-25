@@ -21,10 +21,9 @@ Metrics:
   - cost_usd               : token cost per call
 """
 import json
-from pathlib import Path
 from anthropic import Anthropic
 
-from evals.config import RESULTS_DIR, REDUCER_VARIANTS, DATASETS_DIR, SONNET_MODEL
+from evals.config import RESULTS_DIR, REDUCER_VARIANTS, SONNET_MODEL
 from evals.metrics.nlp import LatencyTimer, rouge_l
 from evals.metrics.llm_judge import LLMJudge
 

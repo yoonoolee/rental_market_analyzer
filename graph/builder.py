@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Send
 from .state import RentalState
+from .nodes.intent_router import intent_router_node, route_after_intent_router
 from .nodes.elicitation import elicitation_node
 from .nodes.planner import planner_node
 from .nodes.search import search_node
@@ -60,9 +61,17 @@ def fan_out_to_listing_agents(state: RentalState) -> list:
     ]
 
 
-def build_graph():
+def build_graph(checkpointer=None):
+    """
+    Build and compile the rental-search graph.
+
+    checkpointer: optional LangGraph checkpointer (e.g. SqliteSaver) for persisting
+    state across sessions. When provided, the graph reloads prior state per-thread_id
+    on every invocation, so Chainlit page refreshes preserve conversation context.
+    """
     builder = StateGraph(RentalState)
 
+    builder.add_node("intent_router", intent_router_node)
     builder.add_node("elicitation", elicitation_node)
     builder.add_node("planner", planner_node)
     builder.add_node("search_node", search_node)
@@ -72,7 +81,14 @@ def build_graph():
     builder.add_node("reducer", reducer_node)
     builder.add_node("analyzer", analyzer_node)
 
-    builder.add_edge(START, "elicitation")
+    builder.add_edge(START, "intent_router")
+
+    # intent_router → elicitation (needs_search) or END (other intents)
+    builder.add_conditional_edges(
+        "intent_router",
+        route_after_intent_router,
+        ["elicitation", END]
+    )
 
     # after elicitation: ask another question (END) or kick off search pipeline
     builder.add_conditional_edges(
@@ -103,4 +119,6 @@ def build_graph():
     builder.add_edge("reducer", "analyzer")
     builder.add_edge("analyzer", END)
 
+    if checkpointer is not None:
+        return builder.compile(checkpointer=checkpointer)
     return builder.compile()

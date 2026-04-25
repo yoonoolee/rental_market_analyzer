@@ -1,5 +1,7 @@
 # Rental Recommendation Agent: Personalized Apartment Search
 
+**New here?** Start with [SETUP.md](SETUP.md) for install + run + test instructions.
+
 A conversational apartment-hunting agent built as part of INFO 290: Generative AI at UC Berkeley. The idea came from a pretty universal pain point - searching for a rental is tedious, results are scattered across a dozen sites, and standard search filters don't capture the nuance of what people actually care about (commute time, noise level, whether there's a good gym nearby, etc.).
 
 This project explores what a better version of that experience could look like when you combine a conversational LLM with real-time web search, parallel multi-agent research, and structured preference reasoning.
@@ -19,19 +21,20 @@ The result is a ranked recommendation list built from real data - actual commute
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Chainlit UI                             │  [Human in the Loop]
+│              + AsyncSqliteSaver checkpointer                    │  [Persistence]
 └───────────────────────────┬─────────────────────────────────────┘
-                            │ user message
+                            │ user message (thread_id scoped)
                             ▼
                     ┌───────────────┐
-                    │ Intent Router │  Claude Haiku (classify intent)
+                    │ Intent Router │  Claude Haiku (classify intent) — IMPLEMENTED
                     │     Node      │  [Routing]
                     └───────┬───────┘
         ┌──────────┬────────┴───────────┬──────────┐
         │          │                    │          │
         ▼          ▼                    ▼          ▼
  off_topic  conversational      get recommendations  tool_call
- decline &  answer directly             │          run specific
- END        from context → END          │          tool → END
+ decline &  answer directly             │          run commute/places
+ END        from context → END          │          directly → END
                                         ▼
                                 ┌───────────────┐
                                 │  Elicitation  │  Claude Haiku (extract prefs)
@@ -140,26 +143,91 @@ The listing agents have access to five tools. Which ones get called depends on t
 | `scrape_listing` | Firecrawl | Implemented |
 | `search_web` | SerpAPI (Google) | Implemented |
 | `analyze_listing_photos` | Claude Sonnet 4.6 (vision) | Implemented |
-| `get_commute_time` | Google Maps Distance Matrix API | API tested, prototype ready |
-| `find_nearby_places` | Google Places API (+ Geocoding) | API tested, prototype ready |
+| `get_commute_time` | Google Maps Distance Matrix API | Implemented |
+| `find_nearby_places` | Google Places API (+ Geocoding) | Implemented |
+
+---
+
+## Example Listing Profile
+
+Each ReAct listing agent returns a structured JSON profile with fields selected based on the user's preferences. Example for a user with a dog who cares about commute and wants bars nearby:
+
+```json
+{
+  "url": "https://sfbay.craigslist.org/eby/apa/d/oakland-temescal-2br",
+  "disqualified": false,
+  "disqualify_reason": null,
+  "price": 2350,
+  "floor": 1,
+  "address": "4521 Telegraph Ave, Temescal, Oakland, CA",
+  "views": false,
+  "pet_friendly": true,
+  "pet_deposit": 400,
+  "furnishing": "unfurnished",
+  "images": [
+    "https://images.craigslist.org/00A0A_ex1_600x450.jpg",
+    "https://images.craigslist.org/00D0D_ex2_600x450.jpg"
+  ],
+  "commute_times": {
+    "UC Berkeley, Soda Hall": "13 min BART",
+    "Downtown Oakland": "10 min BART"
+  },
+  "nearby_places": {
+    "bars": "Temescal strip 0.1mi",
+    "coffee shop": "Bicycle Coffee 0.1mi"
+  },
+  "modern_finishes": false,
+  "natural_light": true,
+  "spacious": true,
+  "condition": "good",
+  "notes": "Classic bungalow with a small yard, walkable to Temescal restaurants",
+  "description": "2BR Temescal bungalow, yard, pet-friendly"
+}
+```
+
+Note how only preference-relevant fields are populated. A user who didn't mention bars or commute would receive a profile without `commute_times` or the "bars" `nearby_places` entry — the agent skips unnecessary API calls.
+
+---
+
+## Evaluation
+
+The evaluation suite lives in [`evals/`](evals/) and covers six component-level experiments plus one end-to-end pipeline experiment:
+
+| Experiment | Scope |
+|---|---|
+| `elicitation` | Preference extraction accuracy + question quality |
+| `planner`     | Search query format, diversity, retry novelty |
+| `search`      | SerpAPI result precision, yield, relevance |
+| `listing_agent` | Field extraction F1, disqualification accuracy, tool efficiency |
+| `image`       | Photo analysis accuracy vs. human labels, consistency |
+| `reducer`     | Ranking accuracy, trade-off application, ROUGE-L vs reference |
+| `end_to_end`  | Full-pipeline Kendall tau vs human gold rankings on a static 30-listing corpus |
+
+**Reproducibility:** the end-to-end experiment runs against [`evals/datasets/static_listings.json`](evals/datasets/static_listings.json) (30 fixed apartment profiles across SF/Oakland/Chicago) with [`evals/datasets/preference_rankings.json`](evals/datasets/preference_rankings.json) providing human-labeled gold orderings. This pins every external API response so results are comparable across runs.
+
+**Dataset split:** [`evals/datasets/preferences.json`](evals/datasets/preferences.json) explicitly marks each row `"split": "validation"` (rows 1–5, for prompt tuning) or `"split": "test"` (rows 6–10, for final reporting).
+
+**LLM-as-judge:** all judges run on `claude-sonnet-4-6`. Rubrics live in [`evals/metrics/llm_judge.py`](evals/metrics/llm_judge.py).
+
+Run with `python -m evals.run_evals` or type `/evals` in the Chainlit UI. See [`evals/README.md`](evals/README.md) for full documentation.
 
 ---
 
 ## TODO
 
-- Intent Router node - currently every message goes straight to elicitation regardless of what the user is asking. A lightweight Haiku classifier should run first on every message and route to one of four paths: `needs_search` (user wants to find apartments → elicitation if prefs incomplete, planner if ready), `conversational` (general question, follow-up about results, etc. → answer directly from context), `tool_call` (specific data request like commute time or nearby places for a known address → call the relevant tool directly and return), or `off_topic` (message has nothing to do with apartment searching → respond that we can only help with rental search and end). Examples: "find me a 2br in SF under $3k" → needs_search; "what's the difference between a studio and 1br?" → conversational; "how long is the commute from 123 Main St to UC Berkeley by transit?" → tool_call; "write me a poem about cats" → off_topic. Currently the app resets and reruns the full search pipeline on every follow-up message regardless of intent, which is wasteful and breaks simple conversational exchanges.
-- `find_nearby_places` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/places.py` (geocodes address internally, returns structured dict with nearby place details). Uses `GOOGLE_MAPS_API_KEY` — single key covers Places + Geocoding + Distance Matrix.
-- `get_commute_time` tool - API tested and prototype implementation ready in `notebooks/google_maps_places_api_test.ipynb`; needs to be wired into the stub at `graph/tools/commute.py` (supports driving, transit, bicycling, walking modes; returns structured dict). Uses same `GOOGLE_MAPS_API_KEY`.
-- LangSmith observability - add tracing across graph traces (node inputs/outputs, latency, token usage)
-- Evals - framework implemented in `evals/` with 6 experiments covering all major nodes (elicitation, planner, search, listing agent, reducer, image analysis). Run with `python -m evals.run_evals` or type `/evals` in the Chainlit UI. Metrics include ROUGE-L, embedding similarity, F1, LLM-as-judge, latency, and cost per session. Results saved to `evals/results/`. Outstanding: fill in test datasets (`evals/datasets/preferences.json`, `listings.json`, `images.json`) with real examples.
-- Photo analysis token cost - `analyze_listing_photos` currently passes all available images to Claude vision. This gives the best analysis quality (no relevant photos get cut) but cost scales linearly with listing photo count — Zillow/Apartments.com listings commonly have 30–50 images. A few options worth considering:
+- ~~Intent Router node~~ — **done.** Haiku classifier in [`graph/nodes/intent_router.py`](graph/nodes/intent_router.py) routes every message to one of: `needs_search` (→ elicitation), `conversational` (answer from context), `tool_call` (direct commute/places lookup), or `off_topic` (polite decline).
+- ~~`find_nearby_places` tool~~ — **done.** Geocodes + Places Nearby Search, maps natural-language types, returns structured results with distances.
+- ~~`get_commute_time` tool~~ — **done.** Distance Matrix across transit/driving/bicycling/walking.
+- ~~LangSmith observability~~ — **done.** Per-node run names tagged; enable via `LANGCHAIN_TRACING_V2=true` in `.env`.
+- ~~Evals datasets~~ — **done.** 30-listing static corpus, 10 preferences (5 validation / 5 test), 5 human-ranked preference-to-listing sets, end-to-end experiment registered.
+- ~~Data persistence~~ — **done (LLM context only).** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per Chainlit session. Visual chat history (Chainlit data layer) still deferred.
+- Photo analysis token cost — `analyze_listing_photos` currently passes all available images to Claude vision. This gives the best analysis quality (no relevant photos get cut) but cost scales linearly with listing photo count — Zillow/Apartments.com listings commonly have 30–50 images. A few options worth considering:
   - **Hard cap with relevance ranking**: do a cheap first-pass call to categorize/label all images, then pass only the top-N most relevant to `focus_areas` for the full analysis. Better quality than a naive slice, but adds a round-trip.
   - **Single-pass expanded**: pass all images in one call but prompt the model to weight its analysis toward images most relevant to `focus_areas`. One call, higher token cost, no extra latency.
   - **Naive cap (original)**: `image_urls[:N]` — cheapest but misses relevant photos that appear later in the listing's sequence.
   Current choice favors analysis quality; revisit if per-listing API cost becomes a concern.
-- Data persistence - state is in-memory only (`cl.user_session`), so a page refresh or server restart loses all chat history and LLM context. Two things needed to fix this:
-  - **LLM context** - wire a LangGraph checkpointer (e.g. `SqliteSaver`) into `build_graph()` and pass a `thread_id` per user in the invoke config; the graph will automatically reload prior state on resume
-  - **Visual chat history** - configure Chainlit's data layer (LiteralAI or a custom adapter) so the UI replays past messages on reload; without this the page appears blank even if the LLM has context
+- Chainlit visual chat replay — with `AsyncSqliteSaver` in place the LLM already has full context across refreshes, but the UI starts blank. Configure Chainlit's data layer (LiteralAI or a custom adapter) so past messages re-render on reload.
+- Scale static corpus to 50–100 — framework supports it; current 30 is the MVP.
 
 ---
 
@@ -174,4 +242,5 @@ The listing agents have access to five tools. Which ones get called depends on t
 | Scraping | Firecrawl |
 | Location / Commute | Google Maps Platform (Distance Matrix, Places, Geocoding) |
 | LLM framework | LangChain |
-| Observability | LangSmith (planned) |
+| Observability | LangSmith (per-node run names) |
+| Persistence | LangGraph AsyncSqliteSaver (thread-scoped checkpointer) |

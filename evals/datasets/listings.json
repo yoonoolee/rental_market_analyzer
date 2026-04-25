@@ -60,5 +60,98 @@
     },
     "preferences_used": "pref_002",
     "notes": "Over base budget, no laundry — trade-off condition not met, should be disqualified"
+  },
+  {
+    "id": "listing_005",
+    "url": "https://sfbay.craigslist.org/eby/apa/d/oakland-temescal-1br-grad-student/test",
+    "ground_truth": {
+      "price": 1950,
+      "bedrooms": 1,
+      "address": "Temescal, Oakland, CA",
+      "pet_friendly": true,
+      "pet_deposit": 300,
+      "furnishing": "unfurnished",
+      "disqualified": false,
+      "disqualify_reason": null
+    },
+    "preferences_used": "pref_006",
+    "notes": "Under budget, pet-friendly, close to BART — ideal match"
+  },
+  {
+    "id": "listing_006",
+    "url": "https://www.zillow.com/homedetails/oakland-montclair-overbudget/test",
+    "ground_truth": {
+      "price": 2300,
+      "bedrooms": 1,
+      "address": "Montclair, Oakland, CA",
+      "pet_friendly": true,
+      "furnishing": "unfurnished",
+      "disqualified": true,
+      "disqualify_reason": "Price exceeds max_price of $2100 with no trade-off rule active"
+    },
+    "preferences_used": "pref_006",
+    "notes": "Near-miss — only $200 over, but no trade-off to justify; should be disqualified"
+  },
+  {
+    "id": "listing_007",
+    "url": "https://www.apartments.com/sf-salesforce-walk/test",
+    "ground_truth": {
+      "price": 3150,
+      "bedrooms": 2,
+      "address": "South Beach, San Francisco, CA",
+      "pet_friendly": false,
+      "furnishing": "unfurnished",
+      "disqualified": false,
+      "disqualify_reason": null
+    },
+    "preferences_used": "pref_007",
+    "notes": "Over base budget but trade-off condition met (8 min walk to Salesforce Tower), under $3200 max"
+  },
+  {
+    "id": "listing_008",
+    "url": "https://www.zillow.com/homedetails/sf-outer-sunset-overpriced/test",
+    "ground_truth": {
+      "price": 3050,
+      "bedrooms": 2,
+      "address": "Outer Sunset, San Francisco, CA",
+      "pet_friendly": true,
+      "furnishing": "unfurnished",
+      "disqualified": true,
+      "disqualify_reason": "Over base budget and commute to Salesforce Tower is 45+ min (not under 15 min trade-off threshold)"
+    },
+    "preferences_used": "pref_007",
+    "notes": "Trade-off rule requires <15 min commute; Outer Sunset is 45min+, so over-budget price isn't justified"
+  },
+  {
+    "id": "listing_009",
+    "url": "https://www.apartments.com/chicago-wicker-park-blueline/test",
+    "ground_truth": {
+      "price": 2550,
+      "bedrooms": 2,
+      "address": "Wicker Park, Chicago, IL",
+      "pet_friendly": true,
+      "pet_deposit": 250,
+      "in_unit_laundry": false,
+      "furnishing": "unfurnished",
+      "disqualified": false,
+      "disqualify_reason": null
+    },
+    "preferences_used": "pref_005",
+    "notes": "Walkable to Blue Line, within $2700 trade-off ceiling, pet-friendly"
+  },
+  {
+    "id": "listing_010",
+    "url": "https://www.zillow.com/homedetails/chicago-no-blue-line-overpriced/test",
+    "ground_truth": {
+      "price": 2650,
+      "bedrooms": 2,
+      "address": "Edgewater, Chicago, IL",
+      "pet_friendly": true,
+      "furnishing": "unfurnished",
+      "disqualified": true,
+      "disqualify_reason": "Over base budget $2400 with no Blue Line access (trade-off condition not met)"
+    },
+    "preferences_used": "pref_005",
+    "notes": "Trade-off is conditional on Blue Line walkability; Edgewater is Red Line area, so disqualified"
   }
 ]

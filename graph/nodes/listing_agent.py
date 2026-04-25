@@ -56,12 +56,15 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
 
     system_prompt = build_listing_agent_prompt(url, preferences)
 
-    result = await agent.ainvoke({
-        "messages": [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
-        ]
-    })
+    result = await agent.ainvoke(
+        {
+            "messages": [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
+            ]
+        },
+        config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
+    )
 
     # last message from the agent should be the JSON profile
     final_content = result["messages"][-1].content

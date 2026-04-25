@@ -1,6 +1,7 @@
 [
   {
     "id": "pref_001",
+    "split": "validation",
     "description": "Clear requirements, single turn",
     "conversation": [
       {
@@ -20,6 +21,7 @@
   },
   {
     "id": "pref_002",
+    "split": "validation",
     "description": "Trade-off rule present",
     "conversation": [
       {
@@ -39,6 +41,7 @@
   },
   {
     "id": "pref_003",
+    "split": "validation",
     "description": "Multi-turn conversation",
     "conversation": [
       {"role": "user", "content": "I want to find an apartment in Seattle."},
@@ -59,6 +62,7 @@
   },
   {
     "id": "pref_004",
+    "split": "validation",
     "description": "Minimal info provided",
     "conversation": [
       {"role": "user", "content": "I need an apartment in Austin."}
@@ -74,6 +78,7 @@
   },
   {
     "id": "pref_005",
+    "split": "validation",
     "description": "Complex trade-offs and lifestyle signals",
     "conversation": [
       {
@@ -91,6 +96,92 @@
       "soft_constraints": ["Wicker Park or Logan Square", "natural light", "high ceilings", "no smoking building", "near Blue Line"],
       "trade_off_rules": ["willing to pay up to $2700 if walkable to Blue Line"],
       "lifestyle_notes": "remote worker, values natural light and high ceilings, 2 cats"
+    }
+  },
+  {
+    "id": "pref_006",
+    "split": "test",
+    "description": "Oakland student with transit priority",
+    "conversation": [
+      {"role": "user", "content": "Hey, I'm a grad student at UC Berkeley (Soda Hall). Looking for a 1BR in Oakland, under $2100, needs to be close to BART. I have a cat and I like to be near bars and coffee shops."}
+    ],
+    "expected_preferences": {
+      "city": "Oakland",
+      "bedrooms": 1,
+      "max_price": 2100,
+      "pet_friendly": true,
+      "commute_destinations": ["UC Berkeley, Soda Hall"],
+      "soft_constraints": ["close to BART", "bars", "coffee shops"],
+      "trade_off_rules": [],
+      "lifestyle_notes": "grad student with a cat"
+    }
+  },
+  {
+    "id": "pref_007",
+    "split": "test",
+    "description": "SF tech worker with strict commute threshold",
+    "conversation": [
+      {"role": "user", "content": "2BR in SF, willing to spend up to $3000. Work at Salesforce Tower. I'd pay an extra $200 if the commute is under 15 minutes by transit or walking. No pets."}
+    ],
+    "expected_preferences": {
+      "city": "San Francisco",
+      "bedrooms": 2,
+      "max_price": 3200,
+      "commute_destinations": ["Salesforce Tower, San Francisco"],
+      "soft_constraints": ["short commute"],
+      "trade_off_rules": ["willing to pay up to $3200 if commute to Salesforce Tower is under 15 minutes by transit or walking"]
+    }
+  },
+  {
+    "id": "pref_008",
+    "split": "test",
+    "description": "Multi-destination commute, natural light priority",
+    "conversation": [
+      {"role": "user", "content": "2BR in Oakland, max $2500. I go to UC Berkeley twice a week and Downtown Oakland for the gym. I really care about natural light — I work from home. Pet-friendly (I have a dog)."}
+    ],
+    "expected_preferences": {
+      "city": "Oakland",
+      "bedrooms": 2,
+      "max_price": 2500,
+      "pet_friendly": true,
+      "commute_destinations": ["UC Berkeley", "Downtown Oakland"],
+      "soft_constraints": ["natural light", "gym nearby"],
+      "trade_off_rules": [],
+      "lifestyle_notes": "works from home with a dog"
+    }
+  },
+  {
+    "id": "pref_009",
+    "split": "test",
+    "description": "Tight budget, no extras",
+    "conversation": [
+      {"role": "user", "content": "Cheapest 1BR I can get in Chicago, under $1700. Close to any L stop. No pets. I commute downtown."}
+    ],
+    "expected_preferences": {
+      "city": "Chicago",
+      "bedrooms": 1,
+      "max_price": 1700,
+      "commute_destinations": ["Chicago Loop"],
+      "soft_constraints": ["close to L stop"],
+      "trade_off_rules": []
+    }
+  },
+  {
+    "id": "pref_010",
+    "split": "test",
+    "description": "Complex trade-off chain",
+    "conversation": [
+      {"role": "user", "content": "Looking for 2BR in SF, $2800 target, can stretch to $3100 if there's a view or modern finishes. Pet-friendly for my dog. Commute to UCSF Mission Bay. Prefer quiet, walkable, near a park."}
+    ],
+    "expected_preferences": {
+      "city": "San Francisco",
+      "bedrooms": 2,
+      "max_price": 3100,
+      "pet_friendly": true,
+      "commute_destinations": ["UCSF Mission Bay"],
+      "soft_constraints": ["quiet", "walkable", "near a park", "view", "modern finishes"],
+      "trade_off_rules": ["willing to pay up to $3100 if the listing has a view or modern finishes"],
+      "lifestyle_notes": "dog owner"
     }
   }
 ]

@@ -1,6 +1,48 @@
+# Secrets
 .env
+.env.local
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Chainlit runtime
 .chainlit/
+.files/
+
+# App runtime state (checkpointer DB — regenerated per session)
+rental_state.db
+rental_state.db-journal
+rental_state.db-shm
+rental_state.db-wal
+*.db
+
+# Eval outputs (regenerated on each run)
+evals/results/*.json
+!evals/results/.gitkeep
+
+# Misc
+*.log
+
+# PDFs — ignored by default, but allow the milestone report through
 *.pdf
+!INFO 290 GenAI Final Project_milestone_report.pdf

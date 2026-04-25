@@ -13,7 +13,6 @@ evals/results/summary.json.
 import argparse
 import json
 import time
-from pathlib import Path
 
 from evals.config import RESULTS_DIR
 
@@ -24,6 +23,7 @@ EXPERIMENT_REGISTRY = {
     "planner":      ("evals.experiments.eval_planner",       "run"),
     "listing_agent":("evals.experiments.eval_listing_agent", "run"),
     "reducer":      ("evals.experiments.eval_reducer",       "run"),
+    "end_to_end":   ("evals.experiments.eval_end_to_end",    "run"),
 }
 
 ALL_EXPERIMENTS = list(EXPERIMENT_REGISTRY.keys())
