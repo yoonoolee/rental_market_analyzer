@@ -91,6 +91,7 @@ class RentalState(TypedDict):
     questions_asked: int
     ready_to_search: bool
     final_response: str
+    ranked_listings: list[dict]
     analysis_insights: str
     elicitation_options: list[str]
 

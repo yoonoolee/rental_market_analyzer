@@ -17,14 +17,35 @@ export type ProcessStep = {
   agents?: AgentStatus[]
 }
 
+export type ListingProfile = {
+  url: string
+  price?: number
+  address?: string
+  floor?: number
+  images?: string[]
+  commute_times?: Record<string, string>
+  nearby_places?: Record<string, string>
+  pet_friendly?: boolean
+  pet_deposit?: number
+  furnishing?: string
+  views?: boolean
+  modern_finishes?: boolean
+  natural_light?: boolean
+  spacious?: boolean
+  condition?: string
+  notes?: string
+  description?: string
+}
+
 export type Message = {
   id: string
-  role: 'user' | 'assistant' | 'process'
+  role: 'user' | 'assistant' | 'process' | 'listings'
   content: string
   options?: string[]
   answered?: boolean
   steps?: ProcessStep[]
   isRunning?: boolean
+  listings?: ListingProfile[]
 }
 
 export type SessionMeta = {
@@ -90,6 +111,9 @@ export function useChat() {
           id: generateId(), role: 'assistant', content: data.content,
           options: data.options, answered: false,
         }])
+
+      } else if (data.type === 'listings') {
+        setMessages(prev => [...prev, { id: generateId(), role: 'listings', content: '', listings: data.listings }])
 
       } else if (data.type === 'process_start') {
         const pid = generateId()

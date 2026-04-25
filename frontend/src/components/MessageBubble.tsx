@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm'
 import type { Message } from '../hooks/useChat'
 import { OptionsMessage } from './OptionsMessage'
 import { ProcessSteps } from './ProcessSteps'
+import { ListingCard } from './ListingCard'
 
 type Props = {
   message: Message
@@ -10,6 +11,17 @@ type Props = {
 }
 
 export function MessageBubble({ message, onSend }: Props) {
+  if (message.role === 'listings') {
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-gray-400">Found {message.listings?.length} listings</p>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {message.listings?.map((l, i) => <ListingCard key={i} listing={l} />)}
+        </div>
+      </div>
+    )
+  }
+
   if (message.role === 'process') {
     return (
       <div className="flex justify-start">

@@ -1,4 +1,5 @@
 import json
+import re
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_llm
 from ..state import RentalState
@@ -38,18 +39,37 @@ async def reducer_node(state: RentalState) -> dict:
         )
 
     response = await llm.ainvoke([
-        SystemMessage(content=REDUCER_PROMPT),
+        SystemMessage(content=REDUCER_PROMPT.replace("MAX_SHOWN", str(MAX_SHOWN))),
         HumanMessage(content=(
             f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
             f"Qualifying listings ({len(good_profiles)}):\n"
             f"{json.dumps(good_profiles, indent=2)}\n\n"
             f"Disqualified listings ({len(disqualified_profiles)}):\n"
-            f"{json.dumps(disqualified_profiles, indent=2)}\n\n"
-            f"Show the top {MAX_SHOWN} results maximum in your final response."
+            f"{json.dumps(disqualified_profiles, indent=2)}"
             + context_note
         ))
     ])
 
+    content = response.content
+    if isinstance(content, list):
+        content = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in content)
+
+    ranked_urls = []
+    final_response = content
+    try:
+        match = re.search(r'```(?:json)?\s*([\s\S]*?)```', content)
+        parsed = json.loads(match.group(1).strip() if match else content.strip())
+        ranked_urls = parsed.get("ranked_urls", [])
+        final_response = parsed.get("response", content)
+    except (json.JSONDecodeError, AttributeError, ValueError):
+        pass
+
+    profile_by_url = {p.get("url"): p for p in good_profiles}
+    ranked_listings = [profile_by_url[u] for u in ranked_urls if u in profile_by_url]
+    if not ranked_listings:
+        ranked_listings = good_profiles[:MAX_SHOWN]
+
     return {
-        "final_response": response.content,
+        "final_response": final_response,
+        "ranked_listings": ranked_listings,
     }

@@ -74,6 +74,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             elif isinstance(m, AIMessage) and m.content:
                 await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
 
+        ranked_listings = prior_state.values.get("ranked_listings", [])
+        if ranked_listings:
+            await websocket.send_json({"type": "listings", "listings": ranked_listings})
+
         final_response = prior_state.values.get("final_response", "")
         analysis_insights = prior_state.values.get("analysis_insights", "")
         if final_response:
@@ -236,6 +240,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "label": "Ranking results",
                             "detail": [],
                         })
+                        ranked = output.get("ranked_listings", [])
+                        if ranked:
+                            await websocket.send_json({"type": "listings", "listings": ranked})
 
                     elif name == "analyzer":
                         await websocket.send_json({
