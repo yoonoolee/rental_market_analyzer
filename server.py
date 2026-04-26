@@ -95,8 +95,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
             await websocket.send_json({"type": "process_start"})
 
-            listing_total = 0
-            listing_done = 0
+            listing_round = 0
+            round_done = 0
+            round_total = 0
             agent_run_urls: dict[str, str] = {}  # run_id -> url
 
             TOOL_LABELS = {
@@ -126,11 +127,16 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             await websocket.send_json({
                                 "type": "agent_update",
                                 "node": "listing_agents",
+                                "round": listing_round,
                                 "url": url,
                                 "hostname": hostname,
                                 "status": "starting…",
                                 "finished": False,
                             })
+                        continue
+
+                    if kind == "on_custom_event" and name == "timing_log":
+                        await websocket.send_json({"type": "debug_log", "msg": event.get("data", {}).get("msg", "")})
                         continue
 
                     # rate limit wait — find which agent triggered it via parent_ids
@@ -143,6 +149,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             await websocket.send_json({
                                 "type": "agent_update",
                                 "node": "listing_agents",
+                                "round": listing_round,
                                 "url": url,
                                 "hostname": hostname,
                                 "status": "rate limited",
@@ -160,6 +167,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             await websocket.send_json({
                                 "type": "agent_update",
                                 "node": "listing_agents",
+                                "round": listing_round,
                                 "url": url,
                                 "hostname": hostname,
                                 "status": TOOL_LABELS[name],
@@ -186,7 +194,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
                     elif name == "supervisor":
                         urls = output.get("pending_urls", [])
-                        listing_total += len(urls)
+                        listing_round += 1
+                        round_done = 0
+                        round_total = len(urls)
                         await websocket.send_json({
                             "type": "process_step",
                             "node": "supervisor",
@@ -197,6 +207,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             await websocket.send_json({
                                 "type": "process_step",
                                 "node": "listing_agents",
+                                "round": listing_round,
                                 "label": f"Researching listings (0/{len(urls)})",
                                 "detail": [],
                                 "done": 0,
@@ -204,7 +215,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             })
 
                     elif name == "listing_agent":
-                        listing_done += 1
+                        round_done += 1
                         profile = (output.get("listing_profiles") or [{}])[0]
                         url = profile.get("url", "")
                         hostname = urlparse(url).hostname or url
@@ -220,6 +231,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         await websocket.send_json({
                             "type": "agent_update",
                             "node": "listing_agents",
+                            "round": listing_round,
                             "url": url,
                             "hostname": hostname,
                             "status": status,
@@ -229,9 +241,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         await websocket.send_json({
                             "type": "process_step_update",
                             "node": "listing_agents",
-                            "label": f"Researching listings ({listing_done}/{listing_total})",
-                            "done": listing_done,
-                            "total": listing_total,
+                            "round": listing_round,
+                            "label": f"Researching listings ({round_done}/{round_total})",
+                            "done": round_done,
+                            "total": round_total,
                         })
 
                     elif name == "reducer":

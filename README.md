@@ -238,6 +238,10 @@ Run with `python -m evals.run_evals`. See [`evals/README.md`](evals/README.md) f
   - **Single-pass expanded**: pass all images in one call but prompt the model to weight its analysis toward images most relevant to `focus_areas`. One call, higher token cost, no extra latency.
   - **Naive cap (original)**: `image_urls[:N]` — cheapest but misses relevant photos that appear later in the listing's sequence.
   Current choice favors analysis quality; revisit if per-listing API cost becomes a concern.
+- **Rate limit bottleneck** — current setup uses Anthropic via a Berkeley account capped at 5 req/min, which forces the semaphore to 1 and makes listing research fully serial (~40–70s per listing). Options to fix:
+  - **Groq** (recommended): free, no credit card, ~30 RPM. Swap `ChatAnthropic` → `ChatGroq` in `llm.py`. Model mapping per stage: intent router + elicitation → `llama-3.1-8b-instant`, planner + listing agent → `llama-3.1-70b-versatile`, reducer + analyzer → `llama-3.1-70b-versatile`. Then raise `_CONCURRENCY` in `listing_agent.py` to 3–5.
+  - **Google Gemini**: free tier at 15 RPM on Gemini 1.5 Flash. Swap `ChatAnthropic` → `ChatGoogleGenerativeAI`.
+  - **Paid Anthropic / OpenAI**: both require credit card + $5 spend to reach a usable tier.
 - Scale static corpus to 50–100 — framework supports it; current 30 is the MVP.
 - Error handling — errors throughout the codebase currently surface raw to the user. Should catch and return friendly messages instead. Leaving raw for now to make errors visible during testing.
 

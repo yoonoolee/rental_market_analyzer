@@ -38,16 +38,16 @@ def _is_valid_listing(url: str) -> bool:
         return False
 
 
+# how many top listings to surface in the final response
+# MAX_SHOWN = 20
+MAX_SHOWN = 1  # testing
+
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer
-MIN_GOOD_RESULTS = 10
+MIN_GOOD_RESULTS = MAX_SHOWN
 
 # cap on how many search + listing cycles we'll run before giving up and going to reducer
 # with whatever we have. prevents infinite loops when the market is thin.
 MAX_SEARCH_ATTEMPTS = 3
-
-# how many top listings to surface in the final response
-# MAX_SHOWN = 20
-MAX_SHOWN = 1  # testing
 
 
 async def supervisor_node(state: RentalState) -> dict:

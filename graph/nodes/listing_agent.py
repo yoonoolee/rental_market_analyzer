@@ -1,10 +1,12 @@
 import json
 import re
+import time
 import asyncio
 import json_repair
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_base_llm
 from langgraph.prebuilt import create_react_agent
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..state import ListingAgentState
 from ..tools.scraper import scrape_listing
 from ..tools.commute import get_commute_time
@@ -67,7 +69,15 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
     agent = create_react_agent(model=llm, tools=LISTING_AGENT_TOOLS)
     system_prompt = build_listing_agent_prompt(url, preferences)
 
+    short_url = url.split("/")[-2] or url[-40:]
+    t_queued = time.monotonic()
+    await adispatch_custom_event("timing_log", {"msg": f"QUEUED   {short_url}"})
+
     async with _CONCURRENCY:
+        t_start = time.monotonic()
+        wait = t_start - t_queued
+        await adispatch_custom_event("timing_log", {"msg": f"START    {short_url}  (queued {wait:.1f}s)"})
+
         result = await agent.ainvoke(
             {
                 "messages": [
@@ -77,6 +87,9 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
             },
             config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
         )
+
+        t_end = time.monotonic()
+        await adispatch_custom_event("timing_log", {"msg": f"DONE     {short_url}  (ran {t_end - t_start:.1f}s, total {t_end - t_queued:.1f}s)"})
 
     # find the last AIMessage (not ToolMessage) with content
     from langchain_core.messages import AIMessage as LCAIMessage

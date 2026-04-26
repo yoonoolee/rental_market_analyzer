@@ -12,6 +12,7 @@ export type AgentStatus = {
 
 export type ProcessStep = {
   node: string
+  round?: number
   label: string
   detail: string[]
   done?: number
@@ -126,7 +127,7 @@ export function useChat() {
       } else if (data.type === 'process_step') {
         const pid = processId.current
         if (!pid) return
-        const step: ProcessStep = { node: data.node, label: data.label, detail: data.detail || [], done: data.done, total: data.total }
+        const step: ProcessStep = { node: data.node, round: data.round, label: data.label, detail: data.detail || [], done: data.done, total: data.total }
         setMessages(prev => prev.map(m => m.id === pid ? { ...m, steps: [...(m.steps || []), step] } : m))
 
       } else if (data.type === 'process_step_update') {
@@ -134,7 +135,7 @@ export function useChat() {
         if (!pid) return
         setMessages(prev => prev.map(m => m.id === pid ? {
           ...m,
-          steps: m.steps?.map(s => s.node === data.node
+          steps: m.steps?.map(s => s.node === data.node && (!data.round || s.round === data.round)
             ? {
                 ...s,
                 label: data.label,
@@ -150,7 +151,7 @@ export function useChat() {
         if (!pid) return
         setMessages(prev => prev.map(m => m.id === pid ? {
           ...m,
-          steps: m.steps?.map(s => s.node === data.node ? {
+          steps: m.steps?.map(s => s.node === data.node && (!data.round || s.round === data.round) ? {
             ...s,
             agents: (() => {
               const existing = (s.agents || [])
@@ -160,6 +161,9 @@ export function useChat() {
             })()
           } : s) || []
         } : m))
+
+      } else if (data.type === 'debug_log') {
+        console.log(`[listing_agent] ${data.msg}`)
 
       } else if (data.type === 'process_end') {
         const pid = processId.current
