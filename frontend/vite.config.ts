@@ -7,6 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/ws': { target: 'ws://localhost:8000', ws: true },
+      '/sessions': { target: 'http://localhost:8000' },
+      '/abort': { target: 'http://localhost:8000' },
+      '/imgproxy': { target: 'http://localhost:8000' },
     },
   },
 })

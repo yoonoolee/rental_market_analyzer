@@ -56,10 +56,6 @@ python -m evals.run_evals --experiments reducer --variants baseline low_temp
 python -m evals.run_evals --experiments end_to_end --variants baseline
 ```
 
-### Chainlit front-end
-
-With the app running (`chainlit run app.py -w`), type `/evals` in the chat. The full suite runs in the background; a markdown summary renders when complete.
-
 ## Results
 
 - Per-experiment: `results/<experiment>_eval.json`

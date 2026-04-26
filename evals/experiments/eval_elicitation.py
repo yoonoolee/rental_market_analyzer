@@ -7,7 +7,7 @@ Variants compared:
   - sonnet_sonnet : Sonnet for both
 
 Held constant:
-  - 5 simulated conversation test cases (datasets/preferences.json)
+  - 10 simulated conversation test cases (datasets/preferences.json)
   - MAX_QUESTIONS = 5
   - Extraction prompt template (from prompts/elicitation_prompts.py)
   - System prompt for question generation
@@ -18,7 +18,7 @@ Metrics:
   - turns_to_ready        : Q&A turns needed to reach ready_to_search=True (lower is better)
   - question_quality_score: LLM-judge score (1-10) on follow-up question naturalness/relevance
   - latency_ms_per_turn   : avg wall-clock time per elicitation turn
-  - cost_usd_per_session  : total token cost for one full elicitation session
+  - total_tokens_per_session: total token count for one full elicitation session
 """
 import json
 from anthropic import Anthropic

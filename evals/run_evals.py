@@ -4,7 +4,7 @@ Master eval runner.
 Usage:
     python -m evals.run_evals                     # run all experiments
     python -m evals.run_evals --experiments search image
-    python -m evals.run_evals --variants baseline low_temp
+    python -m evals.run_evals --variants baseline low_temp no_analyzer
     python -m evals.run_evals --experiments search --variants baseline_5 expanded_10
 
 Results are saved to evals/results/<experiment>_eval.json and a summary to
@@ -45,9 +45,15 @@ def print_summary(all_results: dict):
 
     for exp_name, results in all_results.items():
         print(f"\n── {exp_name.upper().replace('_', ' ')} ──")
+        if isinstance(results, dict) and "error" in results:
+            print(f"  [error] {results['error']}")
+            continue
         for variant_name, data in results.items():
-            agg = data.get("aggregate", {})
-            metrics_str = "  ".join(f"{k}={v}" for k, v in agg.items())
+            if isinstance(data, dict):
+                agg = data.get("aggregate", {})
+                metrics_str = "  ".join(f"{k}={v}" for k, v in agg.items())
+            else:
+                metrics_str = str(data)
             print(f"  [{variant_name}] {metrics_str}")
 
     print("\n" + "=" * 70)

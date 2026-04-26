@@ -84,7 +84,7 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
 
 export function ListingMap({ listings }: { listings: ListingProfile[] }) {
   const addressedListings = listings.filter(l => l.address)
-  if (!addressedListings.length) return null
+  if (!addressedListings.length || !API_KEY) return null
 
   return (
     <APIProvider apiKey={API_KEY}>

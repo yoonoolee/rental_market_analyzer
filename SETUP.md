@@ -7,6 +7,7 @@ This guide walks through setting up the project from scratch and testing it end-
 ## 1. Prerequisites
 
 - **Python 3.10+** (project was developed against 3.12/3.14; 3.10 is the minimum for the type-hint syntax used).
+- **Node.js 20+ and npm** — for the React UI (`frontend/`). Not needed for CLI smoke tests or evals.
 - **A shell (bash/zsh)** with `git`, `python3`, and `pip`.
 
 Check:
@@ -57,7 +58,8 @@ Then open `.env` in a text editor and replace each `your_..._here` placeholder. 
 
 | Env var | Where to get it | Cost notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | https://console.anthropic.com/ → API Keys | Pay-as-you-go; Haiku/Sonnet pricing on their site |
+| `GROQ_API_KEY` | https://console.groq.com/keys | Free tier; used for all text LLM nodes by default |
+| `ANTHROPIC_API_KEY` | https://console.anthropic.com/ → API Keys | Required for photo analysis (vision tool) |
 | `SERPAPI_API_KEY` | https://serpapi.com/manage-api-key | 100 free searches/month; paid plans after |
 | `FIRECRAWL_API_KEY` | https://www.firecrawl.dev/app/api-keys | 500 free scrapes/month on the Hobby tier |
 | `GOOGLE_MAPS_API_KEY` | https://console.cloud.google.com/ → APIs & Services → Credentials | $200/mo free credit from Google; **must enable Distance Matrix API, Places API, and Geocoding API on that project** |
@@ -65,10 +67,25 @@ Then open `.env` in a text editor and replace each `your_..._here` placeholder. 
 
 ### Minimum keys to boot the app
 
-- `ANTHROPIC_API_KEY` — required (every node uses Claude).
+- `GROQ_API_KEY` — required for intent router, elicitation, planner, listing-agent reasoning, reducer, analyzer.
+- `ANTHROPIC_API_KEY` — required for `analyze_listing_photos` (vision).
 - `SERPAPI_API_KEY` — required for the search stage.
 - `FIRECRAWL_API_KEY` — required for the scrape stage.
 - `GOOGLE_MAPS_API_KEY` — required if users mention commutes or nearby places; otherwise the tool-call intent router path will return errors for those specific queries.
+
+### Runtime tuning knobs (optional)
+
+In `.env`, these defaults are safe for local runs:
+
+```bash
+LLM_PROVIDER=groq
+LISTING_CONCURRENCY=3
+MAX_PHOTOS=12
+```
+
+- `LLM_PROVIDER` chooses text-model backend (`groq` default, `anthropic` optional fallback).
+- `LISTING_CONCURRENCY` controls max parallel listing-agent runs.
+- `MAX_PHOTOS` caps images sent to vision analysis per listing.
 
 ### LangSmith (optional but recommended for the submission)
 
@@ -107,7 +124,7 @@ You should see the nine nodes: `intent_router`, `elicitation`, `planner`, `searc
 
 ---
 
-## 6. End-to-end smoke test (no Chainlit)
+## 6. End-to-end smoke test (no web UI)
 
 This exercises all four intent-router branches plus one full search pipeline run, using an in-memory checkpointer so nothing persists:
 
@@ -117,15 +134,36 @@ python -m scripts.smoke_test_graph
 
 Expect ~3–5 minutes for the full-pipeline test (it hits SerpAPI + Firecrawl + Google Maps + Claude many times).
 
+Optional: slow down between intent-router test turns (defaults to 2s) to reduce API rate issues: `SMOKE_THROTTLE_SEC=0 python -m scripts.smoke_test_graph`
+
 ---
 
-## 7. Run the Chainlit app
+## 7. Run the web app (FastAPI + React)
+
+**Development (recommended):** run the API and the Vite dev server in two terminals. The dev server proxies WebSocket traffic to the API.
 
 ```bash
-chainlit run app.py -w
+# Terminal 1 — project root, venv active
+uvicorn server:app --reload --port 8000
 ```
 
-`-w` enables auto-reload on file changes. The UI opens at http://localhost:8000.
+```bash
+# Terminal 2
+cd frontend && npm install && npm run dev
+```
+
+Open **http://localhost:5173** in the browser.
+
+**Maps in the UI:** add `frontend/.env.local` with `VITE_GOOGLE_MAPS_KEY` set to the same value as `GOOGLE_MAPS_API_KEY` in the project root `.env` (Vite only reads env files under `frontend/`). Without it, the rest of the app still works; the map may not load tiles.
+
+**Production-style (API serves the built UI):** only one process, no Vite. Build the frontend once, then start uvicorn:
+
+```bash
+cd frontend && npm install && npm run build && cd ..
+uvicorn server:app --host 0.0.0.0 --port 8000
+```
+
+Open **http://localhost:8000** (FastAPI mounts `frontend/dist` when that folder exists).
 
 Try these to exercise every path:
 
@@ -160,8 +198,6 @@ Results land in `evals/results/`:
 - Per-experiment JSON (`end_to_end_eval.json`, `elicitation_eval.json`, etc.)
 - Combined `summary.json`
 
-You can also trigger the suite from the Chainlit UI: type `/evals` in the chat.
-
 ---
 
 ## 9. Common issues
@@ -178,7 +214,7 @@ You can also trigger the suite from the Chainlit UI: type `/evals` in the chat.
 
 **`rental_state.db` growing large** — delete it to reset all conversations.
 
-**Chainlit UI shows blank on refresh** — this is expected; the LLM still has full context via the SQLite checkpointer, but visual chat replay requires a Chainlit data layer (see the README TODO).
+**WebSocket or blank UI in dev** — ensure `uvicorn` is on port 8000 before `npm run dev` (Vite proxies `/ws` to `ws://localhost:8000`). For a single-process setup, use `npm run build` in `frontend/` and open `http://localhost:8000` with only uvicorn running.
 
 ---
 
@@ -189,7 +225,7 @@ Checklist for a grader to verify everything works:
 - [ ] `python -m scripts.smoke_test_tools` → all 5 tools PASS
 - [ ] `python -m scripts.print_graph` → 9 nodes listed, matches README diagram
 - [ ] `python -m scripts.smoke_test_graph` → all 5 intent branches produce the right response shape
-- [ ] `chainlit run app.py -w` → can complete a full search end-to-end
+- [ ] API + Vite dev servers (or built UI + uvicorn) → can complete a full search end-to-end
 - [ ] `python -m evals.run_evals --experiments end_to_end --variants baseline` → `end_to_end_eval.json` written with non-zero metrics
 - [ ] LangSmith dashboard (if enabled) shows traces with per-node names
 

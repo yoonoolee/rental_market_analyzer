@@ -48,6 +48,20 @@ COST_PER_M_INPUT = {SONNET_MODEL: 3.00}
 COST_PER_M_OUTPUT = {SONNET_MODEL: 15.00}
 
 
+def _content_to_text(content) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        chunks = []
+        for block in content:
+            if isinstance(block, dict):
+                chunks.append(str(block.get("text", "")))
+            else:
+                chunks.append(str(block))
+        return " ".join(chunks).strip()
+    return str(content)
+
+
 def _kendall_tau(predicted: list[str], gold: list[str]) -> float:
     """
     Normalized Kendall tau distance between two rankings.
@@ -141,7 +155,7 @@ async def _run_reducer_stage(
         input_t / 1_000_000 * COST_PER_M_INPUT[SONNET_MODEL]
         + output_t / 1_000_000 * COST_PER_M_OUTPUT[SONNET_MODEL]
     )
-    return resp.content, {
+    return _content_to_text(resp.content), {
         "latency_ms": timer.elapsed_ms,
         "input_tokens": input_t,
         "output_tokens": output_t,
@@ -173,7 +187,7 @@ async def _run_analyzer_stage(
         input_t / 1_000_000 * COST_PER_M_INPUT[SONNET_MODEL]
         + output_t / 1_000_000 * COST_PER_M_OUTPUT[SONNET_MODEL]
     )
-    return resp.content, {
+    return _content_to_text(resp.content), {
         "latency_ms": timer.elapsed_ms,
         "cost_usd": round(cost, 6),
     }

@@ -1,22 +1,44 @@
 import { useState } from 'react'
 import type { ListingProfile } from '../hooks/useChat'
 
+function proxyUrl(url: string) {
+  return `/imgproxy?url=${encodeURIComponent(url)}`
+}
+
 export function ListingCard({ listing }: { listing: ListingProfile }) {
   const [imgIdx, setImgIdx] = useState(0)
   const images = listing.images?.filter(Boolean) ?? []
+  const amenities = listing.amenities?.filter(Boolean) ?? []
+  const details: Array<[string, string | undefined]> = [
+    ['Address', listing.address],
+    ['Size', listing.sqft ? `${listing.sqft} sqft` : undefined],
+    ['Floor', listing.floor != null ? `Floor ${listing.floor}` : undefined],
+    ['Furnishing', listing.furnishing],
+    ['Condition', listing.condition],
+    ['Pet deposit', listing.pet_deposit != null ? `$${listing.pet_deposit}` : undefined],
+  ]
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col">
+    <article className="rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col">
+      {listing.disqualified && (
+        <div className="px-3 py-2 bg-red-50 border-b border-red-200 text-xs text-red-700">
+          Disqualified: {listing.disqualify_reason || 'did not match hard requirements'}
+        </div>
+      )}
 
       {/* Image carousel */}
       {images.length > 0 ? (
         <div className="relative h-44 bg-gray-100">
           <img
-            src={images[imgIdx]}
-            alt="listing"
+            src={proxyUrl(images[imgIdx])}
+            alt={listing.address ? `Listing photo for ${listing.address}` : 'Listing photo'}
             className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            onError={(e) => {
+              const el = e.target as HTMLImageElement
+              el.src = ''
+              el.style.display = 'none'
+              el.parentElement!.classList.add('no-photo')
+            }}
           />
           {images.length > 1 && (
             <>
@@ -44,7 +66,7 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            {listing.price && (
+            {listing.price != null && (
               <p className="font-semibold text-gray-900">${listing.price.toLocaleString()}<span className="font-normal text-gray-500 text-sm">/mo</span></p>
             )}
             {(listing.bedrooms != null || listing.bathrooms != null) && (
@@ -70,6 +92,15 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
 
         {/* Pills */}
         <div className="flex flex-wrap gap-1">
+          {listing.modern_finishes === true && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Modern finishes</span>
+          )}
+          {listing.natural_light === true && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Natural light</span>
+          )}
+          {listing.spacious === true && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Spacious</span>
+          )}
           {listing.floor != null && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Floor {listing.floor}</span>
           )}
@@ -102,11 +133,30 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
           </div>
         )}
 
+        <dl className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+          {details.map(([label, value]) => value ? (
+            <div key={label} className="col-span-1">
+              <dt className="text-gray-400">{label}</dt>
+              <dd className="text-gray-600 truncate">{value}</dd>
+            </div>
+          ) : null)}
+        </dl>
+
+        {amenities.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {amenities.slice(0, 8).map((item) => (
+              <span key={item} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Notes / description */}
         {(listing.notes || listing.description) && (
           <p className="text-xs text-gray-500 leading-relaxed">{listing.notes || listing.description}</p>
         )}
       </div>
-    </div>
+    </article>
   )
 }

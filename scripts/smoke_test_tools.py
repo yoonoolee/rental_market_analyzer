@@ -10,7 +10,7 @@ import json
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 REQUIRED_KEYS = [
@@ -65,13 +65,21 @@ async def test_search():
 async def test_scraper():
     from graph.tools.scraper import scrape_listing
     print("\n--- scrape_listing (Zillow) ---")
-    # Pick any current Zillow detail URL; the test just verifies the call path works.
+    # Pick any current Zillow detail URL; verifies Firecrawl JSON extraction path.
     url = "https://www.zillow.com/homedetails/538-3rd-Ave-APT-2-San-Francisco-CA-94118/461374502_zpid/"
     try:
         result = await scrape_listing.ainvoke({"url": url})
-        preview = (result.get("raw_text") or "")[:500]
-        print(preview)
-        return len(preview) > 50
+        if result.get("error"):
+            print(f"scrape error: {result['error']}")
+            return False
+        preview = {k: v for k, v in result.items() if k != "url" and v not in (None, [], "")}
+        print(json.dumps(preview, indent=2)[:1500])
+        return bool(
+            result.get("price") is not None
+            or result.get("address")
+            or (result.get("images") and len(result["images"]) > 0)
+            or (result.get("description") and len(result["description"]) > 20)
+        )
     except Exception as e:
         print(f"scrape_listing failed (may be a dead URL): {e}")
         return False
@@ -85,7 +93,7 @@ async def test_photos():
     try:
         result = await analyze_listing_photos.ainvoke({
             "image_urls": urls,
-            "focus_areas": "natural_light",
+            "user_preferences": "Prioritize natural light and overall upkeep.",
         })
         print(json.dumps(result, indent=2))
         return isinstance(result, dict)

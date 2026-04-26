@@ -1,20 +1,374 @@
 {
-  "search": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkeJkWGvuEsn1pg3Q4'}"
-  },
-  "image": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkhCshyW5adcDoLiW1'}"
-  },
   "elicitation": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkhsKNiUbwXztoEE3e'}"
-  },
-  "planner": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkiosHWny7i8TWaDpF'}"
-  },
-  "listing_agent": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkjVYfuUsSsBU9jJZd'}"
-  },
-  "reducer": {
-    "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CaLFkkChquL8U9hk1mhb9'}"
+    "haiku_sonnet": {
+      "variant": "haiku_sonnet",
+      "config": {
+        "extraction_model": "claude-haiku-4-5-20251001",
+        "chat_model": "claude-sonnet-4-6"
+      },
+      "per_case": [
+        {
+          "test_id": "pref_001",
+          "final_preferences": {
+            "city": "San Francisco",
+            "bedrooms": 2,
+            "max_price": 3000,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "Salesforce Tower"
+            ],
+            "soft_constraints": [],
+            "trade_off_rules": [],
+            "lifestyle_notes": "Has a cat"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 292,
+          "total_latency_ms": 2849.5,
+          "extraction_micro_f1": 0.619,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.3333,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.833
+        },
+        {
+          "test_id": "pref_002",
+          "final_preferences": {
+            "city": "Brooklyn",
+            "bedrooms": 1,
+            "max_price": 2800,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [],
+            "soft_constraints": [
+              "Prefer studio or 1 bedroom",
+              "In-unit laundry"
+            ],
+            "trade_off_rules": [
+              "Will accept up to $2800 if in-unit laundry is included, otherwise ideally under $2500"
+            ],
+            "lifestyle_notes": "No pets"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 342,
+          "total_latency_ms": 1369.1,
+          "extraction_micro_f1": 0.7094,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "min_price": 1.0,
+            "soft_constraints": 0.4444,
+            "trade_off_rules": 0.5217,
+            "commute_destinations": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_003",
+          "final_preferences": {
+            "city": null,
+            "bedrooms": null,
+            "max_price": null,
+            "min_price": null,
+            "pet_friendly": null,
+            "commute_destinations": [
+              "Bellevue",
+              "downtown Seattle"
+            ],
+            "soft_constraints": [
+              "preference for Seattle proper vs eastside neighborhoods",
+              "willingness to consider Kirkland or Redmond"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "User is evaluating commute trade-offs between Seattle and Bellevue locations"
+          },
+          "turns_to_ready": 5,
+          "reached_ready": false,
+          "mean_question_quality": 5.6,
+          "total_tokens": 4337,
+          "total_latency_ms": 61693.5,
+          "extraction_micro_f1": 0.0952,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 0.0,
+            "max_price": 0.0,
+            "pet_friendly": 0.0,
+            "commute_destinations": 0.6667,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.286
+        },
+        {
+          "test_id": "pref_004",
+          "final_preferences": {
+            "city": null,
+            "bedrooms": null,
+            "max_price": null,
+            "min_price": null,
+            "pet_friendly": null,
+            "commute_destinations": [],
+            "soft_constraints": [],
+            "trade_off_rules": [],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 5,
+          "reached_ready": false,
+          "mean_question_quality": 4.0,
+          "total_tokens": 2817,
+          "total_latency_ms": 54250.0,
+          "extraction_micro_f1": 0.3333,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.0
+        },
+        {
+          "test_id": "pref_005",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 2,
+            "max_price": 2400,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [],
+            "soft_constraints": [
+              "Wicker Park or Logan Square area",
+              "natural light",
+              "high ceilings",
+              "no smoking building"
+            ],
+            "trade_off_rules": [
+              "willing to pay up to $2700/month if walkable to Blue Line"
+            ],
+            "lifestyle_notes": "Remote worker, has 2 cats"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 383,
+          "total_latency_ms": 1300.4,
+          "extraction_micro_f1": 0.6999,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 0.0,
+            "min_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.8571,
+            "trade_off_rules": 0.9091,
+            "lifestyle_notes": 0.5333
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_006",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 1,
+            "max_price": 2100,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UC Berkeley Soda Hall",
+              "BART"
+            ],
+            "soft_constraints": [
+              "near bars",
+              "near coffee shops"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "Grad student with cat, prioritizes proximity to BART for commute to UC Berkeley"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 332,
+          "total_latency_ms": 1178.0,
+          "extraction_micro_f1": 0.6932,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.6667,
+            "soft_constraints": 0.5455,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.3333
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_007",
+          "final_preferences": {
+            "city": "San Francisco",
+            "bedrooms": 2,
+            "max_price": 3000,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "Salesforce Tower"
+            ],
+            "soft_constraints": [
+              "commute under 15 minutes by transit or walking"
+            ],
+            "trade_off_rules": [
+              "willing to pay up to $3200 for commute under 15 minutes"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 325,
+          "total_latency_ms": 1415.4,
+          "extraction_micro_f1": 0.5333,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 0.0,
+            "commute_destinations": 0.3333,
+            "soft_constraints": 0.2,
+            "trade_off_rules": 0.6667
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_008",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 2,
+            "max_price": 2500,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UC Berkeley",
+              "Downtown Oakland"
+            ],
+            "soft_constraints": [
+              "natural light",
+              "good for work from home"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "Works from home, visits UC Berkeley twice a week, goes to gym in Downtown Oakland, has a dog"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 343,
+          "total_latency_ms": 1327.9,
+          "extraction_micro_f1": 0.7121,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.3636,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.3333
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_009",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 1,
+            "max_price": 1700,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "downtown Chicago"
+            ],
+            "soft_constraints": [
+              "close to L stop"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "Prioritizes affordability and public transit accessibility"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 290,
+          "total_latency_ms": 7741.2,
+          "extraction_micro_f1": 0.75,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.5,
+            "soft_constraints": 1.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_010",
+          "final_preferences": {
+            "city": "San Francisco",
+            "bedrooms": 2,
+            "max_price": 3100,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UCSF Mission Bay"
+            ],
+            "soft_constraints": [
+              "quiet",
+              "walkable",
+              "near a park"
+            ],
+            "trade_off_rules": [
+              "willing to stretch budget to $3100 for view or modern finishes"
+            ],
+            "lifestyle_notes": "Has a dog that needs to be accommodated"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 346,
+          "total_latency_ms": 12634.2,
+          "extraction_micro_f1": 0.8231,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.7692,
+            "trade_off_rules": 0.6154,
+            "lifestyle_notes": 0.2
+          },
+          "completeness_score": 1.0
+        }
+      ],
+      "aggregate": {
+        "mean_extraction_f1": 0.597,
+        "mean_completeness": 0.812,
+        "mean_turns_to_ready": 1.8,
+        "ready_rate": 0.8,
+        "mean_question_quality": 0.96,
+        "mean_total_tokens": 981,
+        "mean_latency_ms": 14575.9
+      }
+    }
   }
 }

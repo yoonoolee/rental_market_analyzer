@@ -22,11 +22,15 @@ export type ProcessStep = {
 
 export type ListingProfile = {
   url: string
+  disqualified?: boolean
+  disqualify_reason?: string
   price?: number
   bedrooms?: number
   bathrooms?: number
   address?: string
   floor?: number
+  sqft?: number
+  amenities?: string[]
   images?: string[]
   commute_times?: Record<string, string>
   nearby_places?: Record<string, string>
@@ -84,28 +88,44 @@ export function useChat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isThinking, setIsThinking] = useState(false)
   const [connected, setConnected] = useState(false)
+  const [connectionState, setConnectionState] = useState<'connected' | 'disconnected' | 'error'>('disconnected')
   const [sessions, setSessions] = useState<SessionMeta[]>(loadSessions)
   const ws = useRef<WebSocket | null>(null)
   const sessionId = useRef(getOrCreateCurrentId())
   const titleSet = useRef(false)
   const processId = useRef<string | null>(null)
   const processInjected = useRef(false)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttempt = useRef(0)
+  const manualClose = useRef(false)
 
-  const connect = useCallback((sid: string) => {
-    ws.current?.close()
-    setMessages([])
-    setIsThinking(false)
-    setConnected(false)
-    titleSet.current = false
-    processId.current = null
-    processInjected.current = false
+  const reconnect = useCallback((sid: string) => {
+    if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+    const delay = Math.min(1000 * 2 ** reconnectAttempt.current, 30000)
+    reconnectAttempt.current += 1
+    reconnectTimer.current = setTimeout(() => {
+      if (!manualClose.current) connectSocket(sid) // eslint-disable-line @typescript-eslint/no-use-before-define
+    }, delay)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const connectSocket = useCallback((sid: string) => {
+    if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+    manualClose.current = false
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const socket = new WebSocket(`${protocol}://${window.location.host}/ws/${sid}`)
     ws.current = socket
 
-    socket.onopen = () => setConnected(true)
-    socket.onclose = () => setConnected(false)
+    socket.onopen = () => {
+      reconnectAttempt.current = 0
+      setConnected(true)
+      setConnectionState('connected')
+    }
+    socket.onclose = () => {
+      setConnected(false)
+      setConnectionState('disconnected')
+      if (!manualClose.current) reconnect(sid)
+    }
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -139,6 +159,7 @@ export function useChat() {
         const pid = generateId()
         processId.current = pid
         setIsThinking(true)
+        setConnectionState('connected')
         setMessages(prev => [...prev, { id: pid, role: 'process', content: '', steps: [], isRunning: true }])
 
       } else if (data.type === 'process_step') {
@@ -202,15 +223,51 @@ export function useChat() {
         if (pid) setMessages(prev => prev.map(m => m.id === pid ? { ...m, isRunning: false } : m))
         processId.current = null
         setIsThinking(false)
+        setConnectionState('error')
         setMessages(prev => [...prev, { id: generateId(), role: 'assistant', content: `Error: ${data.content}` }])
+
+      } else if (data.type === 'connection_state') {
+        const state = data.state === 'connected' || data.state === 'error' ? data.state : 'disconnected'
+        setConnectionState(state)
       }
     }
-  }, [])
+  }, [reconnect])
+
+  const connect = useCallback((sid: string) => {
+    manualClose.current = true
+    ws.current?.close()
+    setMessages([])
+    setIsThinking(false)
+    setConnected(false)
+    setConnectionState('disconnected')
+    titleSet.current = false
+    processId.current = null
+    processInjected.current = false
+    reconnectAttempt.current = 0
+    connectSocket(sid)
+  }, [connectSocket])
 
   useEffect(() => {
-    connect(sessionId.current)
-    return () => ws.current?.close()
-  }, [connect])
+    connectSocket(sessionId.current)
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const state = ws.current?.readyState
+        if (state === WebSocket.CLOSED || state === WebSocket.CLOSING) {
+          reconnectAttempt.current = 0
+          connectSocket(sessionId.current)
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      manualClose.current = true
+      ws.current?.close()
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [connectSocket])
 
   const sendMessage = useCallback((content: string, optionsMsgId?: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return
@@ -276,5 +333,23 @@ export function useChat() {
     connect(id)
   }, [connect])
 
-  return { messages, isThinking, connected, sessions, sendMessage, newChat, switchSession, deleteSession, deleteAllSessions }
+  const abortRun = useCallback(() => {
+    const sid = sessionId.current
+    fetch(`/abort/${sid}`, { method: 'POST' })
+    setIsThinking(false)
+  }, [])
+
+  return {
+    messages,
+    isThinking,
+    connected,
+    connectionState,
+    sessions,
+    sendMessage,
+    newChat,
+    switchSession,
+    deleteSession,
+    deleteAllSessions,
+    abortRun,
+  }
 }

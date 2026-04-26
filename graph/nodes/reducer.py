@@ -1,5 +1,6 @@
 import json
 import re
+import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from ..llm import make_llm
 from ..state import RentalState
@@ -7,7 +8,7 @@ from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS, MAX_SHOWN
 from prompts.reducer_prompts import REDUCER_PROMPT
 
 
-llm = make_llm(model="claude-sonnet-4-6", temperature=0.4)
+llm = make_llm("reducer")
 
 
 async def reducer_node(state: RentalState) -> dict:
@@ -38,17 +39,29 @@ async def reducer_node(state: RentalState) -> dict:
             f"The market may be thin for these criteria. Mention this honestly in your response."
         )
 
-    response = await llm.ainvoke([
-        SystemMessage(content=REDUCER_PROMPT.replace("MAX_SHOWN", str(MAX_SHOWN))),
-        HumanMessage(content=(
-            f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            f"Qualifying listings ({len(good_profiles)}):\n"
-            f"{json.dumps(good_profiles, indent=2)}\n\n"
-            f"Disqualified listings ({len(disqualified_profiles)}):\n"
-            f"{json.dumps(disqualified_profiles, indent=2)}"
-            + context_note
-        ))
-    ])
+    try:
+        response = await asyncio.wait_for(llm.ainvoke([
+            SystemMessage(content=REDUCER_PROMPT.replace("MAX_SHOWN", str(MAX_SHOWN))),
+            HumanMessage(content=(
+                f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
+                f"Qualifying listings ({len(good_profiles)}):\n"
+                f"{json.dumps(good_profiles, indent=2)}\n\n"
+                f"Disqualified listings ({len(disqualified_profiles)}):\n"
+                f"{json.dumps(disqualified_profiles, indent=2)}"
+                + context_note
+            ))
+        ]), timeout=20)
+    except Exception as e:
+        fallback = (
+            f"I hit an LLM error while ranking listings ({str(e)[:80]}). "
+            f"Showing the best available {min(len(good_profiles), MAX_SHOWN)} listing(s) by discovery order."
+        )
+        ranked_listings = good_profiles[:MAX_SHOWN]
+        return {
+            "final_response": fallback,
+            "ranked_listings": ranked_listings,
+            "messages": [AIMessage(content=fallback)],
+        }
 
     content = response.content
     if isinstance(content, list):

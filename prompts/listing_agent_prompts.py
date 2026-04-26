@@ -71,7 +71,7 @@ When you have gathered everything relevant, return ONLY a JSON object. No explan
   "spacious": true/false/null,
   "condition": "excellent/good/fair/poor or null",
   "notes": "one sentence from photo analysis or null",
-  "description": "brief plain-english summary of the unit"
+  "description": "brief plain-english summary of the unit (<= 25 words, no marketing language)"
 }}
 
 If disqualified, set disqualified: true with a clear reason. Other fields can be null.

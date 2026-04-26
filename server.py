@@ -1,13 +1,17 @@
 import os
+import asyncio
+import traceback
+import logging
 from urllib.parse import urlparse
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import httpx
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from graph.builder import build_graph
@@ -15,8 +19,10 @@ import aiosqlite
 
 _CHECKPOINT_DB = os.getenv("RENTAL_CHECKPOINT_DB", "rental_state.db")
 graph = None
+ABORT_EVENTS: dict[str, asyncio.Event] = {}
+logger = logging.getLogger("uvicorn.error")
 
-TRACKED_NODES = {"planner", "supervisor", "listing_agent", "reducer", "analyzer", "elicitation", "intent_router"}
+TRACKED_NODES = {"planner", "search_node", "supervisor", "listing_agent", "reducer", "analyzer", "elicitation", "intent_router"}
 
 
 @asynccontextmanager
@@ -56,9 +62,33 @@ async def delete_all_sessions():
     return JSONResponse({"ok": True})
 
 
+@app.post("/abort/{session_id}")
+async def abort_session(session_id: str):
+    ABORT_EVENTS.setdefault(session_id, asyncio.Event()).set()
+    return JSONResponse({"ok": True})
+
+
+_PROXY_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.apartments.com/",
+}
+
+@app.get("/imgproxy")
+async def image_proxy(url: str = Query(...)):
+    """Proxy listing images to bypass hotlink/referrer restrictions."""
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client:
+            r = await client.get(url, headers=_PROXY_HEADERS)
+        content_type = r.headers.get("content-type", "image/jpeg")
+        return StreamingResponse(iter([r.content]), media_type=content_type)
+    except Exception:
+        return JSONResponse({"error": "failed"}, status_code=502)
+
+
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     await websocket.accept()
+    await websocket.send_json({"type": "connection_state", "state": "connected"})
 
     config = {
         "configurable": {"thread_id": session_id},
@@ -85,11 +115,15 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             if not user_message:
                 continue
 
+            abort_event = ABORT_EVENTS.setdefault(session_id, asyncio.Event())
+            abort_event.clear()
             await websocket.send_json({"type": "process_start"})
 
             listing_round = 0
             round_done = 0
             round_total = 0
+            search_done = 0
+            search_total = 0
             agent_run_urls: dict[str, str] = {}  # run_id -> url
 
             TOOL_LABELS = {
@@ -101,11 +135,21 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             }
 
             try:
+                aborted = False
                 async for event in graph.astream_events(
                     {"messages": [HumanMessage(content=user_message)]},
                     config=config,
                     version="v2",
                 ):
+                    if abort_event.is_set():
+                        aborted = True
+                        await websocket.send_json({
+                            "type": "message",
+                            "role": "assistant",
+                            "content": "Stopped this run. You can send a new request anytime.",
+                        })
+                        break
+
                     kind = event["event"]
                     name = event.get("name", "")
 
@@ -177,12 +221,37 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                     if name == "planner":
                         queries = output.get("search_queries", [])
                         if queries:
+                            search_done = 0
+                            search_total = len(queries)
                             await websocket.send_json({
                                 "type": "process_step",
                                 "node": "planner",
                                 "label": f"Generated {len(queries)} search queries",
                                 "detail": queries,
                             })
+                            await websocket.send_json({
+                                "type": "process_step",
+                                "node": "search_node",
+                                "label": f"Running searches (0/{len(queries)})",
+                                "detail": [],
+                                "done": 0,
+                                "total": len(queries),
+                            })
+                            logger.info("[planner] %s queries generated", len(queries))
+
+                    elif name == "search_node":
+                        search_done += 1
+                        query = ((output.get("search_results") or [{}])[0]).get("query", "")
+                        await websocket.send_json({
+                            "type": "process_step_update",
+                            "node": "search_node",
+                            "label": f"Running searches ({search_done}/{search_total})",
+                            "done": search_done,
+                            "total": search_total,
+                            "detail_item": query,
+                        })
+                        if query:
+                            logger.info("[search] %s/%s %s", search_done, search_total, query)
 
                     elif name == "supervisor":
                         urls = output.get("pending_urls", [])
@@ -195,6 +264,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "label": f"Found {len(urls)} listings to research",
                             "detail": urls,
                         })
+                        logger.info("[supervisor] queued %s listing URLs", len(urls))
                         if urls:
                             await websocket.send_json({
                                 "type": "process_step",
@@ -237,7 +307,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "label": f"Researching listings ({round_done}/{round_total})",
                             "done": round_done,
                             "total": round_total,
+                            "detail_item": url,
                         })
+                        if url:
+                            logger.info("[listing_agent] completed %s", url)
 
                     elif name == "reducer":
                         await websocket.send_json({
@@ -249,6 +322,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         ranked = output.get("ranked_listings", [])
                         if ranked:
                             await websocket.send_json({"type": "listings", "listings": ranked})
+                            logger.info("[reducer] returned %s ranked listings", len(ranked))
                         final_response = output.get("final_response", "")
                         if final_response:
                             await websocket.send_json({"type": "message", "role": "assistant", "content": final_response})
@@ -265,6 +339,26 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             await websocket.send_json({"type": "message", "role": "assistant", "content": insights})
 
                     elif name == "elicitation":
+                        ready = output.get("ready_to_search", False)
+                        prefs = output.get("preferences", {})
+                        if ready:
+                            pref_summary = ", ".join(
+                                f"{k}: {v}" for k, v in prefs.items()
+                                if v not in (None, [], {}, "")
+                            )
+                            await websocket.send_json({
+                                "type": "process_step",
+                                "node": "elicitation",
+                                "label": "Requirements understood — starting search",
+                                "detail": [pref_summary] if pref_summary else [],
+                            })
+                        else:
+                            await websocket.send_json({
+                                "type": "process_step",
+                                "node": "elicitation",
+                                "label": "Clarifying your requirements",
+                                "detail": [],
+                            })
                         messages_out = output.get("messages", [])
                         options = output.get("elicitation_options", [])
                         for m in messages_out:
@@ -275,18 +369,36 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                     await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
 
                     elif name == "intent_router":
+                        intent = output.get("intent", "")
+                        intent_labels = {
+                            "off_topic": "Off-topic — responding directly",
+                            "conversational": "Answering your question",
+                            "tool_call": "Running a quick lookup",
+                            "needs_search": "Starting apartment search",
+                        }
+                        await websocket.send_json({
+                            "type": "process_step",
+                            "node": "intent_router",
+                            "label": intent_labels.get(intent, "Thinking…"),
+                            "detail": [],
+                        })
                         messages_out = output.get("messages", [])
                         for m in messages_out:
                             if isinstance(m, AIMessage) and m.content:
                                 await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
 
+                if aborted:
+                    # Do not emit stale step events after user cancellation.
+                    pass
             except Exception as e:
+                traceback.print_exc()
+                await websocket.send_json({"type": "connection_state", "state": "error"})
                 await websocket.send_json({"type": "error", "content": str(e)})
 
             await websocket.send_json({"type": "process_end"})
 
     except WebSocketDisconnect:
-        pass
+        ABORT_EVENTS.setdefault(session_id, asyncio.Event()).set()
 
 
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")

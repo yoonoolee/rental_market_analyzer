@@ -21,9 +21,11 @@ def _get_gmaps_client():
 # canonical type strings. Anything not in the map is passed through unchanged.
 _PLACE_TYPE_MAP = {
     "grocery store": "supermarket",
+    "grocery stores": "supermarket",
     "grocery": "supermarket",
     "supermarket": "supermarket",
     "coffee shop": "cafe",
+    "coffee shops": "cafe",
     "coffee": "cafe",
     "cafe": "cafe",
     "bar": "bar",
@@ -40,7 +42,14 @@ _PLACE_TYPE_MAP = {
 
 
 def _normalize_place_type(place_type: str) -> str:
-    return _PLACE_TYPE_MAP.get(place_type.strip().lower(), place_type.strip().lower())
+    normalized = place_type.strip().lower()
+    if normalized in _PLACE_TYPE_MAP:
+        return _PLACE_TYPE_MAP[normalized]
+    # fallback: normalize simple plurals ("bookstores" -> "bookstore")
+    if normalized.endswith("s"):
+        singular = normalized[:-1]
+        return _PLACE_TYPE_MAP.get(singular, singular)
+    return normalized
 
 
 def _haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:

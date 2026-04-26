@@ -1,4 +1,5 @@
 import os
+import asyncio
 from serpapi import GoogleSearch
 from langchain_core.tools import tool
 
@@ -13,12 +14,15 @@ async def search_web(query: str) -> list[dict]:
     specific information - e.g. pet policy not stated on the listing page,
     building address is ambiguous, or floor/view details need verification.
     """
-    search = GoogleSearch({
-        "q": query,
-        "api_key": os.getenv("SERPAPI_API_KEY"),
-        "num": 3,
-    })
-    raw = search.get_dict()
+    def _run_search() -> dict:
+        search = GoogleSearch({
+            "q": query,
+            "api_key": os.getenv("SERPAPI_API_KEY"),
+            "num": 3,
+        })
+        return search.get_dict()
+
+    raw = await asyncio.to_thread(_run_search)
     results = []
     for r in raw.get("organic_results", [])[:3]:
         results.append({

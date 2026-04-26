@@ -2,6 +2,7 @@ import json
 import re
 import time
 import asyncio
+import os
 import json_repair
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_base_llm
@@ -21,11 +22,11 @@ from prompts.listing_agent_prompts import build_listing_agent_prompt
 # not every agent will use every tool.
 LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web, analyze_listing_photos]
 
-llm = make_base_llm(model="claude-sonnet-4-6", temperature=0.1)
+llm = make_base_llm("listing_agent")
 
-# cap concurrent Claude calls across all listing agents to avoid rate limit collisions.
-# raise this when on a higher API tier.
-_CONCURRENCY = asyncio.Semaphore(1)
+# Global cap across listing agents to avoid provider rate-limit collisions.
+# Raise this when your API tier allows more parallel calls.
+_CONCURRENCY = asyncio.Semaphore(int(os.getenv("LISTING_CONCURRENCY", "9999")))
 
 
 def _extract_json(text) -> dict:
@@ -78,15 +79,21 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
         wait = t_start - t_queued
         await adispatch_custom_event("timing_log", {"msg": f"START    {short_url}  (queued {wait:.1f}s)"})
 
-        result = await agent.ainvoke(
-            {
-                "messages": [
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
-                ]
-            },
-            config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
-        )
+        try:
+            result = await asyncio.wait_for(agent.ainvoke(
+                {
+                    "messages": [
+                        SystemMessage(content=system_prompt),
+                        HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
+                    ]
+                },
+                config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
+            ), timeout=60)
+        except Exception as e:
+            from langchain_core.messages import AIMessage as LCAIMessage
+            result = {
+                "messages": [LCAIMessage(content=f'{{"url":"{url}","disqualified":true,"disqualify_reason":"agent invocation failed: {str(e)[:120]}"}}')]
+            }
 
         t_end = time.monotonic()
         await adispatch_custom_event("timing_log", {"msg": f"DONE     {short_url}  (ran {t_end - t_start:.1f}s, total {t_end - t_queued:.1f}s)"})

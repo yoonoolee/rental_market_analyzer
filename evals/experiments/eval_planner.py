@@ -18,7 +18,7 @@ Metrics:
   - no_repetition_on_retry: % of retry queries that are genuinely new vs. first-round queries
   - parse_success_rate    : % of LLM outputs that produce valid JSON without fallback
   - latency_ms            : wall-clock time per planner call
-  - token_cost            : input+output tokens per call
+  - mean_tokens           : input+output tokens per call
 """
 import json
 import re

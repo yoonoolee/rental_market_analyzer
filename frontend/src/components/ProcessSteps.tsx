@@ -51,9 +51,12 @@ export function ProcessSteps({ steps, isRunning }: Props) {
 
         return (
           <div key={i} className="flex flex-col">
-            <div
-              className={`flex items-center gap-2 py-0.5 text-sm ${hasDetail ? 'cursor-pointer' : ''}`}
+            <button
+              type="button"
+              className={`flex items-center gap-2 py-0.5 text-sm text-left ${hasDetail ? 'cursor-pointer' : 'cursor-default'}`}
               onClick={() => hasDetail && toggle(i)}
+              aria-expanded={hasDetail ? isExpanded : undefined}
+              disabled={!hasDetail}
             >
               {active ? (
                 <span className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin shrink-0" />
@@ -71,7 +74,7 @@ export function ProcessSteps({ steps, isRunning }: Props) {
                   <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                 </svg>
               )}
-            </div>
+            </button>
 
             {isProgress && (
               <div className="ml-5 mt-1 mb-0.5 flex items-center gap-2">
@@ -87,7 +90,7 @@ export function ProcessSteps({ steps, isRunning }: Props) {
                 {step.detail.map((item, j) => (
                   item.startsWith('http') ? (
                     <a key={j} href={item} target="_blank" rel="noreferrer"
-                      className="text-xs text-[#1a3f6f] hover:underline truncate max-w-md">
+                      className="text-xs text-[#1a3f6f] hover:underline truncate max-w-[22rem]">
                       {item}
                     </a>
                   ) : (

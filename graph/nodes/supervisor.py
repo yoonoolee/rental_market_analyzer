@@ -1,12 +1,12 @@
 import re
+import os
 from urllib.parse import urlparse
 from ..state import RentalState
 
 TRUSTED_DOMAINS = {
-    # "zillow.com",
+    "zillow.com",
     "apartments.com",
-    # "trulia.com",
-    # "hotpads.com",
+    # "trulia.com",  # scraping auth issues
     # "realtor.com",
     # "rent.com",
     # "zumper.com",
@@ -17,8 +17,9 @@ TRUSTED_DOMAINS = {
 def _is_valid_listing(url: str) -> bool:
     """
     Keep only individual listing pages from trusted rental sites.
-    Accepts 3+ segment paths, OR 2-segment paths where the last segment is a
-    short alphanumeric listing ID (e.g. apartments.com's /property-name/68z2ytt/).
+    - Zillow: must start with /homedetails/ (not category/pagination pages)
+    - apartments.com: 2 segments where the last is a short alphanumeric listing ID
+    - Others: 3+ segments (heuristic for detail pages vs search pages)
     """
     try:
         parsed = urlparse(url)
@@ -28,26 +29,33 @@ def _is_valid_listing(url: str) -> bool:
         if parsed.query:
             return False
         segments = [s for s in parsed.path.split("/") if s]
-        if len(segments) >= 3:
-            return True
-        if len(segments) == 2:
-            # individual listing IDs are short alphanumeric strings (no hyphens)
-            return bool(re.match(r'^[a-z0-9]{4,10}$', segments[-1]))
-        return False
+
+        # Zillow individual listings always live under /homedetails/
+        if "zillow.com" in hostname:
+            return len(segments) >= 2 and segments[0] == "homedetails"
+
+        # apartments.com individual listings: exactly 2 segments, last is short alphanumeric ID
+        if "apartments.com" in hostname:
+            return len(segments) == 2 and bool(re.match(r'^[a-z0-9]{4,10}$', segments[-1]))
+
+        # trulia and other trusted domains: 3+ segment paths are individual listings
+        return len(segments) >= 3
     except Exception:
         return False
 
 
 # how many top listings to surface in the final response
-# MAX_SHOWN = 20
-MAX_SHOWN = 1  # testing
+MAX_SHOWN = int(os.getenv("MAX_SHOWN", "20"))
 
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer
 MIN_GOOD_RESULTS = MAX_SHOWN
 
 # cap on how many search + listing cycles we'll run before giving up and going to reducer
 # with whatever we have. prevents infinite loops when the market is thin.
-MAX_SEARCH_ATTEMPTS = 3
+MAX_SEARCH_ATTEMPTS = int(os.getenv("MAX_SEARCH_ATTEMPTS", "2"))
+
+# per-round URL budget to bound end-to-end latency and API spend.
+MAX_URLS_PER_ROUND = int(os.getenv("MAX_URLS_PER_ROUND", "80"))
 
 
 async def supervisor_node(state: RentalState) -> dict:
@@ -79,7 +87,7 @@ async def supervisor_node(state: RentalState) -> dict:
         if url not in already_searched and url not in seen and _is_valid_listing(url):
             seen.add(url)
             new_urls.append(url)
-            if len(new_urls) >= 3:  # cap for testing
+            if len(new_urls) >= MAX_URLS_PER_ROUND:
                 break
 
     return {

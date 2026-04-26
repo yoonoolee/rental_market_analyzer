@@ -21,19 +21,27 @@ def search_node(state: SearchNodeState) -> dict:
     """
     query = state["query"]
 
-    search = GoogleSearch({
-        "q": query,
-        "api_key": os.getenv("SERPAPI_API_KEY"),
-        "num": 1,
-    })
-
-    raw = search.get_dict()
-    organic = raw.get("organic_results", [])
+    try:
+        search = GoogleSearch({
+            "q": query,
+            "api_key": os.getenv("SERPAPI_API_KEY"),
+            "num": 10,
+        })
+        raw = search.get_dict()
+        organic = raw.get("organic_results", [])
+    except Exception as e:
+        return {
+            "search_results": [{
+                "query": query,
+                "results": [],
+                "error": str(e),
+            }]
+        }
 
     # strip down to just what we need - full SerpAPI responses are huge
     # and passing all that to the reducer LLM is wasteful
     results = []
-    for r in organic[:5]:
+    for r in organic[:10]:
         results.append({
             "title": r.get("title", ""),
             "link": r.get("link", ""),

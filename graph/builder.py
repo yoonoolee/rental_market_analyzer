@@ -42,19 +42,17 @@ def fan_out_to_searches(state: RentalState) -> list:
     ]
 
 
-def fan_out_to_listing_agents(state: RentalState) -> list:
+def fan_out_to_listing_agents(state: RentalState):
     """
     Map step: each URL queued by the supervisor becomes an independent listing_agent
     invocation via LangGraph's Send API. They all run in parallel.
 
-    Each agent researches one listing end-to-end (scrape, commute, places, etc.)
-    and returns a structured profile. Profiles accumulate in state["listing_profiles"]
-    via operator.add before results_check runs.
-
-    pending_urls is set by supervisor_node each round - it only contains URLs
-    not yet processed, so retries don't re-research the same listings.
+    If supervisor found no valid URLs this round, route directly to results_check to
+    avoid a deadlock (the listing_agent→results_check edge never fires with 0 agents).
     """
     urls = state.get("pending_urls", [])
+    if not urls:
+        return "results_check"
     return [
         Send("listing_agent", {"url": url, "preferences": state.get("preferences", {})})
         for url in urls
@@ -103,8 +101,8 @@ def build_graph(checkpointer=None):
     # all search nodes feed into supervisor (which extracts and queues new URLs)
     builder.add_edge("search_node", "supervisor")
 
-    # supervisor fans out to N parallel listing agents (one per new URL)
-    builder.add_conditional_edges("supervisor", fan_out_to_listing_agents, ["listing_agent"])
+    # supervisor fans out to N parallel listing agents; falls back to results_check when no URLs found
+    builder.add_conditional_edges("supervisor", fan_out_to_listing_agents, ["listing_agent", "results_check"])
 
     # all listing agents feed into results_check
     builder.add_edge("listing_agent", "results_check")

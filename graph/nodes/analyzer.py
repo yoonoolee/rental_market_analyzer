@@ -1,11 +1,12 @@
 import json
+import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.analyzer_prompts import ANALYZER_PROMPT
 
 
-llm = make_llm(model="claude-sonnet-4-6", temperature=0.3)
+llm = make_llm("analyzer")
 
 
 async def analyzer_node(state: RentalState) -> dict:
@@ -27,16 +28,19 @@ async def analyzer_node(state: RentalState) -> dict:
     if len(listing_profiles) < 2:
         return {"analysis_insights": ""}
 
-    response = await llm.ainvoke([
-        SystemMessage(content=ANALYZER_PROMPT),
-        HumanMessage(content=(
-            f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            f"Qualifying listings ({len(good_profiles)}):\n"
-            f"{json.dumps(good_profiles, indent=2)}\n\n"
-            f"Disqualified listings ({len(disqualified_profiles)}):\n"
-            f"{json.dumps(disqualified_profiles, indent=2)}"
-        ))
-    ])
+    try:
+        response = await asyncio.wait_for(llm.ainvoke([
+            SystemMessage(content=ANALYZER_PROMPT),
+            HumanMessage(content=(
+                f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
+                f"Qualifying listings ({len(good_profiles)}):\n"
+                f"{json.dumps(good_profiles, indent=2)}\n\n"
+                f"Disqualified listings ({len(disqualified_profiles)}):\n"
+                f"{json.dumps(disqualified_profiles, indent=2)}"
+            ))
+        ]), timeout=20)
+    except Exception:
+        return {"analysis_insights": ""}
 
     insights = response.content if isinstance(response.content, str) else ""
     return {

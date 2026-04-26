@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # ── Models ──────────────────────────────────────────────────────────────────
 JUDGE_MODEL = "claude-sonnet-4-6"          # LLM-as-judge

@@ -1,5 +1,6 @@
 import json
 import re
+import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_llm
 from ..state import RentalState
@@ -7,7 +8,7 @@ from prompts.planner_prompts import PLANNER_PROMPT
 from ..nodes.supervisor import TRUSTED_DOMAINS
 
 
-llm = make_llm(model="claude-sonnet-4-6", temperature=0.2)
+llm = make_llm("planner")
 
 
 def _extract_json(text) -> dict:
@@ -34,6 +35,9 @@ async def planner_node(state: RentalState) -> dict:
     preferences = state.get("preferences", {})
     search_attempts = state.get("search_attempts", 0)
     past_queries = state.get("all_search_queries", [])
+    city = preferences.get("city", "apartment")
+    beds = preferences.get("bedrooms", 1)
+    max_price = preferences.get("max_price", 2500)
 
     retry_context = ""
     if search_attempts > 0 and past_queries:
@@ -43,21 +47,31 @@ async def planner_node(state: RentalState) -> dict:
             + "\n".join(f"- {q}" for q in past_queries)
         )
 
-    response = await llm.ainvoke([
-        SystemMessage(content=PLANNER_PROMPT),
-        HumanMessage(content=(
-            f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
-            f"Allowed site: operators (use only these): {', '.join(sorted(TRUSTED_DOMAINS))}\n\n"
-            "Return JSON with key 'search_queries' as a list of strings. Exactly 3 queries."
-            + retry_context
-        ))
-    ])
-
     try:
+        response = await asyncio.wait_for(llm.ainvoke([
+            SystemMessage(content=PLANNER_PROMPT),
+            HumanMessage(content=(
+                f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
+                f"Allowed site: operators (use only these): {', '.join(sorted(TRUSTED_DOMAINS))}\n\n"
+                "Return JSON with key 'search_queries' as a list of strings. Exactly 8 queries."
+                + retry_context
+            ))
+        ]), timeout=12)
         parsed = _extract_json(response.content)
         queries = parsed.get("search_queries", [])
-    except (json.JSONDecodeError, AttributeError, ValueError):
-        queries = [f"apartment for rent site:{d}" for d in sorted(TRUSTED_DOMAINS)][:3]
+    except Exception:
+        queries = []
+
+    fallback_queries = [
+            f"{beds} bedroom apartment {city} under ${max_price} site:{d}"
+            for d in sorted(TRUSTED_DOMAINS)
+    ]
+    # Keep model output first, then fill with deterministic fallback to guarantee 8.
+    deduped = []
+    for q in list(queries) + fallback_queries:
+        if isinstance(q, str) and q.strip() and q not in deduped:
+            deduped.append(q)
+    queries = deduped[:8]
 
     return {
         "search_queries": queries,

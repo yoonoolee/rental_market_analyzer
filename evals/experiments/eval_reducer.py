@@ -7,7 +7,7 @@ Variants compared:
   - cot      : Sonnet 4.6, temperature=0.4, chain-of-thought reasoning block
 
 Held constant:
-  - Input listing profiles (curated fixture profiles below)
+  - Input listing profiles (from datasets/static_listings.json, subset for pref_001 + pref_005)
   - User preferences (from datasets/preferences.json, pref_001 and pref_005)
   - Reducer prompt structure (mirrors prompts/reducer_prompts.py)
 
@@ -16,105 +16,18 @@ Metrics:
   - trade_off_adherence    : LLM judge (1-10) — explicit trade-off rules correctly applied
   - ranking_accuracy       : does best listing appear as #1? (binary, vs curated ideal ranking)
   - rouge_l                : ROUGE-L F1 vs a reference recommendation for each preference set
-  - response_coherence     : LLM judge (1-10) — structure, completeness, no hallucination
   - latency_ms             : wall-clock time per reducer call
   - cost_usd               : token cost per call
 """
 import json
 from anthropic import Anthropic
 
-from evals.config import RESULTS_DIR, REDUCER_VARIANTS, SONNET_MODEL
+from evals.config import RESULTS_DIR, REDUCER_VARIANTS, SONNET_MODEL, DATASETS_DIR
 from evals.metrics.nlp import LatencyTimer, rouge_l
 from evals.metrics.llm_judge import LLMJudge
 
 COST_PER_M_INPUT = {SONNET_MODEL: 3.00}
 COST_PER_M_OUTPUT = {SONNET_MODEL: 15.00}
-
-# ── Fixture listing profiles ──────────────────────────────────────────────────
-# These represent what listing_agent_node would produce in production.
-# Use pref_001 (SF, 2br, $3000 max, cat, commute to Salesforce Tower).
-
-FIXTURE_PROFILES_PREF001 = [
-    {
-        "url": "https://sfbay.craigslist.org/sfc/apa/listing1",
-        "disqualified": False,
-        "price": 2750,
-        "bedrooms": 2,
-        "address": "South Beach, San Francisco",
-        "pet_friendly": True,
-        "pet_deposit": 500,
-        "commute_times": {"Salesforce Tower": "8 min walk"},
-        "modern_finishes": True,
-        "natural_light": True,
-        "spacious": False,
-        "condition": "excellent",
-        "notes": "New construction, floor-to-ceiling windows, steps from Salesforce Tower",
-    },
-    {
-        "url": "https://www.zillow.com/homedetails/listing2",
-        "disqualified": False,
-        "price": 2400,
-        "bedrooms": 2,
-        "address": "Mission District, San Francisco",
-        "pet_friendly": True,
-        "pet_deposit": 300,
-        "commute_times": {"Salesforce Tower": "22 min Muni"},
-        "modern_finishes": False,
-        "natural_light": True,
-        "spacious": True,
-        "condition": "good",
-        "notes": "Victorian flat, large rooms, 2 cats welcome, longer commute",
-    },
-    {
-        "url": "https://www.apartments.com/listing3",
-        "disqualified": False,
-        "price": 2950,
-        "bedrooms": 2,
-        "address": "SoMa, San Francisco",
-        "pet_friendly": True,
-        "pet_deposit": 600,
-        "commute_times": {"Salesforce Tower": "12 min walk"},
-        "modern_finishes": True,
-        "natural_light": False,
-        "spacious": True,
-        "condition": "good",
-        "notes": "Updated unit, dark windows face alley, pets ok up to 2",
-    },
-    {
-        "url": "https://sfbay.craigslist.org/sfc/apa/listing4",
-        "disqualified": True,
-        "disqualify_reason": "No pets allowed",
-        "price": 2100,
-        "bedrooms": 2,
-        "address": "Nob Hill, San Francisco",
-        "pet_friendly": False,
-    },
-]
-
-# Curated ideal ranking for pref_001 (by preference alignment):
-# #1: listing1 (best commute, pet-ok, modern, within budget)
-# #2: listing3 (close commute, spacious, pet-ok, near budget ceiling)
-# #3: listing2 (affordable, spacious, pet-ok, but longer commute)
-IDEAL_RANKING_PREF001 = [
-    "https://sfbay.craigslist.org/sfc/apa/listing1",
-    "https://www.apartments.com/listing3",
-    "https://www.zillow.com/homedetails/listing2",
-]
-
-# Reference recommendation text (human-written baseline for ROUGE-L)
-REFERENCE_RESPONSE_PREF001 = """Here are the top apartments I found for you in San Francisco:
-
-**#1 — South Beach, $2,750/mo** ([listing link](https://sfbay.craigslist.org/sfc/apa/listing1))
-Only an 8-minute walk to Salesforce Tower, cats welcome ($500 deposit), new construction with great natural light. Best commute of the bunch.
-
-**#2 — SoMa, $2,950/mo** ([listing link](https://www.apartments.com/listing3))
-12-minute walk to your office, spacious layout, pets allowed (up to 2). The windows face an alley so natural light is limited — worth a visit to check in person.
-
-**#3 — Mission District, $2,400/mo** ([listing link](https://www.zillow.com/homedetails/listing2))
-Most affordable option with large rooms and great light. The 22-minute Muni commute is the main trade-off here. Good choice if budget is the priority.
-
-One listing in Nob Hill was excluded — no pets allowed.
-"""
 
 REDUCER_SYSTEM = """You are a knowledgeable apartment-hunting advisor.
 Given a user's preferences and a set of researched listing profiles, produce conversational
@@ -136,6 +49,55 @@ COT_INSTRUCTION = """Before writing your recommendation, briefly reason through 
 </thinking>
 
 Then write the conversational recommendation."""
+
+
+def _build_reference_response(listings_by_id: dict, ranked_ids: list[str], disqualified_ids: list[str]) -> str:
+    lines = ["Top recommendations:"]
+    for idx, lid in enumerate(ranked_ids[:3], start=1):
+        listing = listings_by_id.get(lid, {})
+        lines.append(
+            f"{idx}. {listing.get('address', lid)} — ${listing.get('price', 'N/A')}/mo ({listing.get('url', '')})"
+        )
+    if disqualified_ids:
+        lines.append(f"Excluded listings: {', '.join(disqualified_ids)}")
+    return "\n".join(lines)
+
+
+def _build_test_cases() -> list[dict]:
+    prefs = json.loads((DATASETS_DIR / "preferences.json").read_text())
+    rankings_file = json.loads((DATASETS_DIR / "preference_rankings.json").read_text())
+    listings = json.loads((DATASETS_DIR / "static_listings.json").read_text())
+
+    prefs_by_id = {p["id"]: p["expected_preferences"] for p in prefs}
+    listings_by_id = {l["id"]: l for l in listings}
+    target_pref_ids = {"pref_001", "pref_005"}
+
+    test_cases = []
+    for row in rankings_file["rankings"]:
+        pref_id = row["preference_id"]
+        if pref_id not in target_pref_ids or pref_id not in prefs_by_id:
+            continue
+
+        ranked_ids = row["ranked_listing_ids"]
+        disqualified_ids = row.get("disqualified_listing_ids", [])
+        case_listing_ids = ranked_ids + disqualified_ids
+        profiles = [
+            {k: v for k, v in listings_by_id[lid].items() if k not in ("id", "city")}
+            for lid in case_listing_ids
+            if lid in listings_by_id
+        ]
+        ideal_ranking_urls = [listings_by_id[lid]["url"] for lid in ranked_ids if lid in listings_by_id]
+        reference = _build_reference_response(listings_by_id, ranked_ids, disqualified_ids)
+
+        test_cases.append({
+            "id": f"tc_{pref_id}",
+            "preferences_id": pref_id,
+            "preferences": prefs_by_id[pref_id],
+            "listing_profiles": profiles,
+            "ideal_ranking": ideal_ranking_urls,
+            "reference_response": reference,
+        })
+    return test_cases
 
 
 def run_reducer(
@@ -202,30 +164,11 @@ def check_ranking_accuracy(response: str, ideal_ranking: list[str]) -> bool:
     return positions[0] < min(positions[1:]) if len(positions) > 1 else positions[0] != len(response) + 1
 
 
-# ── Test cases ────────────────────────────────────────────────────────────────
-TEST_CASES = [
-    {
-        "id": "tc_pref001",
-        "preferences_id": "pref_001",
-        "preferences": {
-            "city": "San Francisco", "bedrooms": 2, "max_price": 3000,
-            "pet_friendly": True,
-            "commute_destinations": ["Salesforce Tower, San Francisco"],
-            "soft_constraints": ["pet-friendly", "good commute"],
-            "trade_off_rules": [],
-        },
-        "listing_profiles": FIXTURE_PROFILES_PREF001,
-        "ideal_ranking": IDEAL_RANKING_PREF001,
-        "reference_response": REFERENCE_RESPONSE_PREF001,
-    }
-]
-
-
-def evaluate_variant(variant_name: str, config: dict, judge: LLMJudge) -> dict:
+def evaluate_variant(variant_name: str, config: dict, judge: LLMJudge, test_cases: list[dict]) -> dict:
     client = Anthropic()
     per_case_metrics = []
 
-    for tc in TEST_CASES:
+    for tc in test_cases:
         response, usage = run_reducer(
             tc["preferences"],
             tc["listing_profiles"],
@@ -279,13 +222,14 @@ def evaluate_variant(variant_name: str, config: dict, judge: LLMJudge) -> dict:
 
 def run(variants: list[str] | None = None) -> dict:
     judge = LLMJudge()
+    test_cases = _build_test_cases()
     targets = variants or list(REDUCER_VARIANTS.keys())
 
     all_results = {}
     for name in targets:
         config = REDUCER_VARIANTS[name]
         print(f"  Running reducer variant: {name} (temp={config['temperature']}, cot={config['chain_of_thought']})")
-        all_results[name] = evaluate_variant(name, config, judge)
+        all_results[name] = evaluate_variant(name, config, judge, test_cases)
 
     output_path = RESULTS_DIR / "reducer_eval.json"
     output_path.write_text(json.dumps(all_results, indent=2))

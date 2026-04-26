@@ -2,7 +2,7 @@ import os
 import json
 import base64
 import httpx
-import anthropic
+import asyncio
 from langchain_core.tools import tool
 
 _HEADERS = {
@@ -10,10 +10,10 @@ _HEADERS = {
     "Referer": "https://www.apartments.com/",
 }
 
-def _fetch_image_b64(url: str) -> tuple[str, str] | None:
+async def _fetch_image_b64(client: httpx.AsyncClient, url: str) -> tuple[str, str] | None:
     """Download an image and return (base64_data, media_type), or None on failure."""
     try:
-        r = httpx.get(url, headers=_HEADERS, timeout=10, follow_redirects=True)
+        r = await client.get(url, headers=_HEADERS, timeout=10, follow_redirects=True)
         if r.status_code != 200:
             return None
         ct = r.headers.get("content-type", "image/jpeg").split(";")[0].strip()
@@ -29,7 +29,8 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        import openai
+        _client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     return _client
 
 
@@ -50,21 +51,26 @@ async def analyze_listing_photos(image_urls: list[str], user_preferences: str) -
     if not image_urls:
         return {"error": "no images provided"}
 
-    image_blocks = []
-    for url in image_urls:
-        fetched = _fetch_image_b64(url)
-        if fetched:
-            data, media_type = fetched
-            image_blocks.append({"type": "image", "source": {"type": "base64", "media_type": media_type, "data": data}})
+    max_photos = max(1, int(os.getenv("MAX_PHOTOS", "12")))
+    urls = image_urls[:max_photos]
 
-    if not image_blocks:
+    async with httpx.AsyncClient() as http_client:
+        fetched_images = await asyncio.gather(*[_fetch_image_b64(http_client, url) for url in urls], return_exceptions=True)
+
+    image_contents = []
+    for fetched in fetched_images:
+        if isinstance(fetched, Exception) or not fetched:
+            continue
+        data, media_type = fetched
+        image_contents.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{media_type};base64,{data}", "detail": "low"},
+        })
+
+    if not image_contents:
         return {"error": "images could not be downloaded (auth-protected or unavailable)"}
 
-    content = [
-        *image_blocks,
-        {
-            "type": "text",
-            "text": f"""You are analyzing rental listing photos for a specific user. Use their preferences to decide what to look for and assess.
+    prompt = f"""You are analyzing rental listing photos for a specific user. Use their preferences to decide what to look for and assess.
 
 User preferences:
 {user_preferences}
@@ -78,21 +84,30 @@ Return a JSON object with:
 - any other boolean or string fields that capture something specific this user cares about that you can see in the photos
 
 Return only valid JSON. Use null for anything not visible."""
-        }
-    ]
 
-    client = _get_client()
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=512,
-        messages=[{"role": "user", "content": content}]
-    )
+    messages = [{"role": "user", "content": [*image_contents, {"type": "text", "text": prompt}]}]
 
-    text = message.content[0].text.strip()
+    try:
+        client = _get_client()
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            max_tokens=512,
+            messages=messages,
+        )
+    except Exception as e:
+        err = str(e)
+        if "401" in err or "invalid_api_key" in err.lower() or "authentication" in err.lower():
+            return {"error": "photo analysis unavailable (invalid OpenAI API key)"}
+        return {"error": f"photo analysis failed: {err[:80]}"}
+
+    text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("```")[1]
         if text.startswith("json"):
             text = text[4:]
         text = text.strip()
 
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except Exception:
+        return {"error": "could not parse photo analysis response"}

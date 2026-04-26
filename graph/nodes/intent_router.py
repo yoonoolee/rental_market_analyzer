@@ -1,5 +1,6 @@
 import json
 import re
+import asyncio
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from ..llm import make_llm
 from ..state import RentalState
@@ -12,8 +13,8 @@ from prompts.intent_router_prompts import (
 )
 
 
-classifier_llm = make_llm(model="claude-haiku-4-5-20251001", temperature=0.0)
-chat_llm = make_llm(model="claude-sonnet-4-6", temperature=0.4)
+classifier_llm = make_llm("intent_router_classify")
+chat_llm = make_llm("intent_router_chat")
 
 
 def _extract_json(text: str) -> dict:
@@ -45,6 +46,37 @@ def _format_places(result: dict) -> str:
     return "\n".join(lines)
 
 
+def _heuristic_tool_parse(latest: str) -> dict | None:
+    text = latest.strip()
+    lower = text.lower()
+
+    # commute from X to Y [by mode]
+    m = re.search(r"commute from (.+?) to (.+?)(?: by (transit|driving|walking|bicycling))?[?]?$", lower, re.I)
+    if m:
+        return {
+            "intent": "tool_call",
+            "tool": "commute",
+            "params": {
+                "origin": m.group(1).strip(),
+                "destination": m.group(2).strip(),
+                "mode": (m.group(3) or "transit").strip(),
+            },
+        }
+
+    # find <type> near <address>
+    m = re.search(r"find (.+?) near (.+?)[?]?$", text, re.I)
+    if m:
+        return {
+            "intent": "tool_call",
+            "tool": "places",
+            "params": {
+                "place_type": m.group(1).strip(),
+                "address": m.group(2).strip(),
+            },
+        }
+    return None
+
+
 async def intent_router_node(state: RentalState) -> dict:
     """
     First node on every message. Classifies the user's message into one of four
@@ -65,17 +97,23 @@ async def intent_router_node(state: RentalState) -> dict:
         f"User message: {latest}"
     )
 
-    response = await classifier_llm.ainvoke(
-        [
-            SystemMessage(content=CLASSIFIER_PROMPT),
-            HumanMessage(content=context_block),
-        ],
-        config={"run_name": "intent_router:classify", "tags": ["intent_router"]},
-    )
+    heuristic = _heuristic_tool_parse(latest)
+    if heuristic is not None:
+        parsed = heuristic
+    else:
+        try:
+            response = await asyncio.wait_for(classifier_llm.ainvoke(
+                [
+                    SystemMessage(content=CLASSIFIER_PROMPT),
+                    HumanMessage(content=context_block),
+                ],
+                config={"run_name": "intent_router:classify", "tags": ["intent_router"]},
+            ), timeout=12)
+            parsed = _extract_json(response.content)
+        except Exception:
+            parsed = {"intent": "needs_search"}
 
-    try:
-        parsed = _extract_json(response.content)
-    except (json.JSONDecodeError, ValueError):
+    if not isinstance(parsed, dict):
         parsed = {"intent": "needs_search"}
 
     intent = parsed.get("intent", "needs_search")
