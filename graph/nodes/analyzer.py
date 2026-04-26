@@ -1,5 +1,5 @@
 import json
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.analyzer_prompts import ANALYZER_PROMPT
@@ -38,4 +38,8 @@ async def analyzer_node(state: RentalState) -> dict:
         ))
     ])
 
-    return {"analysis_insights": response.content}
+    insights = response.content if isinstance(response.content, str) else ""
+    return {
+        "analysis_insights": insights,
+        "messages": [AIMessage(content=insights)] if insights else [],
+    }

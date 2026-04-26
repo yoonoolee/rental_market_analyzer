@@ -1,6 +1,6 @@
 import json
 import re
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from ..llm import make_llm
 from ..state import RentalState
 from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS, MAX_SHOWN
@@ -72,4 +72,5 @@ async def reducer_node(state: RentalState) -> dict:
     return {
         "final_response": final_response,
         "ranked_listings": ranked_listings,
+        "messages": [AIMessage(content=final_response)],
     }

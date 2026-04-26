@@ -1,7 +1,27 @@
 import os
 import json
+import base64
+import httpx
 import anthropic
 from langchain_core.tools import tool
+
+_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.apartments.com/",
+}
+
+def _fetch_image_b64(url: str) -> tuple[str, str] | None:
+    """Download an image and return (base64_data, media_type), or None on failure."""
+    try:
+        r = httpx.get(url, headers=_HEADERS, timeout=10, follow_redirects=True)
+        if r.status_code != 200:
+            return None
+        ct = r.headers.get("content-type", "image/jpeg").split(";")[0].strip()
+        if not ct.startswith("image/"):
+            return None
+        return base64.standard_b64encode(r.content).decode(), ct
+    except Exception:
+        return None
 
 
 _client = None
@@ -40,11 +60,18 @@ async def analyze_listing_photos(image_urls: list[str], focus_areas: str) -> dic
             'Return a single "outdoor_space" field (true/false/null) regardless of the specific type.\n'
         )
 
+    image_blocks = []
+    for url in image_urls:
+        fetched = _fetch_image_b64(url)
+        if fetched:
+            data, media_type = fetched
+            image_blocks.append({"type": "image", "source": {"type": "base64", "media_type": media_type, "data": data}})
+
+    if not image_blocks:
+        return {"error": "images could not be downloaded (auth-protected or unavailable)"}
+
     content = [
-        *[
-            {"type": "image", "source": {"type": "url", "url": url}}
-            for url in image_urls
-        ],
+        *image_blocks,
         {
             "type": "text",
             "text": f"""Analyze these rental listing photos and return a JSON object.
@@ -61,14 +88,11 @@ Return only valid JSON. Use null for anything not visible or not determinable fr
     ]
 
     client = _get_client()
-    try:
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            messages=[{"role": "user", "content": content}]
-        )
-    except anthropic.BadRequestError:
-        return {"error": "images could not be downloaded (URL may be auth-protected)"}
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=512,
+        messages=[{"role": "user", "content": content}]
+    )
 
     text = message.content[0].text.strip()
     if text.startswith("```"):

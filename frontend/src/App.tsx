@@ -35,8 +35,8 @@ export default function App() {
 
       {/* Chat area */}
       <div className="flex flex-col flex-1 min-w-0 relative">
-        {/* Delete all button top-right */}
-        <div className="absolute top-3 right-4 z-10">
+        {/* Delete all button top-left */}
+        <div className="absolute top-3 left-4 z-10">
           <button
             onClick={deleteAllSessions}
             className="text-xs text-red-400 hover:text-red-600 transition-colors font-medium"
@@ -72,8 +72,8 @@ export default function App() {
 
       {/* Listings panel */}
       {hasListings && (
-        <div className="w-96 shrink-0 border-l border-gray-200 bg-[#f7f6f3] flex flex-col h-screen">
-          <div className="px-4 pt-4 pb-3 border-b border-gray-200 shrink-0">
+        <div className="w-96 shrink-0 flex flex-col h-screen">
+          <div className="px-4 pt-4 pb-3 shrink-0">
             <p className="text-sm font-semibold text-gray-700">{latestListings.length} listings found</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">

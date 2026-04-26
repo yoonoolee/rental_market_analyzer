@@ -78,14 +78,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         if ranked_listings:
             await websocket.send_json({"type": "listings", "listings": ranked_listings})
 
-        final_response = prior_state.values.get("final_response", "")
-        analysis_insights = prior_state.values.get("analysis_insights", "")
-        if final_response:
-            content = final_response
-            if analysis_insights:
-                content += "\n\n---\n\n### Market Insights\n\n" + analysis_insights
-            await websocket.send_json({"type": "message", "role": "assistant", "content": content})
-
     try:
         while True:
             data = await websocket.receive_json()
@@ -257,6 +249,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         ranked = output.get("ranked_listings", [])
                         if ranked:
                             await websocket.send_json({"type": "listings", "listings": ranked})
+                        final_response = output.get("final_response", "")
+                        if final_response:
+                            await websocket.send_json({"type": "message", "role": "assistant", "content": final_response})
 
                     elif name == "analyzer":
                         await websocket.send_json({
@@ -265,13 +260,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "label": "Analyzing market",
                             "detail": [],
                         })
-                        final_response = output.get("final_response", "")
                         insights = output.get("analysis_insights", "")
-                        if final_response:
-                            response = final_response
-                            if insights:
-                                response += "\n\n---\n\n### Market Insights\n\n" + insights
-                            await websocket.send_json({"type": "message", "role": "assistant", "content": response})
+                        if insights:
+                            await websocket.send_json({"type": "message", "role": "assistant", "content": insights})
 
                     elif name == "elicitation":
                         messages_out = output.get("messages", [])

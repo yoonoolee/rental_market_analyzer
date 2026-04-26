@@ -23,6 +23,8 @@ export type ProcessStep = {
 export type ListingProfile = {
   url: string
   price?: number
+  bedrooms?: number
+  bathrooms?: number
   address?: string
   floor?: number
   images?: string[]
@@ -87,6 +89,7 @@ export function useChat() {
   const sessionId = useRef(getOrCreateCurrentId())
   const titleSet = useRef(false)
   const processId = useRef<string | null>(null)
+  const processInjected = useRef(false)
 
   const connect = useCallback((sid: string) => {
     ws.current?.close()
@@ -95,6 +98,7 @@ export function useChat() {
     setConnected(false)
     titleSet.current = false
     processId.current = null
+    processInjected.current = false
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const socket = new WebSocket(`${protocol}://${window.location.host}/ws/${sid}`)
@@ -116,9 +120,22 @@ export function useChat() {
         }])
 
       } else if (data.type === 'listings') {
+        if (!processInjected.current) {
+          processInjected.current = true
+          const stored = localStorage.getItem(`rental_process_${sid}`)
+          if (stored) {
+            try {
+              const steps = JSON.parse(stored) as ProcessStep[]
+              if (steps.length > 0)
+                setMessages(prev => [...prev, { id: generateId(), role: 'process', content: '', steps, isRunning: false }])
+            } catch {}
+          }
+        }
         setMessages(prev => [...prev, { id: generateId(), role: 'listings', content: '', listings: data.listings }])
 
       } else if (data.type === 'process_start') {
+        localStorage.removeItem(`rental_process_${sid}`)
+        processInjected.current = true
         const pid = generateId()
         processId.current = pid
         setIsThinking(true)
@@ -167,7 +184,16 @@ export function useChat() {
 
       } else if (data.type === 'process_end') {
         const pid = processId.current
-        if (pid) setMessages(prev => prev.map(m => m.id === pid ? { ...m, isRunning: false } : m))
+        if (pid) {
+          setMessages(prev => {
+            const updated = prev.map(m => m.id === pid ? { ...m, isRunning: false } : m)
+            const processMsg = updated.find(m => m.id === pid)
+            if (processMsg?.steps?.length) {
+              localStorage.setItem(`rental_process_${sid}`, JSON.stringify(processMsg.steps))
+            }
+            return updated
+          })
+        }
         processId.current = null
         setIsThinking(false)
 

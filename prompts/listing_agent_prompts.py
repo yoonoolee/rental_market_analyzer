@@ -56,6 +56,8 @@ When you have gathered everything relevant, return ONLY a JSON object. No explan
   "disqualified": false,
   "disqualify_reason": null,
   "price": integer or null,
+  "bedrooms": integer or null,
+  "bathrooms": number or null,
   "floor": integer or null,
   "address": "string or null",
   "views": true/false/null,

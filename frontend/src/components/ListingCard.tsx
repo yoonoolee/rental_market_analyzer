@@ -46,6 +46,13 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
             {listing.price && (
               <p className="font-semibold text-gray-900">${listing.price.toLocaleString()}<span className="font-normal text-gray-500 text-sm">/mo</span></p>
             )}
+            {(listing.bedrooms != null || listing.bathrooms != null) && (
+              <p className="text-xs text-gray-600">
+                {listing.bedrooms != null ? `${listing.bedrooms} bd` : ''}
+                {listing.bedrooms != null && listing.bathrooms != null ? ' · ' : ''}
+                {listing.bathrooms != null ? `${listing.bathrooms} ba` : ''}
+              </p>
+            )}
             {listing.address && (
               <p className="text-xs text-gray-500 truncate">{listing.address}</p>
             )}
