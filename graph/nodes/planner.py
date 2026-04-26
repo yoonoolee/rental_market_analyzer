@@ -43,34 +43,12 @@ async def planner_node(state: RentalState) -> dict:
             + "\n".join(f"- {q}" for q in past_queries)
         )
 
-    city = preferences.get("city", "")
-    bedrooms = preferences.get("bedrooms")
-    max_price = preferences.get("max_price")
-    min_price = preferences.get("min_price")
-
-    price_str = ""
-    if min_price and max_price:
-        price_str = f"${min_price}–${max_price}"
-    elif max_price:
-        price_str = f"under ${max_price}"
-    elif min_price:
-        price_str = f"over ${min_price}"
-
-    br_str = ""
-    if bedrooms is not None:
-        br_str = "studio" if bedrooms == 0 else f"{bedrooms} bedroom"
-
-    hard_requirements = f"City: {city}" + (f" | Bedrooms: {br_str}" if br_str else "") + (f" | Price: {price_str}" if price_str else "")
-
     response = await llm.ainvoke([
         SystemMessage(content=PLANNER_PROMPT),
         HumanMessage(content=(
-            f"Hard requirements (must appear in every query): {hard_requirements}\n\n"
-            f"Full preferences (use soft constraints to vary queries):\n{json.dumps(preferences, indent=2)}\n\n"
+            f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
             f"Allowed site: operators (use only these): {', '.join(sorted(TRUSTED_DOMAINS))}\n\n"
-            "Generate search queries where the hard requirements are locked in every query, "
-            "but each query targets a different neighborhood or feature (e.g. pet-friendly, modern, near a landmark). "
-            "Return JSON with key 'search_queries' as a list of strings. 3-5 queries."
+            "Return JSON with key 'search_queries' as a list of strings. Exactly 3 queries."
             + retry_context
         ))
     ])
@@ -79,16 +57,7 @@ async def planner_node(state: RentalState) -> dict:
         parsed = _extract_json(response.content)
         queries = parsed.get("search_queries", [])
     except (json.JSONDecodeError, AttributeError, ValueError):
-        # fallback if the LLM returns something unparseable
-        # TODO: retry with a stricter prompt before falling back
-        city = preferences.get("city", "")
-        bedrooms = preferences.get("bedrooms", 1)
-        max_price = preferences.get("max_price", 2500)
-        br_label = "studio" if bedrooms == 0 else f"{bedrooms} bedroom"
-        queries = [
-            f"{br_label} apartment for rent {city} under ${max_price} site:{d}"
-            for d in sorted(TRUSTED_DOMAINS)
-        ]
+        queries = [f"apartment for rent site:{d}" for d in sorted(TRUSTED_DOMAINS)][:3]
 
     return {
         "search_queries": queries,

@@ -16,28 +16,12 @@ def append_or_reset(existing: list, new: list | None) -> list:
     return (existing or []) + list(new)
 
 
-# PreferenceState is the core data structure we build up during Q&A.
-#
-# Design note: trade_off_rules stores natural language conditional preferences
-# instead of numeric weights. This lets the reducer LLM reason about them
-# holistically rather than doing brittle math. Examples:
-#   "willing to pay +$300/mo if commute to work is under 10 minutes"
-#   "don't need in-unit gym if there's one within 5 min walk"
-#   "noise level matters more since I work from home"
-#
-# soft_constraints are also intentionally not flat - "quiet" matters more if the
-# user works from home, "walkable" matters more if they don't have a car, etc.
-# The reducer handles this reasoning, we just collect the raw signals here.
 class PreferenceState(TypedDict, total=False):
-    city: str
-    bedrooms: int                    # 0 = studio, 1 = 1BR, 2 = 2BR, etc.
-    max_price: int
-    min_price: int                   # optional lower bound (some users have this)
-    soft_constraints: list[str]      # e.g. ["quiet", "walkable", "near grocery stores"]
-    trade_off_rules: list[str]       # conditional prefs in plain english (see above)
-    commute_destinations: list[str]  # e.g. ["UC Berkeley campus", "Downtown Oakland gym"]
-    lifestyle_notes: str             # pets, parking, lease length, anything else
-    raw_query: str                   # original user message - useful context for the planner
+    hard_requirements: list[str]     # non-negotiables e.g. ["Berkeley or East Bay", "under $2000", "1-2 bedrooms"]
+    soft_constraints: list[str]      # unconditional nice-to-haves e.g. ["walkable", "modern finishes", "has a dog"]
+    trade_off_rules: list[str]       # conditional preferences e.g. ["1 bed $1000 if gym nearby, 2 bed $2000 if grocery"]
+    commute_destinations: list[str]  # specific places for commute tool calls e.g. ["South Hall UC Berkeley"]
+    raw_query: str                   # original user message
 
 
 # SearchNodeState is the input to each individual search node.

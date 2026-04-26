@@ -136,11 +136,13 @@ A different user with different preferences triggers a completely different set 
 
 ## Search Strategy
 
-The planner generates up to 30 queries as a **site × neighborhood grid**: each query targets one trusted listing site plus a specific neighborhood or feature angle (e.g. "site:zillow.com 1 bed Elmwood Berkeley $1500", "site:apartments.com 1 bed North Berkeley modern $1500"). Hard requirements (city, bedrooms, price) are locked in every query; only the neighborhood/feature varies. This ensures each query returns a distinct slice of listings rather than the same search repeated across sites.
+The planner generates 3 queries (limited for testing; increase as API credits allow). Each query explores one trade-off scenario from the user's preferences — hard requirements appear in every query, and what varies per query is driven by the trade-off being explored (e.g. one query targets gym proximity for the 1-bed scenario, another targets grocery proximity for the 2-bed scenario). This ensures each query surfaces a distinct slice of the market.
 
-Trusted listing sites: Zillow, Apartments.com, Trulia, HotPads, Realtor.com, Rent.com, Zumper, PadMapper. The planner picks the subset most relevant to the target region.
+Active listing site: Apartments.com (others commented out for testing). Each query returns 1 SerpAPI result to conserve credits.
 
-The supervisor deduplicates URLs across all query results before spawning listing agents, so the same listing surfaced by multiple queries is only researched once. All filtering is done at the URL level (trusted domain + individual listing page heuristic). The final response surfaces the top 15 results from however many listings were researched.
+The supervisor deduplicates URLs across all query results before spawning listing agents, so the same listing surfaced by multiple queries is only researched once. Filtering is done at the URL level (trusted domain + individual listing page heuristic — including apartments.com's 2-segment alphanumeric ID pattern). The final response surfaces the top ranked results from however many listings were researched.
+
+`scrape_listing` now uses Firecrawl's structured JSON extraction instead of raw markdown, returning clean fields (price, address, amenities, images, etc.) directly — works generically across any listing site.
 
 ---
 

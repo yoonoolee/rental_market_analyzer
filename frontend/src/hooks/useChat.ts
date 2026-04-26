@@ -6,6 +6,8 @@ export type AgentStatus = {
   status: string
   finished: boolean
   disqualified?: boolean
+  wait_seconds?: number
+  wait_started_at?: number
 }
 
 export type ProcessStep = {
@@ -153,7 +155,7 @@ export function useChat() {
             agents: (() => {
               const existing = (s.agents || [])
               const idx = existing.findIndex(a => a.url === data.url)
-              const updated: AgentStatus = { url: data.url, hostname: data.hostname, status: data.status, finished: data.finished ?? false, disqualified: data.disqualified }
+              const updated: AgentStatus = { url: data.url, hostname: data.hostname, status: data.status, finished: data.finished ?? false, disqualified: data.disqualified, wait_seconds: data.wait_seconds, wait_started_at: data.wait_seconds ? Date.now() : undefined }
               return idx >= 0 ? existing.map((a, i) => i === idx ? updated : a) : [...existing, updated]
             })()
           } : s) || []

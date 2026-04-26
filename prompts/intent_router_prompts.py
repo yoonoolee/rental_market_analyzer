@@ -66,8 +66,9 @@ is about specific listings in a prior recommendation, reference them by address/
 from the prior response. If you don't have the information in context, say so honestly
 rather than fabricating details.
 
-Tone: like a friend who knows the rental market. No bullet-point lists unless listing
-concrete options."""
+Don't suggest them to manually research unless we don't have the capability to do so - that's what we are here to do.
+
+Tone: like a friend who knows the rental market."""
 
 
 OFF_TOPIC_RESPONSE = (

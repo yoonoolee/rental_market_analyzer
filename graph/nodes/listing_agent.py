@@ -1,6 +1,7 @@
 import json
 import re
 import asyncio
+import json_repair
 from langchain_core.messages import HumanMessage, SystemMessage
 from ..llm import make_base_llm
 from langgraph.prebuilt import create_react_agent
@@ -18,21 +19,28 @@ from prompts.listing_agent_prompts import build_listing_agent_prompt
 # not every agent will use every tool.
 LISTING_AGENT_TOOLS = [scrape_listing, get_commute_time, find_nearby_places, search_web, analyze_listing_photos]
 
-llm = make_base_llm(model="claude-haiku-4-5-20251001", temperature=0.1)
+llm = make_base_llm(model="claude-sonnet-4-6", temperature=0.1)
 
 # cap concurrent Claude calls across all listing agents to avoid rate limit collisions.
 # raise this when on a higher API tier.
-_CONCURRENCY = asyncio.Semaphore(2)
+_CONCURRENCY = asyncio.Semaphore(1)
 
 
 def _extract_json(text) -> dict:
-    """Pull JSON out of agent response, handles markdown code blocks and content block lists."""
+    """Pull JSON out of agent response, tries multiple strategies including repair."""
     if isinstance(text, list):
         text = " ".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in text)
     match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
     if match:
-        return json.loads(match.group(1).strip())
-    return json.loads(text.strip())
+        return json.loads(json_repair.repair_json(match.group(1).strip()))
+    try:
+        return json.loads(text.strip())
+    except (json.JSONDecodeError, ValueError):
+        pass
+    match = re.search(r'\{[\s\S]*\}', text)
+    if match:
+        return json.loads(json_repair.repair_json(match.group(0)))
+    raise ValueError(f"no JSON found: {text[:200]}")
 
 
 async def listing_agent_node(state: ListingAgentState) -> dict:
@@ -70,17 +78,19 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
             config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
         )
 
-    # last message from the agent should be the JSON profile
-    final_content = result["messages"][-1].content
+    # find the last AIMessage (not ToolMessage) with content
+    from langchain_core.messages import AIMessage as LCAIMessage
+    ai_messages = [m for m in result["messages"] if isinstance(m, LCAIMessage) and m.content]
+    final_content = ai_messages[-1].content if ai_messages else ""
 
     try:
         profile = _extract_json(final_content)
-        profile["url"] = url  # always ensure URL is set even if agent omitted it
-    except (json.JSONDecodeError, ValueError):
+        profile["url"] = url
+    except (json.JSONDecodeError, ValueError) as e:
         profile = {
             "url": url,
             "disqualified": True,
-            "disqualify_reason": "Agent failed to return a parseable JSON profile",
+            "disqualify_reason": f"Parse failed ({str(e)[:100]}). Last AI msg: {str(final_content)[:150]}",
         }
 
     return {"listing_profiles": [profile]}

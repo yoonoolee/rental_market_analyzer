@@ -1,7 +1,6 @@
 import asyncio
 import anthropic
 from langchain_anthropic import ChatAnthropic
-from langchain_core.callbacks import adispatch_custom_event
 
 RETRY_KWARGS = dict(
     retry_if_exception_type=(anthropic.RateLimitError, anthropic.APIStatusError),
@@ -29,7 +28,8 @@ class _RetryableLLM(ChatAnthropic):
                     raise
                 wait = min(4 * (2 ** attempt), 60)
                 try:
-                    await adispatch_custom_event("rate_limit_wait", {"wait": wait})
+                    if run_manager:
+                        await run_manager.on_custom_event("rate_limit_wait", {"wait": wait})
                 except Exception:
                     pass
                 await asyncio.sleep(wait)

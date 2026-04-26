@@ -2,21 +2,44 @@ import os
 from firecrawl import AsyncFirecrawl
 from langchain_core.tools import tool
 
+_JSON_FORMAT = {
+    "type": "json",
+    "prompt": "Extract apartment listing details from this page. Return all fields you can find, null for anything not present.",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "price":        {"type": ["number", "null"]},
+            "address":      {"type": ["string", "null"]},
+            "bedrooms":     {"type": ["number", "null"]},
+            "bathrooms":    {"type": ["number", "null"]},
+            "sqft":         {"type": ["number", "null"]},
+            "floor":        {"type": ["number", "null"]},
+            "pet_friendly": {"type": ["boolean", "null"]},
+            "pet_deposit":  {"type": ["number", "null"]},
+            "furnishing":   {"type": ["string", "null"]},
+            "amenities":    {"type": "array", "items": {"type": "string"}},
+            "images":       {"type": "array", "items": {"type": "string"}},
+            "description":  {"type": ["string", "null"]},
+        }
+    }
+}
+
 
 @tool
 async def scrape_listing(url: str) -> dict:
     """
-    Scrape a rental listing page using Firecrawl and return the raw markdown content
-    along with the URL. The listing agent is responsible for extracting structured
-    fields (price, address, pet policy, etc.) from the returned markdown.
+    Scrape a rental listing page using Firecrawl's structured extraction.
+    Returns clean structured fields (price, address, images, amenities, etc.)
+    directly — works generically across any listing site.
 
-    Returns {url, raw_text} on success, or {url, error} if the site is unsupported
-    or the scrape fails. The listing agent should check for the 'error' key and
-    disqualify the listing if scraping is not possible.
+    Returns the extracted fields on success, or {url, error} if scraping fails.
+    The listing agent should check for the 'error' key and disqualify if present.
     """
     try:
         app = AsyncFirecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
-        result = await app.scrape(url, formats=["markdown"])
-        return {"url": url, "raw_text": result.markdown}
+        result = await app.scrape(url, formats=[_JSON_FORMAT])
+        data = dict(result.json or {})
+        data["url"] = url
+        return data
     except Exception as e:
         return {"url": url, "error": str(e)}

@@ -24,7 +24,7 @@ def search_node(state: SearchNodeState) -> dict:
     search = GoogleSearch({
         "q": query,
         "api_key": os.getenv("SERPAPI_API_KEY"),
-        "num": 5,  # keeping this small to save API credits
+        "num": 1,
     })
 
     raw = search.get_dict()

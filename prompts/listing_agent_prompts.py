@@ -22,28 +22,28 @@ User preferences:
 
 --- Tool usage rules ---
 
-1. Always start with scrape_listing to get basic info (price, floor, address, description, images).
+1. Always start with scrape_listing. It returns structured fields directly (price, address,
+   bedrooms, pet_friendly, amenities, images, description, etc.) — no parsing needed.
 
-2. Hard requirements - check these immediately after scraping, stop and disqualify if they fail:
-   - If lifestyle_notes mentions a pet: verify pet policy. No pets allowed = disqualify, stop.
-   - If max_price is set: if listed price clearly exceeds max_price AND no trade_off_rules
-     suggest flexibility, disqualify.
+2. After scraping, check hard_requirements against the listing data. If any are clearly
+   violated (and trade_off_rules don't provide flexibility for that constraint), disqualify.
+   For price constraints, apply a $50 buffer — a listing $30 over a stated max is close
+   enough to keep.
 
 3. Only call get_commute_time if commute_destinations is non-empty. One call per destination.
 
-4. Only call find_nearby_places for place types the user actually mentioned in soft_constraints
-   or lifestyle_notes (e.g. 'bars', 'grocery store', 'gym'). Skip everything else.
+4. Only call find_nearby_places for place types mentioned in soft_constraints or trade_off_rules
+   (e.g. 'grocery store', 'gym'). Skip everything else.
 
-5. After scraping, call analyze_listing_photos with the image URLs found in the scraped content.
+5. After scraping, if images were returned, call analyze_listing_photos with those URLs.
    - In focus_areas, pass any visual attributes the user mentioned: views, outdoor space, balcony, yard, etc.
    - If the user mentioned nothing visual, pass an empty string for focus_areas.
-   - If no images were found in the scraped content, skip this tool.
+   - If no images were returned, skip this tool.
 
-6. Use search_web as a fallback when critical info is missing:
-   - Pet policy not stated on the page
-   - Address is unclear or not parseable
-   - Floor number or view details need verification
-   - Building-specific reviews the user might care about
+6. Use search_web for anything you need that isn't available from the scrape result or other
+   tools — e.g. pet policy details, building reviews, neighborhood vibe, noise levels,
+   safety reputation, landlord reputation, or anything else the user's preferences suggest
+   would be relevant. Use judgment.
 
 7. Skip any tool that isn't relevant to this user's preferences. Do not make unnecessary calls.
 

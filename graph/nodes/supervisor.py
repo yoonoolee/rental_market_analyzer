@@ -1,3 +1,4 @@
+import re
 from urllib.parse import urlparse
 from ..state import RentalState
 
@@ -16,22 +17,23 @@ TRUSTED_DOMAINS = {
 def _is_valid_listing(url: str) -> bool:
     """
     Keep only individual listing pages from trusted rental sites.
-    Filters out search/category pages (query params, short paths) and unknown domains.
+    Accepts 3+ segment paths, OR 2-segment paths where the last segment is a
+    short alphanumeric listing ID (e.g. apartments.com's /property-name/68z2ytt/).
     """
     try:
         parsed = urlparse(url)
-        # must be from a trusted listing site
         hostname = parsed.hostname or ""
         if not any(hostname == d or hostname.endswith("." + d) for d in TRUSTED_DOMAINS):
             return False
-        # skip search/filter pages that have query parameters
         if parsed.query:
             return False
-        # skip category pages (fewer than 3 path segments = not a detail page)
         segments = [s for s in parsed.path.split("/") if s]
-        if len(segments) < 3:
-            return False
-        return True
+        if len(segments) >= 3:
+            return True
+        if len(segments) == 2:
+            # individual listing IDs are short alphanumeric strings (no hyphens)
+            return bool(re.match(r'^[a-z0-9]{4,10}$', segments[-1]))
+        return False
     except Exception:
         return False
 
@@ -44,7 +46,8 @@ MIN_GOOD_RESULTS = 10
 MAX_SEARCH_ATTEMPTS = 3
 
 # how many top listings to surface in the final response
-MAX_SHOWN = 15
+# MAX_SHOWN = 20
+MAX_SHOWN = 1  # testing
 
 
 async def supervisor_node(state: RentalState) -> dict:
@@ -76,6 +79,8 @@ async def supervisor_node(state: RentalState) -> dict:
         if url not in already_searched and url not in seen and _is_valid_listing(url):
             seen.add(url)
             new_urls.append(url)
+            if len(new_urls) >= 3:  # cap for testing
+                break
 
     return {
         # pending_urls is a plain list (replaced each round) - fan_out reads from this

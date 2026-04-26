@@ -24,3 +24,4 @@ python-dotenv>=1.0.0
 
 # Graph visualization (used by scripts/print_graph.py to render ASCII diagrams)
 grandalf>=0.8
+json-repair

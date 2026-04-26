@@ -61,11 +61,14 @@ Return only valid JSON. Use null for anything not visible or not determinable fr
     ]
 
     client = _get_client()
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=512,
-        messages=[{"role": "user", "content": content}]
-    )
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=512,
+            messages=[{"role": "user", "content": content}]
+        )
+    except anthropic.BadRequestError:
+        return {"error": "images could not be downloaded (URL may be auth-protected)"}
 
     text = message.content[0].text.strip()
     if text.startswith("```"):

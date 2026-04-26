@@ -1,5 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ProcessStep, AgentStatus } from '../hooks/useChat'
+
+function Countdown({ waitSeconds, startedAt }: { waitSeconds: number, startedAt: number }) {
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(0, waitSeconds - Math.floor((Date.now() - startedAt) / 1000))
+  )
+  useEffect(() => {
+    if (remaining <= 0) return
+    const t = setInterval(() => {
+      setRemaining(r => Math.max(0, r - 1))
+    }, 1000)
+    return () => clearInterval(t)
+  }, [])
+  return <span className="text-orange-400">rate limited — retrying in {remaining}s</span>
+}
 
 type Props = {
   steps: ProcessStep[]
@@ -30,7 +44,7 @@ export function ProcessSteps({ steps, isRunning }: Props) {
       {steps.map((step, i) => {
         const isLast = i === steps.length - 1
         const active = isLast && isRunning
-        const hasDetail = step.detail.length > 0
+        const hasDetail = step.detail.length > 0 || (step.agents && step.agents.length > 0)
         const isExpanded = expanded.has(i)
         const isProgress = step.done !== undefined && step.total !== undefined
         const pct = isProgress ? Math.round((step.done! / Math.max(step.total!, 1)) * 100) : 0
@@ -83,7 +97,7 @@ export function ProcessSteps({ steps, isRunning }: Props) {
               </div>
             )}
 
-            {step.agents && step.agents.length > 0 && (
+            {step.agents && step.agents.length > 0 && isExpanded && (
               <div className="ml-5 mt-1 mb-1 flex flex-col gap-0.5">
                 {step.agents.map((agent: AgentStatus, j: number) => (
                   <div key={j} className="flex items-center gap-1.5 text-xs">
@@ -95,7 +109,11 @@ export function ProcessSteps({ steps, isRunning }: Props) {
                       <span className="w-2 h-2 border border-gray-300 border-t-gray-500 rounded-full animate-spin shrink-0" />
                     )}
                     <span className="text-gray-400 shrink-0 font-mono">{agent.hostname}</span>
-                    <span className="text-gray-500 truncate">{agent.status}</span>
+                    {agent.wait_seconds && agent.wait_started_at ? (
+                      <Countdown waitSeconds={agent.wait_seconds} startedAt={agent.wait_started_at} />
+                    ) : (
+                      <span className="text-gray-500 truncate">{agent.status}</span>
+                    )}
                   </div>
                 ))}
               </div>

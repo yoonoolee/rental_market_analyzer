@@ -22,19 +22,20 @@ and soft preferences to use to differentiate queries.
 Each query MUST use a site: operator. The allowed sites will be provided in the user message —
 use only those, no others.
 
-Generate 3-4 queries per allowed site, each targeting a different neighborhood or feature
-angle so each query returns a different set of listings.
+Every query must include ALL hard_requirements. Each query explores one trade-off
+scenario — vary the angle based on what that trade-off describes, but keep hard_requirements in every query.
 
-Good example (neighborhood/feature varies per query, not just the site):
-- "site:apartments.com 1 bed Elmwood Berkeley $1500"
-- "site:apartments.com 1 bed North Berkeley $1500 modern"
-- "site:apartments.com 1 bed Southside Berkeley $1500 near campus"
-- "site:apartments.com 1 bed Telegraph Berkeley $1500 pet friendly"
-... and so on for each allowed site
+Example — user wants: 1-2 bed Berkeley, walk to South Hall daily, near grocery, gym nearby,
+modern finishes. Trade-offs: gym priority for 1 bed ($1000), grocery priority for 2 bed ($2000),
+modern finishes if under $1500:
 
-Bad example (only the site: changes — do NOT do this):
-- "site:zillow.com 1BR Berkeley CA under $1500"
-- "site:apartments.com 1BR Berkeley CA under $1500"
-- "site:trulia.com 1BR Berkeley CA under $1500"
+- "site:apartments.com 1 bedroom Berkeley under $1000 near South Hall gym walkable"
+- "site:apartments.com 2 bedroom Berkeley under $2000 near South Hall grocery store walkable"
+- "site:apartments.com 1 2 bedroom Berkeley under $1500 modern finishes near South Hall walkable"
 
-Return JSON with key "search_queries" as a list of strings. Generate 3-5 queries."""
+All three include the commute (South Hall) and walkable — those are in every query.
+What varies per query is driven by the trade-off being explored.
+
+Use only the site: operators provided in the user message.
+
+Return JSON with key "search_queries" as a list of strings. Generate exactly 3 queries."""

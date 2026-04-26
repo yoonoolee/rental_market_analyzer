@@ -145,7 +145,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "node": "listing_agents",
                                 "url": url,
                                 "hostname": hostname,
-                                "status": f"rate limited — retrying in {wait}s",
+                                "status": "rate limited",
+                                "wait_seconds": wait,
                                 "finished": False,
                             })
                         continue

@@ -27,24 +27,20 @@ EXTRACTION_PROMPT = """Extract structured apartment preference data from the con
 Return valid JSON (no markdown) with this structure:
 {
   "new_preferences": {
-    "city": "string or null",
-    "bedrooms": "integer (0=studio, 1=1BR, etc.) or null",
-    "max_price": "integer or null",
-    "soft_constraints": ["list of strings, e.g. 'quiet', 'walkable', 'near grocery stores'"],
-    "trade_off_rules": ["natural language conditional preferences - see examples below"],
-    "commute_destinations": ["specific named places, e.g. 'UC Berkeley campus', '24hr Fitness Oakland'"],
-    "lifestyle_notes": "string with any other relevant context (pets, parking, lease length, etc.)"
+    "hard_requirements": ["non-negotiable constraints in plain language — e.g. 'Berkeley or East Bay', 'under $2000', '1-2 bedrooms', 'no pets policy'"],
+    "soft_constraints": ["nice-to-haves and preferences — e.g. 'walkable', 'modern finishes', 'near grocery store', 'quiet'"],
+    "trade_off_rules": ["conditional preferences — e.g. '1 bed under $1000 if gym nearby, 2 bed under $2000 if near grocery'"],
+    "commute_destinations": ["specific named places the user needs to commute to — e.g. 'South Hall UC Berkeley', 'Downtown Oakland office'"],
+    "lifestyle_notes": "anything else relevant: pets, parking, move-in date, lease length, roommates, etc."
   },
   "ready_to_search": true or false
 }
 
-Only include fields where you found new information in this conversation turn.
-Set ready_to_search to true if we have at minimum: a city + some indication of price or bedroom count.
+hard_requirements: things the user will not compromise on — location, budget ceiling, bedroom count if firm.
+soft_constraints: preferences that matter but have some flexibility.
+trade_off_rules: explicit conditional flexibility ("I'd pay more if X", "ok without Y if Z").
 
-Trade-off rules should capture conditional flexibility in plain english, for example:
-- "willing to pay up to $400 more per month if commute to work is under 15 minutes by transit"
-- "ok skipping in-unit laundry if there is a laundromat within a few blocks"
-- "safety is more important than price if the commute involves walking late at night"
-- "gym in building not needed if there's a gym within 5 min walk"
+Only include fields with new information from this turn.
+Set ready_to_search to true once we have a location and some sense of budget or size.
 
 Return only valid JSON, no explanations or markdown."""
