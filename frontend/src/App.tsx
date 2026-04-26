@@ -4,6 +4,7 @@ import { MessageBubble } from './components/MessageBubble'
 import { InputBar } from './components/InputBar'
 import { Sidebar } from './components/Sidebar'
 import { ListingCard } from './components/ListingCard'
+import { ListingMap } from './components/ListingMap'
 import type { ListingProfile } from './hooks/useChat'
 import './index.css'
 
@@ -75,6 +76,11 @@ export default function App() {
         <div className="w-96 shrink-0 flex flex-col h-screen">
           <div className="px-4 pt-4 pb-3 shrink-0">
             <p className="text-sm font-semibold text-gray-700">{latestListings.length} listings found</p>
+          </div>
+          <div className="h-52 shrink-0 px-4">
+            <div className="w-full h-full rounded-xl overflow-hidden">
+              <ListingMap listings={latestListings} />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
             {latestListings.map((l, i) => (

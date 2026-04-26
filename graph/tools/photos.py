@@ -34,31 +34,21 @@ def _get_client():
 
 
 @tool
-async def analyze_listing_photos(image_urls: list[str], focus_areas: str) -> dict:
+async def analyze_listing_photos(image_urls: list[str], user_preferences: str) -> dict:
     """
-    Analyze rental listing photos using Claude vision.
+    Analyze rental listing photos in the context of what this specific user cares about.
 
-    Always returns fixed quality signals: condition, natural_light, modern_finishes, spacious, notes.
-    Also checks anything in focus_areas (comma-separated string), which the listing agent
-    should populate based on what the user mentioned — e.g. "views, outdoor space, balcony".
+    user_preferences: plain-text summary of what the user wants (from their preference profile).
+    The model decides what to assess based on what actually matters for this user.
 
-    Returns a dict with bool/string fields for each checked attribute.
-    Fields not applicable or not visible in photos are returned as null.
+    Returns a dict with:
+    - "observations": list of short plain-english observations about what's visible
+    - "condition": "excellent", "good", "fair", or "poor"
+    - "notes": one sentence summary of the most relevant thing visible for this user
+    - any other fields the model judges relevant given the user's preferences
     """
     if not image_urls:
         return {"error": "no images provided"}
-
-    focus_list = [f.strip() for f in focus_areas.split(",") if f.strip()]
-
-    focus_instructions = ""
-    if focus_list:
-        focus_instructions = "\n\nAlso check these user-specific areas and add them as fields:\n"
-        for area in focus_list:
-            focus_instructions += f'- "{area}" (true/false/null)\n'
-        focus_instructions += (
-            'For outdoor space, check for any of: balcony, patio, backyard, yard, rooftop deck.\n'
-            'Return a single "outdoor_space" field (true/false/null) regardless of the specific type.\n'
-        )
 
     image_blocks = []
     for url in image_urls:
@@ -74,16 +64,20 @@ async def analyze_listing_photos(image_urls: list[str], focus_areas: str) -> dic
         *image_blocks,
         {
             "type": "text",
-            "text": f"""Analyze these rental listing photos and return a JSON object.
+            "text": f"""You are analyzing rental listing photos for a specific user. Use their preferences to decide what to look for and assess.
 
-Always include these fixed fields:
-- "modern_finishes" (true/false/null): updated kitchen/bath, stainless appliances, hardwood or quality floors
-- "natural_light" (true/false/null): rooms look bright and well-lit
-- "spacious" (true/false/null): rooms look reasonably sized, not cramped
-- "condition" (string): "excellent", "good", "fair", or "poor" based on overall upkeep
-- "notes" (string): one sentence on the most notable positive or negative visible in the photos
-{focus_instructions}
-Return only valid JSON. Use null for anything not visible or not determinable from the photos."""
+User preferences:
+{user_preferences}
+
+Look at the photos and assess what's actually visible and relevant to this user. Don't run through a fixed checklist — focus on what would matter to them specifically based on what they said.
+
+Return a JSON object with:
+- "observations": list of short plain-english observations about what you see that's relevant to this user
+- "condition": "excellent", "good", "fair", or "poor" based on overall upkeep
+- "notes": one sentence on the single most relevant thing visible for this user
+- any other boolean or string fields that capture something specific this user cares about that you can see in the photos
+
+Return only valid JSON. Use null for anything not visible."""
         }
     ]
 

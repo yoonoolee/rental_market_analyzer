@@ -36,8 +36,7 @@ User preferences:
    (e.g. 'grocery store', 'gym'). Skip everything else.
 
 5. After scraping, if images were returned, call analyze_listing_photos with those URLs.
-   - In focus_areas, pass any visual attributes the user mentioned: views, outdoor space, balcony, yard, etc.
-   - If the user mentioned nothing visual, pass an empty string for focus_areas.
+   - In user_preferences, pass a plain-text summary of what this user cares about so the model knows what to look for.
    - If no images were returned, skip this tool.
 
 6. Use search_web for anything you need that isn't available from the scrape result or other

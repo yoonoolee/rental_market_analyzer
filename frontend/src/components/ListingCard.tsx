@@ -15,6 +15,7 @@ export function ListingCard({ listing }: { listing: ListingProfile }) {
             src={images[imgIdx]}
             alt="listing"
             className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
           {images.length > 1 && (
