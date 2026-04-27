@@ -118,6 +118,12 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
             "disqualify_reason": f"Parse failed ({str(e)[:100]}). Last AI msg: {str(final_content)[:150]}",
         }
 
+    # If the profile has no meaningful scraped data, force-disqualify here rather
+    # than letting an empty shell reach the reducer.
+    if not profile.get("disqualified") and not profile.get("price") and not profile.get("address"):
+        profile["disqualified"] = True
+        profile["disqualify_reason"] = "scrape returned no usable data"
+
     # Override images with the full list from the scrape tool result — the LLM
     # tends to truncate long image arrays in its JSON summary.
     for msg in result["messages"]:

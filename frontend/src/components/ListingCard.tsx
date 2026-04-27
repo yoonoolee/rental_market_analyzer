@@ -115,7 +115,14 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
         {listing.nearby_places && Object.keys(listing.nearby_places).length > 0 && (
           <div className="flex flex-col gap-1">
             {Object.entries(listing.nearby_places).map(([type, info]) => {
-              const label = typeof info === 'string' ? info : (info as {name?: string; address?: string})?.name ?? type
+              let label: string
+              if (typeof info === 'string') {
+                label = info
+              } else {
+                const p = info as {name?: string; distance_meters?: number}
+                const dist = p.distance_meters ? ` ${(p.distance_meters / 1609).toFixed(1)}mi` : ''
+                label = (p.name ?? type) + dist
+              }
               return <p key={type} className="text-sm text-gray-500">📍 {label}</p>
             })}
           </div>

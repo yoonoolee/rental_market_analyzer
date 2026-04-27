@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { APIProvider, Map, Marker, InfoWindow, useMapsLibrary } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, Marker, InfoWindow, useMapsLibrary, useMap } from '@vis.gl/react-google-maps'
 import type { ListingProfile } from '../hooks/useChat'
 
 type PinnedListing = {
@@ -9,6 +9,25 @@ type PinnedListing = {
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY as string
+
+function FitBounds({ pinned }: { pinned: PinnedListing[] }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!map || !pinned.length) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (window as any).google?.maps
+    if (!g) return
+    if (pinned.length === 1) {
+      map.setCenter({ lat: pinned[0].lat, lng: pinned[0].lng })
+      map.setZoom(14)
+      return
+    }
+    const bounds = new g.LatLngBounds()
+    pinned.forEach(p => bounds.extend({ lat: p.lat, lng: p.lng }))
+    map.fitBounds(bounds, 40)
+  }, [map, pinned])
+  return null
+}
 
 function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void }) {
   const geocodingLib = useMapsLibrary('geocoding')
@@ -57,6 +76,7 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
 
   return (
     <>
+      <FitBounds pinned={pinned} />
       {pinned.map((p, i) => (
         <Marker
           key={i}
@@ -98,7 +118,7 @@ export function ListingMap({ listings, onSelect }: { listings: ListingProfile[],
   return (
     <APIProvider apiKey={API_KEY}>
       <Map
-        defaultCenter={{ lat: 37.8716, lng: -122.2727 }}
+        defaultCenter={{ lat: 37.7749, lng: -122.4194 }}
         defaultZoom={12}
         style={{ width: '100%', height: '100%' }}
         disableDefaultUI

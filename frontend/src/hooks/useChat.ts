@@ -144,21 +144,35 @@ export function useChat() {
         }])
 
       } else if (data.type === 'listings') {
-        if (!processInjected.current) {
+        setMessages(prev => {
+          const listingMsg = { id: generateId(), role: 'listings' as const, content: '', listings: data.listings }
+          if (processInjected.current || processId.current) return [...prev, listingMsg]
+          // Replay path: inject all stored runs, each after its corresponding user message
           processInjected.current = true
           const stored = localStorage.getItem(`rental_process_${sid}`)
-          if (stored) {
-            try {
-              const steps = JSON.parse(stored) as ProcessStep[]
-              if (steps.length > 0)
-                setMessages(prev => [...prev, { id: generateId(), role: 'process', content: '', steps, isRunning: false }])
-            } catch {}
+          if (!stored) return [...prev, listingMsg]
+          try {
+            const runs = JSON.parse(stored) as ProcessStep[][]
+            if (!runs.length) return [...prev, listingMsg]
+            // Find all user message positions
+            const userIndices = prev.reduce((acc, m, i) => m.role === 'user' ? [...acc, i] : acc, [] as number[])
+            // Match last N user messages to the N stored runs
+            const relevantIndices = userIndices.slice(-runs.length)
+            let result = [...prev]
+            let offset = 0
+            relevantIndices.forEach((userIdx, i) => {
+              const processMsg = { id: generateId(), role: 'process' as const, content: '', steps: runs[i], isRunning: false }
+              const insertAt = userIdx + 1 + offset
+              result = [...result.slice(0, insertAt), processMsg, ...result.slice(insertAt)]
+              offset++
+            })
+            return [...result, listingMsg]
+          } catch {
+            return [...prev, listingMsg]
           }
-        }
-        setMessages(prev => [...prev, { id: generateId(), role: 'listings', content: '', listings: data.listings }])
+        })
 
       } else if (data.type === 'process_start') {
-        localStorage.removeItem(`rental_process_${sid}`)
         processInjected.current = true
         const pid = generateId()
         processId.current = pid
@@ -223,7 +237,9 @@ export function useChat() {
             const updated = prev.map(m => m.id === pid ? { ...m, isRunning: false } : m)
             const processMsg = updated.find(m => m.id === pid)
             if (processMsg?.steps?.length) {
-              localStorage.setItem(`rental_process_${sid}`, JSON.stringify(processMsg.steps))
+              const existing = localStorage.getItem(`rental_process_${sid}`)
+              const runs: ProcessStep[][] = existing ? JSON.parse(existing) : []
+              localStorage.setItem(`rental_process_${sid}`, JSON.stringify([...runs, processMsg.steps]))
             }
             return updated
           })

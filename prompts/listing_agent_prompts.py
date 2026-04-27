@@ -30,14 +30,17 @@ User preferences:
 2. After scraping, check hard_requirements against the listing data. If any are clearly
    violated (and trade_off_rules don't provide flexibility for that constraint), disqualify.
    For price constraints: "max $X/mo" means the listing must cost $X or LESS — anything
-   cheaper automatically passes. Apply a $50 buffer on the high end only (a listing $30
-   over the max is close enough to keep). Never disqualify a listing for being too cheap
+   cheaper automatically passes. Apply a $50 buffer on the high end (a listing up to $50
+   over the stated max is close enough to keep). Never disqualify a listing for being too cheap
    unless an explicit minimum price is stated in hard_requirements.
 
 3. Only call get_commute_time if commute_destinations is non-empty. One call per destination.
 
 4. Only call find_nearby_places for place types mentioned in soft_constraints or trade_off_rules
    (e.g. 'grocery store', 'gym'). Skip everything else.
+   For each find_nearby_places result, format the top 1-2 closest results as "Name Xmi" strings
+   (convert distance_meters to miles, 1 decimal). Store as nearby_places: {{"grocery": "Trader Joe's 0.2mi", ...}}.
+   Never store raw objects — always convert to "Name Xmi" strings.
 
 5. After scraping, if images were returned, call analyze_listing_photos with those URLs.
    - In user_preferences, pass a plain-text summary of what this user cares about so the model knows what to look for.
@@ -69,13 +72,13 @@ When you have gathered everything relevant, return ONLY a JSON object. No explan
   "furnishing": "string or null",
   "images": ["url1", "url2"],
   "commute_times": {{"UC Berkeley": "14 min BART", "Downtown Oakland": "8 min BART"}},
-  "nearby_places": {{"bars": "Temescal strip 0.1mi", "grocery": "Trader Joe's 0.3mi"}},
+  "nearby_places": {{"grocery": "Trader Joe's 0.2mi", "bars": "The Layover 0.4mi", "gym": "Planet Fitness 0.3mi"}},
   "modern_finishes": true/false/null,
   "natural_light": true/false/null,
   "spacious": true/false/null,
   "condition": "excellent/good/fair/poor or null",
   "notes": "one sentence from photo analysis or null",
-  "description": "brief plain-english summary of the unit (<= 25 words, no marketing language)"
+  "description": "brief plain-english summary of the unit (no marketing language)"
 }}
 
 If disqualified, set disqualified: true with a clear reason. Other fields can be null.

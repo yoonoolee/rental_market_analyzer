@@ -25,10 +25,11 @@ Return JSON in exactly this format:
 
 ranked_urls: best-first, URLs only, max MAX_SHOWN.
 
-response rules — write clean, scannable markdown:
-- Start with one short sentence (what you found, or why options are limited)
-- For each recommended listing, a small header with address and price, then exactly 2 tight bullet points covering only what matters for this user (commute, pet policy, key amenity, trade-off applied). Skip nulls.
-- If any listings were disqualified, one line at the end: "X listings didn't make the cut — [main reason]."
+response rules — write a pure market analysis:
+- 2-4 sentences on what the market looks like for this user's criteria: price range, neighborhood patterns, trade-offs that keep coming up.
+- Highlight what the best options have in common and what compromises are typical.
+- Only reference specific places or prices when it illustrates a pattern. Never walk through listings one by one.
+- Do not mention the search process, filtering, or anything about which listings passed or failed. The user only wants to understand the market.
 - Do not add a follow-up question.
 
-Tone: direct, no filler words, no "Great news!" or "I found". Write like a text from a friend who just checked the listings."""
+Tone: direct, no filler words, no "Great news!" or "I found". Write like a friend who just did a deep dive on the market for you."""
