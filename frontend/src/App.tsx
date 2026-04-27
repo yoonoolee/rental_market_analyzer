@@ -51,7 +51,7 @@ export default function App() {
         onDelete={deleteSession}
       />
 
-      <div className="flex-1 min-w-0 min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_28rem]" style={{height: '100vh'}}>
+      <div className={`flex-1 min-w-0 min-h-0 grid grid-cols-1 ${hasListings ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : ''}`} style={{height: '100vh'}}>
         <section className="min-w-0 flex flex-col h-screen">
           <div className="h-11 shrink-0 flex items-center px-4">
             <button

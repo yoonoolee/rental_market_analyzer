@@ -87,16 +87,18 @@ export function ProcessSteps({ steps, isRunning }: Props) {
 
             {hasDetail && isExpanded && (
               <div className="ml-5 mt-1 mb-1 flex flex-col gap-0.5">
-                {step.detail.map((item, j) => (
-                  item.startsWith('http') ? (
-                    <a key={j} href={item} target="_blank" rel="noreferrer"
-                      className="text-xs text-[#1a3f6f] hover:underline truncate max-w-[22rem]">
-                      {item}
-                    </a>
-                  ) : (
-                    <span key={j} className="text-xs text-gray-500">{item}</span>
-                  )
-                ))}
+                {step.detail
+                  .filter(item => !(item.startsWith('http') && step.label.startsWith('Researching listings')))
+                  .map((item, j) => (
+                    item.startsWith('http') ? (
+                      <a key={j} href={item} target="_blank" rel="noreferrer"
+                        className="text-xs text-[#1a3f6f] hover:underline truncate max-w-[22rem]">
+                        {item}
+                      </a>
+                    ) : (
+                      <span key={j} className="text-xs text-gray-500">{item}</span>
+                    )
+                  ))}
               </div>
             )}
 

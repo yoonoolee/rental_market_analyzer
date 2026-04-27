@@ -104,18 +104,20 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
         {/* Commute times */}
         {listing.commute_times && Object.keys(listing.commute_times).length > 0 && (
           <div className="flex flex-col gap-1">
-            {Object.entries(listing.commute_times).map(([dest, time]) => (
-              <p key={dest} className="text-sm text-gray-500">🚇 <span className="text-gray-700">{time}</span> to {dest}</p>
-            ))}
+            {Object.entries(listing.commute_times).map(([dest, time]) => {
+              const label = typeof time === 'string' ? time : JSON.stringify(time)
+              return <p key={dest} className="text-sm text-gray-500">🚇 <span className="text-gray-700">{label}</span> to {dest}</p>
+            })}
           </div>
         )}
 
         {/* Nearby places */}
         {listing.nearby_places && Object.keys(listing.nearby_places).length > 0 && (
           <div className="flex flex-col gap-1">
-            {Object.entries(listing.nearby_places).map(([type, info]) => (
-              <p key={type} className="text-sm text-gray-500">📍 {info}</p>
-            ))}
+            {Object.entries(listing.nearby_places).map(([type, info]) => {
+              const label = typeof info === 'string' ? info : (info as {name?: string; address?: string})?.name ?? type
+              return <p key={type} className="text-sm text-gray-500">📍 {label}</p>
+            })}
           </div>
         )}
 

@@ -252,8 +252,10 @@ export function useChat() {
   }, [reconnect])
 
   const connect = useCallback((sid: string) => {
-    manualClose.current = true
-    ws.current?.close()
+    if (ws.current) {
+      ws.current.onclose = null  // prevent old socket's onclose from triggering reconnect
+      ws.current.close()
+    }
     setMessages([])
     setPreferences({})
     setIsThinking(false)
@@ -281,8 +283,10 @@ export function useChat() {
     document.addEventListener('visibilitychange', onVisibilityChange)
 
     return () => {
-      manualClose.current = true
-      ws.current?.close()
+      if (ws.current) {
+        ws.current.onclose = null
+        ws.current.close()
+      }
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
       document.removeEventListener('visibilitychange', onVisibilityChange)
     }
