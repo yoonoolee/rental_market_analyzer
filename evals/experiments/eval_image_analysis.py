@@ -21,6 +21,7 @@ Metrics:
   - cost_usd          : estimated cost (based on published token prices)
 """
 import json
+import os
 import base64
 import urllib.request
 
@@ -196,7 +197,12 @@ def run(variants: list[str] | None = None) -> dict:
     NOTE: The image URLs in datasets/images.json are placeholders.
     Replace them with real Zillow/Craigslist photo URLs before running.
     """
-    image_sets = json.loads((DATASETS_DIR / "images.json").read_text())
+    dataset = json.loads((DATASETS_DIR / "images.json").read_text())
+    
+    # SLIM MODE: only use 1 image set
+    if os.environ.get("EVAL_SLIM") == "true":
+        dataset = dataset[:1]
+
     judge = LLMJudge()
     targets = variants or list(IMAGE_VARIANTS.keys())
 
@@ -204,7 +210,7 @@ def run(variants: list[str] | None = None) -> dict:
     for name in targets:
         config = IMAGE_VARIANTS[name]
         print(f"  Running image analysis variant: {name} (model={config['model']}, max_images={config['max_images']})")
-        all_results[name] = evaluate_variant(name, config, image_sets, judge)
+        all_results[name] = evaluate_variant(name, config, dataset, judge)
 
     output_path = RESULTS_DIR / "image_analysis_eval.json"
     output_path.write_text(json.dumps(all_results, indent=2))

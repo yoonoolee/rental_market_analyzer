@@ -3,54 +3,53 @@
     "id": "img_set_001",
     "listing_id": "listing_001",
     "image_urls": [
-      "https://photos.zillowstatic.com/fp/example1.jpg",
-      "https://photos.zillowstatic.com/fp/example2.jpg",
-      "https://photos.zillowstatic.com/fp/example3.jpg"
-    ],
-    "human_labels": {
-      "modern_finishes": true,
-      "natural_light": true,
-      "spacious": false,
-      "condition": "good",
-      "notes": "Renovated kitchen with stainless appliances, large windows, but compact rooms"
-    },
-    "focus_areas": ["natural_light", "modern_finishes"],
-    "preferences_used": "pref_001"
-  },
-  {
-    "id": "img_set_002",
-    "listing_id": "listing_002",
-    "image_urls": [
-      "https://photos.zillowstatic.com/fp/example4.jpg",
-      "https://photos.zillowstatic.com/fp/example5.jpg"
-    ],
-    "human_labels": {
-      "modern_finishes": false,
-      "natural_light": false,
-      "spacious": true,
-      "condition": "dated",
-      "notes": "Older unit with original fixtures, dark rooms, but large square footage"
-    },
-    "focus_areas": ["spacious"],
-    "preferences_used": "pref_001"
-  },
-  {
-    "id": "img_set_003",
-    "listing_id": "listing_003",
-    "image_urls": [
-      "https://photos.zillowstatic.com/fp/example6.jpg",
-      "https://photos.zillowstatic.com/fp/example7.jpg",
-      "https://photos.zillowstatic.com/fp/example8.jpg",
-      "https://photos.zillowstatic.com/fp/example9.jpg"
+      "https://photos.zillowstatic.com/fp/f79af0a267819b7c05e154a78f034172-p_e.webp",
+      "https://photos.zillowstatic.com/fp/1dfcda3037dbff71a2881653022fb8c3-p_e.webp",
+      "https://photos.zillowstatic.com/fp/dc9dc3bad88cff8ad54205e710171786-p_e.webp"
     ],
     "human_labels": {
       "modern_finishes": true,
       "natural_light": true,
       "spacious": true,
       "condition": "excellent",
-      "notes": "New construction with floor-to-ceiling windows, open floor plan, high-end kitchen"
+      "notes": "Modern Berkeley kitchen with stainless steel appliances, large windows, and clean finishes."
     },
-    "focus_areas": ["in_unit_laundry", "natural_light"],
-    "preferences_used": "pref_002"
+    "focus_areas": ["natural_light", "modern_finishes"],
+    "preferences_used": "pref_001"
+  },
+  {
+    "id": "img_set_002",
+    "listing_id": "listing_003",
+    "image_urls": [
+      "https://photos.zillowstatic.com/fp/659f48874f2757c19719449327bf1ffc-p_e.webp",
+      "https://photos.zillowstatic.com/fp/5754d9640b5d274668c03326c83c0fed-p_e.webp",
+      "https://photos.zillowstatic.com/fp/bfba184ea32e6921209fefed8db9f7ef-p_e.webp"
+    ],
+    "human_labels": {
+      "modern_finishes": true,
+      "natural_light": true,
+      "spacious": true,
+      "condition": "excellent",
+      "notes": "Luxury San Francisco high-rise with floor-to-ceiling windows, city views, and premium amenities."
+    },
+    "focus_areas": ["natural_light", "spacious"],
+    "preferences_used": "pref_001"
+  },
+  {
+    "id": "img_set_003",
+    "listing_id": "listing_006",
+    "image_urls": [
+      "https://images1.apartments.com/i2/XwH5K7j9H9M2f7Z1Z7b5Z2Z2Q7Q7Q7Q7Q7Q7Q7Q7Q7Q/111/the-fitzgerald-san-francisco-ca-primary-photo.jpg",
+      "https://images1.apartments.com/i2/q4zH5K7j9H9M2f7Z1Z7b5Z2Z2Q7Q7Q7Q7Q7Q7Q7Q7Q7Q/111/the-fitzgerald-san-francisco-ca-kitchen.jpg"
+    ],
+    "human_labels": {
+      "modern_finishes": true,
+      "natural_light": true,
+      "spacious": false,
+      "condition": "excellent",
+      "notes": "Mission District apartment with modern kitchen, bright windows, and city views, though slightly compact."
+    },
+    "focus_areas": ["natural_light", "modern_finishes"],
+    "preferences_used": "pref_001"
   }
 ]

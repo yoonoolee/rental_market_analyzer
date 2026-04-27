@@ -21,6 +21,7 @@ Metrics:
   - total_tokens_per_session: total token count for one full elicitation session
 """
 import json
+import os
 from anthropic import Anthropic
 
 from evals.config import RESULTS_DIR, ELICITATION_VARIANTS, DATASETS_DIR
@@ -71,6 +72,7 @@ def extract_preferences(messages: list[dict], model: str, client: Anthropic) -> 
 
 def generate_question(messages: list[dict], preferences: dict, model: str, client: Anthropic) -> tuple[str, dict]:
     """Generate the next follow-up question."""
+    # Format conversation as text so the API always receives a valid user-last message list
     context_str = "\n".join(f"{m['role'].upper()}: {m['content']}" for m in messages[-6:])
     prompt = (
         f"Conversation so far:\n{context_str}\n\n"
@@ -140,9 +142,11 @@ def simulate_elicitation_session(
         q_score = judge.question_quality(question, messages)
         question_scores.append(q_score.get("score", 0))
 
-        # Simulate user not providing more info (worst case — tests max turns)
+        # Simulate user not providing more info (worst case — tests max turns).
+        # Append a neutral user reply so the conversation maintains proper user/assistant
+        # alternation; without it, consecutive assistant turns confuse subsequent extractions.
         messages.append({"role": "assistant", "content": question})
-        # In a real eval, add a synthetic user reply here per test case
+        messages.append({"role": "user", "content": "I'm not sure, can you help me figure that out?"})
         turns = turn + 1
 
     if not ready:
@@ -212,7 +216,12 @@ def evaluate_variant(variant_name: str, config: dict, test_cases: list[dict], ju
 
 
 def run(variants: list[str] | None = None) -> dict:
-    test_cases = json.loads((DATASETS_DIR / "preferences.json").read_text())
+    dataset = json.loads((DATASETS_DIR / "preferences.json").read_text())
+    
+    # SLIM MODE: only use 2 preferences
+    if os.environ.get("EVAL_SLIM") == "true":
+        dataset = dataset[:2]
+
     judge = LLMJudge()
     targets = variants or list(ELICITATION_VARIANTS.keys())
 
@@ -220,7 +229,7 @@ def run(variants: list[str] | None = None) -> dict:
     for name in targets:
         config = ELICITATION_VARIANTS[name]
         print(f"  Running elicitation variant: {name}")
-        all_results[name] = evaluate_variant(name, config, test_cases, judge)
+        all_results[name] = evaluate_variant(name, config, dataset, judge)
 
     output_path = RESULTS_DIR / "elicitation_eval.json"
     output_path.write_text(json.dumps(all_results, indent=2))

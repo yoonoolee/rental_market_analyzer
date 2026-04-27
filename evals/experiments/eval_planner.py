@@ -21,6 +21,7 @@ Metrics:
   - mean_tokens           : input+output tokens per call
 """
 import json
+import os
 import re
 import itertools
 from anthropic import Anthropic
@@ -214,9 +215,13 @@ def evaluate_variant(
 
 
 def run(variants: list[str] | None = None) -> dict:
-    all_prefs = json.loads((DATASETS_DIR / "preferences.json").read_text())
-    # Use a subset with clear requirements for planner eval
-    test_prefs = [p for p in all_prefs if p["id"] in ("pref_001", "pref_005")]
+    dataset = json.loads((DATASETS_DIR / "preferences.json").read_text())
+    
+    # SLIM MODE: only use 2 preferences
+    if os.environ.get("EVAL_SLIM") == "true":
+        dataset = dataset[:2]
+
+    test_prefs = [p for p in dataset if p["id"] in ("pref_001", "pref_005")]
     judge = LLMJudge()
     targets = variants or list(PLANNER_VARIANTS.keys())
 

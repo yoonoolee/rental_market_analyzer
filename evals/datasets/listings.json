@@ -1,157 +1,191 @@
 [
   {
     "id": "listing_001",
-    "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-2br-2ba-soma/test",
-    "ground_truth": {
-      "price": 2800,
-      "bedrooms": 2,
-      "address": "SOMA, San Francisco, CA",
-      "pet_friendly": true,
-      "pet_deposit": 500,
-      "furnishing": "unfurnished",
-      "disqualified": false,
-      "disqualify_reason": null
+    "url": "https://www.zillow.com/apartments/berkeley-ca/2520-college-avenue/Cj8NDb/",
+    "price": 3195,
+    "bedrooms": 1.0,
+    "address": "2520 College Avenue, Berkeley, CA 94704",
+    "neighborhood": "Southside",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": true,
+    "gym": false,
+    "sqft": 700,
+    "commute_times": {
+      "uc_berkeley": 5
     },
-    "preferences_used": "pref_001",
-    "notes": "Valid listing, under budget, pet-friendly — should NOT be disqualified"
+    "description": "Modern apartment steps from UC Berkeley campus. Features floor-to-ceiling windows, refreshing pool, and assigned garage parking. Pet friendly.",
+    "disqualified": false
   },
   {
     "id": "listing_002",
-    "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-no-pets-3200/test",
-    "ground_truth": {
-      "price": 3200,
-      "bedrooms": 2,
-      "address": "Mission District, San Francisco, CA",
-      "pet_friendly": false,
-      "disqualified": true,
-      "disqualify_reason": "Price exceeds max_price of $3000 and no pets allowed"
+    "url": "https://www.zillow.com/apartments/berkeley-ca/2333-channing-way/5Xxy2V/",
+    "price": 2685,
+    "bedrooms": 1.0,
+    "address": "2333 Channing Way, Berkeley, CA 94704",
+    "neighborhood": "Southside",
+    "pet_friendly": true,
+    "in_unit_laundry": false,
+    "dishwasher": true,
+    "parking": false,
+    "gym": false,
+    "sqft": 600,
+    "commute_times": {
+      "uc_berkeley": 8
     },
-    "preferences_used": "pref_001",
-    "notes": "Over budget AND no pets — should be disqualified on two hard constraints"
+    "description": "Charming units with shared laundry and gated entry. Ideally located near shopping and dining on Telegraph Ave.",
+    "disqualified": false
   },
   {
     "id": "listing_003",
-    "url": "https://www.zillow.com/homedetails/test-brooklyn-studio/",
-    "ground_truth": {
-      "price": 2600,
-      "bedrooms": 1,
-      "address": "Williamsburg, Brooklyn, NY",
-      "in_unit_laundry": true,
-      "pet_friendly": false,
-      "furnishing": "unfurnished",
-      "disqualified": false,
-      "disqualify_reason": null
+    "url": "https://www.zillow.com/apartments/san-francisco-ca/nema/CjpwdL/",
+    "price": 3413,
+    "bedrooms": 0.5,
+    "address": "8 10th St, San Francisco, CA 94103",
+    "neighborhood": "Mid-Market",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": true,
+    "gym": true,
+    "sqft": 650,
+    "commute_times": {
+      "salesforce_tower": 10
     },
-    "preferences_used": "pref_002",
-    "notes": "Has in-unit laundry, $2600 is within the trade-off max of $2800 — should NOT be disqualified"
+    "description": "NEMA is a next-generation residential community with floor-to-ceiling windows, 7,000 sq ft fitness center, and a saline pool.",
+    "disqualified": false
   },
   {
     "id": "listing_004",
-    "url": "https://www.zillow.com/homedetails/test-brooklyn-no-laundry/",
-    "ground_truth": {
-      "price": 2700,
-      "bedrooms": 1,
-      "address": "Park Slope, Brooklyn, NY",
-      "in_unit_laundry": false,
-      "pet_friendly": false,
-      "furnishing": "unfurnished",
-      "disqualified": true,
-      "disqualify_reason": "Price exceeds base max_price of $2500 and does not have in-unit laundry to justify trade-off"
+    "url": "https://www.zillow.com/apartments/san-francisco-ca/astella/CkBBqs/",
+    "price": 4192,
+    "bedrooms": 1.0,
+    "address": "975 Bryant St, San Francisco, CA 94103",
+    "neighborhood": "SoMa",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": true,
+    "gym": true,
+    "sqft": 750,
+    "commute_times": {
+      "salesforce_tower": 15
     },
-    "preferences_used": "pref_002",
-    "notes": "Over base budget, no laundry — trade-off condition not met, should be disqualified"
+    "description": "Astella offers modern 1-bedroom units with pet washing stations, rooftop lounges, and premium finishes in the heart of SoMa.",
+    "disqualified": false
   },
   {
     "id": "listing_005",
-    "url": "https://sfbay.craigslist.org/eby/apa/d/oakland-temescal-1br-grad-student/test",
-    "ground_truth": {
-      "price": 1950,
-      "bedrooms": 1,
-      "address": "Temescal, Oakland, CA",
-      "pet_friendly": true,
-      "pet_deposit": 300,
-      "furnishing": "unfurnished",
-      "disqualified": false,
-      "disqualify_reason": null
+    "url": "https://www.zillow.com/apartments/berkeley-ca/2252-parker-street/Cj6pHv/",
+    "price": 5475,
+    "bedrooms": 3.0,
+    "address": "2252 Parker St, Berkeley, CA 94704",
+    "neighborhood": "Southside",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": false,
+    "gym": false,
+    "sqft": 1200,
+    "commute_times": {
+      "uc_berkeley": 10
     },
-    "preferences_used": "pref_006",
-    "notes": "Under budget, pet-friendly, close to BART — ideal match"
+    "description": "Large 3-bedroom flat with modern appliances and gated entry. Perfect for groups or families."
   },
   {
     "id": "listing_006",
-    "url": "https://www.zillow.com/homedetails/oakland-montclair-overbudget/test",
-    "ground_truth": {
-      "price": 2300,
-      "bedrooms": 1,
-      "address": "Montclair, Oakland, CA",
-      "pet_friendly": true,
-      "furnishing": "unfurnished",
-      "disqualified": true,
-      "disqualify_reason": "Price exceeds max_price of $2100 with no trade-off rule active"
+    "url": "https://www.apartments.com/the-fitzgerald-san-francisco-ca/hxj33g1/",
+    "price": 3550,
+    "bedrooms": 1.0,
+    "address": "2095 Bryant St, San Francisco, CA 94110",
+    "neighborhood": "Mission District",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": false,
+    "gym": true,
+    "sqft": 750,
+    "commute_times": {
+      "salesforce_tower": 20
     },
-    "preferences_used": "pref_006",
-    "notes": "Near-miss — only $200 over, but no trade-off to justify; should be disqualified"
+    "description": "The Fitzgerald offers modern living in the vibrant Mission District with incredible city views, a rooftop deck, and updated appliances.",
+    "disqualified": false
   },
   {
     "id": "listing_007",
-    "url": "https://www.apartments.com/sf-salesforce-walk/test",
-    "ground_truth": {
-      "price": 3150,
-      "bedrooms": 2,
-      "address": "South Beach, San Francisco, CA",
-      "pet_friendly": false,
-      "furnishing": "unfurnished",
-      "disqualified": false,
-      "disqualify_reason": null
+    "url": "https://www.apartments.com/the-fillmore-center-san-francisco-ca/3d4j1n2/",
+    "price": 2850,
+    "bedrooms": 1.0,
+    "address": "1475 Fillmore St, San Francisco, CA 94115",
+    "neighborhood": "Fillmore District",
+    "pet_friendly": true,
+    "in_unit_laundry": false,
+    "dishwasher": true,
+    "parking": true,
+    "gym": true,
+    "sqft": 680,
+    "commute_times": {
+      "salesforce_tower": 25
     },
-    "preferences_used": "pref_007",
-    "notes": "Over base budget but trade-off condition met (8 min walk to Salesforce Tower), under $3200 max"
+    "description": "The Fillmore Center features spacious apartments with private balconies, city views, and access to a massive fitness club.",
+    "disqualified": false
   },
   {
     "id": "listing_008",
-    "url": "https://www.zillow.com/homedetails/sf-outer-sunset-overpriced/test",
-    "ground_truth": {
-      "price": 3050,
-      "bedrooms": 2,
-      "address": "Outer Sunset, San Francisco, CA",
-      "pet_friendly": true,
-      "furnishing": "unfurnished",
-      "disqualified": true,
-      "disqualify_reason": "Over base budget and commute to Salesforce Tower is 45+ min (not under 15 min trade-off threshold)"
+    "url": "https://www.apartments.com/trinity-place-san-francisco-ca/5t2k9m3/",
+    "price": 3100,
+    "bedrooms": 1.0,
+    "address": "1188 Mission St, San Francisco, CA 94103",
+    "neighborhood": "SoMa",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": false,
+    "gym": true,
+    "sqft": 710,
+    "commute_times": {
+      "salesforce_tower": 15
     },
-    "preferences_used": "pref_007",
-    "notes": "Trade-off rule requires <15 min commute; Outer Sunset is 45min+, so over-budget price isn't justified"
+    "description": "Trinity Place offers luxury living with modern amenities, a stunning courtyard with public art, and easy transit access.",
+    "disqualified": false
   },
   {
     "id": "listing_009",
-    "url": "https://www.apartments.com/chicago-wicker-park-blueline/test",
-    "ground_truth": {
-      "price": 2550,
-      "bedrooms": 2,
-      "address": "Wicker Park, Chicago, IL",
-      "pet_friendly": true,
-      "pet_deposit": 250,
-      "in_unit_laundry": false,
-      "furnishing": "unfurnished",
-      "disqualified": false,
-      "disqualify_reason": null
+    "url": "https://www.apartments.com/panoramic-berkeley-berkeley-ca/q9w8e7r/",
+    "price": 2450,
+    "bedrooms": 0.5,
+    "address": "2539 Telegraph Ave, Berkeley, CA 94704",
+    "neighborhood": "Southside",
+    "pet_friendly": false,
+    "in_unit_laundry": false,
+    "dishwasher": false,
+    "parking": false,
+    "gym": false,
+    "sqft": 350,
+    "commute_times": {
+      "uc_berkeley": 5
     },
-    "preferences_used": "pref_005",
-    "notes": "Walkable to Blue Line, within $2700 trade-off ceiling, pet-friendly"
+    "description": "The Panoramic Berkeley offers efficient micro-studios directly adjacent to the UC Berkeley campus with incredible rooftop views.",
+    "disqualified": false
   },
   {
     "id": "listing_010",
-    "url": "https://www.zillow.com/homedetails/chicago-no-blue-line-overpriced/test",
-    "ground_truth": {
-      "price": 2650,
-      "bedrooms": 2,
-      "address": "Edgewater, Chicago, IL",
-      "pet_friendly": true,
-      "furnishing": "unfurnished",
-      "disqualified": true,
-      "disqualify_reason": "Over base budget $2400 with no Blue Line access (trade-off condition not met)"
+    "url": "https://www.apartments.com/stonefire-berkeley-ca/z1x2c3v/",
+    "price": 3800,
+    "bedrooms": 2.0,
+    "address": "1974 University Ave, Berkeley, CA 94704",
+    "neighborhood": "Downtown Berkeley",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": true,
+    "gym": true,
+    "sqft": 850,
+    "commute_times": {
+      "uc_berkeley": 10
     },
-    "preferences_used": "pref_005",
-    "notes": "Trade-off is conditional on Blue Line walkability; Edgewater is Red Line area, so disqualified"
+    "description": "Stonefire features premium 2-bedroom apartments with high-end appliances, an outdoor terrace, and walkable access to BART and campus.",
+    "disqualified": false
   }
 ]

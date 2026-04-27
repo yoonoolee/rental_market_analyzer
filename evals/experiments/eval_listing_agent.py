@@ -23,6 +23,7 @@ Metrics:
   - cost_usd                : estimated token cost per listing
 """
 import json
+import os
 from anthropic import Anthropic
 
 from evals.config import RESULTS_DIR, LISTING_AGENT_VARIANTS, DATASETS_DIR, SONNET_MODEL, HAIKU_MODEL
@@ -41,7 +42,7 @@ LISTING_AGENT_SYSTEM = """You are researching a rental listing. Your job:
    - search_web: fallback for critical missing data
 
 Return ONLY valid JSON with these fields (null if unknown):
-{{
+{
   "url": "<string>",
   "disqualified": <true|false>,
   "disqualify_reason": <string|null>,
@@ -57,10 +58,7 @@ Return ONLY valid JSON with these fields (null if unknown):
   "spacious": <bool|null>,
   "condition": <string|null>,
   "notes": <string|null>
-}}
-
-User preferences: {preferences}
-URL to research: {url}
+}
 
 IMPORTANT: You do not have real tool access in this eval.
 Based on the preferences and URL provided, reason through what data you would extract
@@ -85,23 +83,24 @@ def simulate_listing_agent(
     if always_use_all_tools:
         tool_hint = "\nUse all available tools regardless of user preferences."
     else:
-        # Add conditional tool hints based on preferences
         if preferences.get("pet_friendly"):
             tool_hint += "\nCheck pet policy (user has pets — hard requirement)."
         if preferences.get("commute_destinations"):
             tool_hint += "\nCalculate commute times for: " + ", ".join(preferences["commute_destinations"])
         tool_hint += "\nAnalyze listing photos for: natural_light, modern_finishes."
 
-    prompt = LISTING_AGENT_SYSTEM.format(
-        preferences=json.dumps(preferences, indent=2),
-        url=url,
-    ) + tool_hint
+    user_content = (
+        f"URL to research: {url}\n\n"
+        f"User preferences:\n{json.dumps(preferences, indent=2)}"
+        + tool_hint
+    )
 
     with LatencyTimer() as timer:
         resp = client.messages.create(
             model=model,
             max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
+            system=LISTING_AGENT_SYSTEM,
+            messages=[{"role": "user", "content": user_content}],
         )
 
     raw = resp.content[0].text.strip()
@@ -242,6 +241,11 @@ def evaluate_variant(
 
 def run(variants: list[str] | None = None) -> dict:
     listings = json.loads((DATASETS_DIR / "listings.json").read_text())
+    
+    # SLIM MODE: only use 2 listings
+    if os.environ.get("EVAL_SLIM") == "true":
+        listings = listings[:2]
+
     all_prefs = json.loads((DATASETS_DIR / "preferences.json").read_text())
     judge = LLMJudge()
     targets = variants or list(LISTING_AGENT_VARIANTS.keys())

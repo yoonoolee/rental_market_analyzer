@@ -1,10 +1,16 @@
 import os
+import json
 import asyncio
 import traceback
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 load_dotenv(override=True)
+
+_LOG_SESSIONS = os.getenv("LOG_SESSIONS", "").lower() == "true"
+_SESSION_LOGS_DIR = Path("logs/sessions")
 
 from contextlib import asynccontextmanager
 import httpx
@@ -133,6 +139,77 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 "search_web": "searching web",
                 "analyze_listing_photos": "analyzing photos",
             }
+
+            if user_message.startswith("/evals"):
+                parts = user_message.split()
+                args_to_pass = parts[1:]
+                cmd = ["python3", "-u", "-m", "evals.run_evals"] + args_to_pass
+                
+                await websocket.send_json({
+                    "type": "process_step",
+                    "node": "evals",
+                    "label": f"Running evaluations: {' '.join(args_to_pass) if args_to_pass else 'all'}",
+                    "detail": []
+                })
+                
+                try:
+                    process = await asyncio.create_subprocess_exec(
+                        *cmd,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.STDOUT,
+                    )
+                    
+                    while True:
+                        line = await process.stdout.readline()
+                        if not line:
+                            break
+                        line_str = line.decode('utf-8').strip()
+                        if line_str:
+                            await websocket.send_json({
+                                "type": "process_step_update",
+                                "node": "evals",
+                                "label": f"Running evaluations: {', '.join(exps) if exps else 'all'}",
+                                "detail_item": line_str
+                            })
+                    
+                    await process.wait()
+                    
+                    try:
+                        with open("evals/results/summary.json", "r") as f:
+                            summary = json.load(f)
+                        summary_text = "### Evaluation Complete!\n\n"
+                        
+                        # Determine if we should filter the summary
+                        specific_exps = []
+                        if "--experiments" in args_to_pass:
+                            idx = args_to_pass.index("--experiments")
+                            specific_exps = args_to_pass[idx+1:]
+                            # stop at next flag
+                            specific_exps = [e for e in specific_exps if not e.startswith("-")]
+
+                        for exp_name, res in summary.items():
+                            if not specific_exps or exp_name in specific_exps:
+                                summary_text += f"**{exp_name.upper()}**\n"
+                                if isinstance(res, dict) and "error" in res:
+                                    summary_text += f"- *error*: {res['error']}\n\n"
+                                    continue
+                                for variant, data in res.items():
+                                    if isinstance(data, dict):
+                                        agg = data.get("aggregate", {})
+                                        metrics = " | ".join(f"`{k}`: {v}" for k, v in agg.items())
+                                        summary_text += f"- *{variant}*: {metrics}\n"
+                                    else:
+                                        summary_text += f"- *{variant}*: {data}\n"
+                                summary_text += "\n"
+                        await websocket.send_json({"type": "message", "role": "assistant", "content": summary_text})
+                    except Exception as e:
+                        await websocket.send_json({"type": "message", "role": "assistant", "content": f"Could not load summary: {e}"})
+                
+                except Exception as e:
+                    await websocket.send_json({"type": "message", "role": "assistant", "content": f"Failed to run evals: {e}"})
+                
+                await websocket.send_json({"type": "process_end"})
+                continue
 
             try:
                 aborted = False
@@ -414,6 +491,26 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 if aborted:
                     # Do not emit stale step events after user cancellation.
                     pass
+                elif _LOG_SESSIONS:
+                    try:
+                        final_state = await graph.aget_state(config)
+                        vals = final_state.values if final_state else {}
+                        _SESSION_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+                        log_path = _SESSION_LOGS_DIR / f"{session_id}.json"
+                        conversation = [
+                            {"role": "user" if isinstance(m, HumanMessage) else "assistant", "content": m.content}
+                            for m in vals.get("messages", [])
+                            if (isinstance(m, (HumanMessage, AIMessage)) and m.content)
+                        ]
+                        log_path.write_text(json.dumps({
+                            "session_id": session_id,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "preferences": vals.get("preferences"),
+                            "listing_profiles": vals.get("listing_profiles", []),
+                            "conversation": conversation,
+                        }, indent=2))
+                    except Exception:
+                        pass
             except Exception as e:
                 traceback.print_exc()
                 err_str = str(e)

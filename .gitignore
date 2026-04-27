@@ -42,6 +42,7 @@ evals/results/*.json
 
 # Misc
 *.log
+logs/
 
 # PDFs — ignored by default, but allow the milestone report through
 *.pdf

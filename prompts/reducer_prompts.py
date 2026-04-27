@@ -25,6 +25,13 @@ Return JSON in exactly this format:
 
 ranked_urls: best-first, URLs only, max MAX_SHOWN.
 
+Ranking rules — apply in order:
+1. Hard constraints first: exclude any listing marked disqualified or that violates budget/bedrooms/pet policy.
+2. Soft constraints next: listings that satisfy more of the user's soft_constraints rank higher than those that satisfy fewer.
+3. Trade-off rules: if the user stated explicit trade-offs (e.g. "willing to pay $X more for Y"), apply them to the real numbers in the profiles.
+4. Commute tiebreaker: when soft constraints are equally satisfied, prefer shorter total commute time to the user's stated destinations.
+5. Price last: only use price as a tiebreaker when everything else is equal.
+
 response rules — write a pure market analysis:
 - 2-4 sentences on what the market looks like for this user's criteria: price range, neighborhood patterns, trade-offs that keep coming up.
 - Highlight what the best options have in common and what compromises are typical.
