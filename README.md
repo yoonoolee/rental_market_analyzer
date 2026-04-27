@@ -102,6 +102,24 @@ The result is a ranked recommendation list built from real data - actual commute
 ```
 
 
+## LLM Models by Step
+
+| Step | Role | Default Provider | Default Model | Fallback | Fallback Model | Temp | Pinned? |
+|---|---|---|---|---|---|---|---|
+| Intent classification | `intent_router_classify` | Groq | `llama-3.1-8b-instant` | OpenAI | `gpt-4o-mini` | 0.0 | No |
+| Intent chat response | `intent_router_chat` | Groq | `llama-3.3-70b-versatile` | OpenAI | `gpt-4o` | 0.4 | No |
+| Preference extraction | `elicitation_extract` | Groq | `llama-3.1-8b-instant` | OpenAI | `gpt-4o-mini` | 0.1 | No |
+| Preference chat | `elicitation_chat` | Groq | `llama-3.3-70b-versatile` | OpenAI | `gpt-4o` | 0.4 | No |
+| Search planning | `planner` | Groq | `llama-3.3-70b-versatile` | OpenAI | `gpt-4o-mini` | 0.2 | No |
+| Listing agent | `listing_agent` | OpenAI | `gpt-4o-mini` | — | — | 0.1 | **Yes (OpenAI only)** |
+| Result reduction | `reducer` | Anthropic | `claude-sonnet-4-6` | OpenAI | `gpt-4o-mini` | 0.3 | No |
+| Market analysis | `analyzer` | Anthropic | `claude-sonnet-4-6` | OpenAI | `gpt-4o-mini` | 0.3 | No |
+| Photo vision | `photo_vision` | OpenAI | `gpt-4o-mini` | — | — | 0.2 | **Yes (OpenAI only)** |
+
+Model selection is centralized in [`graph/llm.py`](graph/llm.py) and can be overridden per-role via the `RENTAL_MODELS` env var or globally via `LLM_PROVIDER`.
+
+---
+
 ## How the Listing Agents Work
 
 Each listing agent is a ReAct (Reason + Act) agent. It has a set of tools and decides which ones to call based on what it finds and what the user cares about - not a fixed pipeline.
@@ -230,7 +248,7 @@ Run with `python -m evals.run_evals`. See [`evals/README.md`](evals/README.md) f
 - ~~Evals datasets~~ — **done.** 30-listing static corpus, 10 preferences (5 validation / 5 test), 5 human-ranked preference-to-listing sets, end-to-end experiment registered.
 - ~~Data persistence~~ — **done.** `AsyncSqliteSaver` checkpointer wired into `build_graph()` with `thread_id` per session. Session ID persisted in `localStorage`; full conversation history + final search results replayed on reconnect from SQLite.
 - ~~Photo analysis~~ — **done.** `analyze_listing_photos` uses GPT-4o-mini vision, capped to `MAX_PHOTOS` (default 12). Images proxied through `/imgproxy` backend endpoint to bypass hotlink restrictions.
-- ~~Rate limit bottleneck~~ — **done.** Text nodes on Groq (Llama 3.1/3.3), listing agents and photo analysis on OpenAI (GPT-4o-mini). Concurrency is unlimited by default (env-tunable via `LISTING_CONCURRENCY`). UI surfaces rate-limit waits + run aborts.
+- ~~Rate limit bottleneck~~ — **done.** Classify/extract/chat/plan nodes on Groq (Llama 3.1/3.3), reduce/analyze on Anthropic (Claude Sonnet 4.6), listing agents and photo analysis on OpenAI (GPT-4o-mini). Concurrency is unlimited by default (env-tunable via `LISTING_CONCURRENCY`). UI surfaces rate-limit waits + run aborts.
 - ~~Search scale~~ — **done.** 8 queries × 10 URLs = up to 80 candidate listings per round (was 3 × 1 = 3).
 - ~~WebSocket reconnect~~ — **done.** Auto-reconnects with exponential backoff on disconnect; immediately reconnects when tab becomes visible again.
 - ~~Map rendering~~ — **done.** Google Maps with geocoded pins; requires `VITE_GOOGLE_MAPS_KEY` in `frontend/.env`.
@@ -246,7 +264,9 @@ Run with `python -m evals.run_evals`. See [`evals/README.md`](evals/README.md) f
 | Frontend | React (Vite + TypeScript + Tailwind) |
 | Backend | FastAPI + WebSockets |
 | Graph / Orchestration | LangGraph |
-| LLM (text nodes) | Groq — Llama 3.1 8B (classify/extract) + Llama 3.3 70B (generate) |
+| LLM (classify/extract) | Groq — Llama 3.1 8B |
+| LLM (chat/plan) | Groq — Llama 3.3 70B |
+| LLM (reduce/analyze) | Anthropic — Claude Sonnet 4.6 |
 | LLM (listing agents + vision) | OpenAI — GPT-4o-mini |
 | Search | SerpAPI (Google) |
 | Scraping | Firecrawl |

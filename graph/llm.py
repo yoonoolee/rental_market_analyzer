@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 
+from langchain_anthropic import ChatAnthropic
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 
@@ -23,13 +24,13 @@ ROLE_DEFAULTS = {
     "elicitation_chat": {"provider": "groq", "model": "llama-3.3-70b-versatile", "temperature": 0.4},
     "planner": {"provider": "groq", "model": "llama-3.3-70b-versatile", "temperature": 0.2},
     "listing_agent": {"provider": "openai", "model": "gpt-4o-mini", "temperature": 0.1},
-    "reducer": {"provider": "groq", "model": "llama-3.3-70b-versatile", "temperature": 0.3},
-    "analyzer": {"provider": "groq", "model": "llama-3.3-70b-versatile", "temperature": 0.3},
+    "reducer": {"provider": "anthropic", "model": "claude-sonnet-4-6", "temperature": 0.3},
+    "analyzer": {"provider": "anthropic", "model": "claude-sonnet-4-6", "temperature": 0.3},
     "photo_vision": {"provider": "openai", "model": "gpt-4o-mini", "temperature": 0.2},
 }
 
 _OVERRIDE_ENV = "RENTAL_MODELS"
-# Fallback model map when provider is forced to openai but default was groq
+# Fallback model map when provider is forced to openai but default was groq/anthropic
 _OPENAI_ROLE_MODELS = {
     "intent_router_classify": "gpt-4o-mini",
     "intent_router_chat": "gpt-4o",
@@ -90,14 +91,21 @@ def _resolve_role_config(role: str) -> dict:
     elif isinstance(overrides, dict):
         base.update(overrides)
 
-    # Provider fallback chain: openai -> groq if no openai key, groq -> openai if no groq key
-    if base["provider"] == "openai" and not _valid_key("OPENAI_API_KEY"):
+    # Roles that skip Groq in the fallback chain (anthropic -> openai directly)
+    _ANTHROPIC_OPENAI_ONLY = {"reducer", "analyzer"}
+
+    if base["provider"] == "anthropic" and not _valid_key("ANTHROPIC_API_KEY"):
+        base["provider"] = "openai" if role in _ANTHROPIC_OPENAI_ONLY else "groq"
+    if base["provider"] == "openai" and not _valid_key("OPENAI_API_KEY") and role not in _ANTHROPIC_OPENAI_ONLY:
         base["provider"] = "groq"
     if base["provider"] == "groq" and not _valid_key("GROQ_API_KEY"):
         base["provider"] = "openai"
 
-    # If provider is openai but model is a llama name, swap to openai equivalent
-    if base["provider"] == "openai" and str(base.get("model", "")).startswith("llama"):
+    # If provider switched away from anthropic/groq, swap model to openai equivalent
+    if base["provider"] == "openai" and (
+        str(base.get("model", "")).startswith("llama")
+        or str(base.get("model", "")).startswith("claude")
+    ):
         base["model"] = _OPENAI_ROLE_MODELS[role]
 
     return base
@@ -105,6 +113,14 @@ def _resolve_role_config(role: str) -> dict:
 
 def _create_model(provider: str, model: str, temperature: float):
     provider = provider.lower()
+    if provider == "anthropic":
+        if not _valid_key("ANTHROPIC_API_KEY"):
+            raise ValueError("ANTHROPIC_API_KEY is missing or invalid.")
+        return ChatAnthropic(
+            model=model,
+            temperature=temperature,
+            api_key=os.getenv("ANTHROPIC_API_KEY"),
+        )
     if provider == "openai":
         if not _valid_key("OPENAI_API_KEY"):
             raise ValueError("OPENAI_API_KEY is missing or invalid.")
@@ -165,6 +181,10 @@ class _RetryableMixin:
                 await asyncio.sleep(wait)
 
 
+class _RetryableAnthropicLLM(_RetryableMixin, ChatAnthropic):
+    pass
+
+
 class _RetryableOpenAILLM(_RetryableMixin, ChatOpenAI):
     pass
 
@@ -175,6 +195,14 @@ class _RetryableGroqLLM(_RetryableMixin, ChatGroq):
 
 def make_base_llm(role: str):
     cfg = _resolve_role_config(role)
+    if cfg["provider"] == "anthropic":
+        if not _valid_key("ANTHROPIC_API_KEY"):
+            raise ValueError("ANTHROPIC_API_KEY is missing or invalid.")
+        return _RetryableAnthropicLLM(
+            model=cfg["model"],
+            temperature=cfg["temperature"],
+            api_key=os.getenv("ANTHROPIC_API_KEY"),
+        )
     if cfg["provider"] == "openai":
         if not _valid_key("OPENAI_API_KEY"):
             raise ValueError("OPENAI_API_KEY is missing or invalid.")
