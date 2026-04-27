@@ -374,6 +374,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "label": "Requirements understood — starting search",
                                 "detail": [pref_summary] if pref_summary else [],
                             })
+                            if prefs:
+                                await websocket.send_json({"type": "preferences", "data": prefs})
                         else:
                             await websocket.send_json({
                                 "type": "process_step",

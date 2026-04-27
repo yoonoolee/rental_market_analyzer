@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { APIProvider, Map, AdvancedMarker, InfoWindow, useMapsLibrary } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, Marker, InfoWindow, useMapsLibrary } from '@vis.gl/react-google-maps'
 import type { ListingProfile } from '../hooks/useChat'
 
 type PinnedListing = {
@@ -38,18 +38,32 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
     Promise.all(tasks).then(() => setPinned([...results]))
   }, [geocodingLib, listings])
 
+  const makeBubbleIcon = (price: number | undefined) => {
+    const text = price ? `$${price.toLocaleString()}` : '?'
+    const w = Math.max(52, text.length * 8 + 16)
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="28">
+      <rect x="0" y="0" width="${w}" height="28" rx="14" fill="#111827"/>
+      <text x="${w / 2}" y="19" text-anchor="middle" fill="white" font-size="12"
+        font-family="system-ui,-apple-system,sans-serif" font-weight="700">${text}</text>
+    </svg>`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (window as any).google?.maps
+    return {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: g ? new g.Size(w, 28) : undefined,
+      anchor: g ? new g.Point(w / 2, 14) : undefined,
+    }
+  }
+
   return (
     <>
       {pinned.map((p, i) => (
-        <AdvancedMarker
+        <Marker
           key={i}
           position={{ lat: p.lat, lng: p.lng }}
           onClick={() => setSelected(p)}
-        >
-          <div className="bg-gray-900 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md whitespace-nowrap cursor-pointer hover:bg-gray-700 transition-colors">
-            ${p.listing.price?.toLocaleString()}/mo
-          </div>
-        </AdvancedMarker>
+          icon={makeBubbleIcon(p.listing.price)}
+        />
       ))}
 
       {selected && (
@@ -67,12 +81,7 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
               </p>
             )}
             <p className="text-gray-500">{selected.listing.address}</p>
-            <a
-              href={selected.listing.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 hover:underline mt-1"
-            >
+            <a href={selected.listing.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline mt-1">
               View listing →
             </a>
           </div>
@@ -84,14 +93,13 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
 
 export function ListingMap({ listings }: { listings: ListingProfile[] }) {
   const addressedListings = listings.filter(l => l.address)
-  if (!addressedListings.length || !API_KEY) return null
+  if (!addressedListings.length) return null
 
   return (
     <APIProvider apiKey={API_KEY}>
       <Map
         defaultCenter={{ lat: 37.8716, lng: -122.2727 }}
         defaultZoom={12}
-        mapId="rental-map"
         style={{ width: '100%', height: '100%' }}
         disableDefaultUI
         zoomControl

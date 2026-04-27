@@ -15,6 +15,7 @@ export default function App() {
     connected,
     connectionState,
     sessions,
+    preferences,
     sendMessage,
     newChat,
     switchSession,
@@ -47,7 +48,7 @@ export default function App() {
         onDelete={deleteSession}
       />
 
-      <div className="flex-1 min-w-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="flex-1 min-w-0 min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_28rem]" style={{height: '100vh'}}>
         <section className="min-w-0 flex flex-col h-screen">
           <header className="h-14 shrink-0 border-b border-gray-200 px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -91,7 +92,7 @@ export default function App() {
             <>
               <main className="flex-1 overflow-y-auto px-4 pt-4 pb-8">
                 <div className="max-w-3xl mx-auto flex flex-col gap-6">
-                  {messages.map((m) => (
+                  {messages.filter(m => m.role !== 'listings').map((m) => (
                     <MessageBubble key={m.id} message={m} onSend={sendMessage} />
                   ))}
                   <div ref={bottomRef} />
@@ -111,7 +112,7 @@ export default function App() {
               </button>
               {showMobileListings && (
                 <div className="mt-3 max-h-80 overflow-y-auto flex flex-col gap-3">
-                  {latestListings.map((l, i) => <ListingCard key={i} listing={l} />)}
+                  {latestListings.map((l, i) => <ListingCard key={i} listing={l} preferences={preferences} />)}
                 </div>
               )}
             </div>
@@ -119,18 +120,18 @@ export default function App() {
         </section>
 
         {hasListings && (
-          <aside className="hidden lg:flex border-l border-gray-200 flex-col h-screen">
-            <div className="px-4 pt-4 pb-3 shrink-0">
+          <aside className="hidden lg:block overflow-y-auto" style={{height: '100vh'}}>
+            <div className="px-4 pt-4 pb-3">
               <p className="text-sm font-semibold text-gray-700">{latestListings.length} listings found</p>
             </div>
-            <div className="h-52 shrink-0 px-4">
-              <div className="w-full h-full rounded-xl overflow-hidden bg-gray-100">
+            <div className="h-72 px-4 mb-4">
+              <div className="w-full h-full rounded-xl overflow-hidden">
                 <ListingMap listings={latestListings} />
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+            <div className="px-4 pb-8 flex flex-col gap-6">
               {latestListings.map((l, i) => (
-                <ListingCard key={i} listing={l} />
+                <ListingCard key={i} listing={l} preferences={preferences} />
               ))}
             </div>
           </aside>

@@ -90,6 +90,7 @@ export function useChat() {
   const [connected, setConnected] = useState(false)
   const [connectionState, setConnectionState] = useState<'connected' | 'disconnected' | 'error'>('disconnected')
   const [sessions, setSessions] = useState<SessionMeta[]>(loadSessions)
+  const [preferences, setPreferences] = useState<Record<string, unknown>>({})
   const ws = useRef<WebSocket | null>(null)
   const sessionId = useRef(getOrCreateCurrentId())
   const titleSet = useRef(false)
@@ -239,6 +240,9 @@ export function useChat() {
         setConnectionState('error')
         setMessages(prev => [...prev, { id: generateId(), role: 'assistant', content: `Error: ${data.content}` }])
 
+      } else if (data.type === 'preferences') {
+        setPreferences(data.data || {})
+
       } else if (data.type === 'connection_state') {
         const state = data.state === 'connected' || data.state === 'error' ? data.state : 'disconnected'
         if (state === 'error') console.error('[ws] connection_state: error')
@@ -251,6 +255,7 @@ export function useChat() {
     manualClose.current = true
     ws.current?.close()
     setMessages([])
+    setPreferences({})
     setIsThinking(false)
     setConnected(false)
     setConnectionState('disconnected')
@@ -359,6 +364,7 @@ export function useChat() {
     connected,
     connectionState,
     sessions,
+    preferences,
     sendMessage,
     newChat,
     switchSession,

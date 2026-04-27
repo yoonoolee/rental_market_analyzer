@@ -1,4 +1,5 @@
 import json
+import json_repair
 import re
 import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
@@ -77,7 +78,8 @@ async def reducer_node(state: RentalState) -> dict:
     final_response = content
     try:
         match = re.search(r'```(?:json)?\s*([\s\S]*?)```', content)
-        parsed = json.loads(match.group(1).strip() if match else content.strip())
+        raw = match.group(1).strip() if match else content.strip()
+        parsed = json.loads(json_repair.repair_json(raw))
         ranked_urls = parsed.get("ranked_urls", [])
         final_response = parsed.get("response", content)
     except (json.JSONDecodeError, AttributeError, ValueError):
