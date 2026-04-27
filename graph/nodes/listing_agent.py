@@ -104,7 +104,7 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
         await adispatch_custom_event("timing_log", {"msg": f"DONE     {short_url}  (ran {t_end - t_start:.1f}s, total {t_end - t_queued:.1f}s)"})
 
     # find the last AIMessage (not ToolMessage) with content
-    from langchain_core.messages import AIMessage as LCAIMessage
+    from langchain_core.messages import AIMessage as LCAIMessage, ToolMessage
     ai_messages = [m for m in result["messages"] if isinstance(m, LCAIMessage) and m.content]
     final_content = ai_messages[-1].content if ai_messages else ""
 
@@ -117,5 +117,18 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
             "disqualified": True,
             "disqualify_reason": f"Parse failed ({str(e)[:100]}). Last AI msg: {str(final_content)[:150]}",
         }
+
+    # Override images with the full list from the scrape tool result — the LLM
+    # tends to truncate long image arrays in its JSON summary.
+    for msg in result["messages"]:
+        if isinstance(msg, ToolMessage) and msg.name == "scrape_listing":
+            try:
+                scrape_data = json.loads(msg.content) if isinstance(msg.content, str) else msg.content
+                scraped_images = scrape_data.get("images") if isinstance(scrape_data, dict) else None
+                if scraped_images:
+                    profile["images"] = [u for u in scraped_images if u][:10]
+            except Exception:
+                pass
+            break
 
     return {"listing_profiles": [profile]}

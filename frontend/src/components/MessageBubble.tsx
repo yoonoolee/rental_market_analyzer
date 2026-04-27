@@ -54,7 +54,7 @@ export function MessageBubble({ message, onSend }: Props) {
 
   return (
     <div className="flex items-start">
-      <div className="assistant-message flex-1">
+      <div className="assistant-message flex-1 min-w-0 overflow-hidden">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
       </div>
     </div>
