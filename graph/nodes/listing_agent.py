@@ -87,9 +87,14 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
                         HumanMessage(content=f"Research this listing and return a structured JSON profile: {url}"),
                     ]
                 },
-                config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"]},
-            ), timeout=60)
+                config={"run_name": f"listing_agent:{url[:60]}", "tags": ["listing_agent"], "recursion_limit": 12},
+            ), timeout=120)
         except Exception as e:
+            await adispatch_custom_event("error_log", {
+                "node": "listing_agent",
+                "error": f"{type(e).__name__} for {url[:80]}: {str(e)[:300]}",
+                "level": "error",
+            })
             from langchain_core.messages import AIMessage as LCAIMessage
             result = {
                 "messages": [LCAIMessage(content=f'{{"url":"{url}","disqualified":true,"disqualify_reason":"agent invocation failed: {str(e)[:120]}"}}')]

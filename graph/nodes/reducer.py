@@ -2,6 +2,7 @@ import json
 import re
 import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
 from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS, MAX_SHOWN
@@ -52,6 +53,11 @@ async def reducer_node(state: RentalState) -> dict:
             ))
         ]), timeout=20)
     except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "reducer",
+            "error": f"{type(e).__name__}: {str(e)[:300]}",
+            "level": "error",
+        })
         fallback = (
             f"I hit an LLM error while ranking listings ({str(e)[:80]}). "
             f"Showing the best available {min(len(good_profiles), MAX_SHOWN)} listing(s) by discovery order."

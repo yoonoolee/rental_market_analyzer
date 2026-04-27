@@ -29,7 +29,7 @@ Return valid JSON (no markdown) with this structure:
   "ready_to_search": true or false
 }
 
-hard_requirements: things the user will not compromise on.
+hard_requirements: things the user will not compromise on. When the user mentions a price without specifying a minimum, always infer it as a maximum and write it as "max $X/mo" (e.g. "$3000 1 bed berkeley" → "max $3000/mo"). Never write a bare dollar amount — always prefix with "max".
 soft_constraints: preferences that matter but have some flexibility. Capture exactly what they said, don't generalize.
 trade_off_rules: explicit conditional flexibility.
 

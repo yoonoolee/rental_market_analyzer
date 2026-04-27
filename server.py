@@ -175,6 +175,28 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         await websocket.send_json({"type": "debug_log", "msg": event.get("data", {}).get("msg", "")})
                         continue
 
+                    if kind == "on_custom_event" and name == "supervisor_expand":
+                        d = event.get("data", {})
+                        cat_count = d.get("category_count", 0)
+                        extracted_count = d.get("extracted_count", 0)
+                        detail = d.get("detail", [])
+                        await websocket.send_json({
+                            "type": "process_step",
+                            "node": "supervisor_expand",
+                            "label": f"Expanded {cat_count} search pages → {extracted_count} listings found",
+                            "detail": detail,
+                        })
+                        continue
+
+                    if kind == "on_custom_event" and name == "error_log":
+                        d = event.get("data", {})
+                        node = d.get("node", "?")
+                        msg = d.get("error", "")
+                        level = d.get("level", "error")
+                        logger.error("[%s] %s", node, msg)
+                        await websocket.send_json({"type": "debug_error", "node": node, "msg": msg, "level": level})
+                        continue
+
                     # rate limit wait — find which agent triggered it via parent_ids
                     if kind == "on_custom_event" and name == "rate_limit_wait":
                         wait = event.get("data", {}).get("wait", 0)
@@ -392,8 +414,22 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                     pass
             except Exception as e:
                 traceback.print_exc()
+                err_str = str(e)
+                err_lower = err_str.lower()
+                if "rate limit" in err_lower or "429" in err_str or "too many requests" in err_lower:
+                    err_label = "RateLimitError"
+                elif any(x in err_lower for x in ("insufficient_credits", "billing", "quota_exceeded", "payment")):
+                    err_label = "CreditsError"
+                elif any(x in err_lower for x in ("context_length_exceeded", "maximum context length", "too many tokens", "max_tokens")):
+                    err_label = "TokenLimitError"
+                elif "401" in err_str or "unauthorized" in err_lower or "invalid api key" in err_lower or "authentication" in err_lower:
+                    err_label = "AuthError"
+                else:
+                    err_label = type(e).__name__
+                logger.error("[graph] %s: %s", err_label, err_str)
+                await websocket.send_json({"type": "debug_error", "node": "graph", "msg": f"{err_label}: {err_str}", "level": "error"})
                 await websocket.send_json({"type": "connection_state", "state": "error"})
-                await websocket.send_json({"type": "error", "content": str(e)})
+                await websocket.send_json({"type": "error", "content": err_str})
 
             await websocket.send_json({"type": "process_end"})
 

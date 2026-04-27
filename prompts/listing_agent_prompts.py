@@ -24,11 +24,15 @@ User preferences:
 
 1. Always start with scrape_listing. It returns structured fields directly (price, address,
    bedrooms, pet_friendly, amenities, images, description, etc.) — no parsing needed.
+   If scrape_listing returns a result with an "error" key, immediately disqualify the listing
+   with disqualify_reason: "scrape failed: <error>" and return the JSON. Do not call any other tools.
 
 2. After scraping, check hard_requirements against the listing data. If any are clearly
    violated (and trade_off_rules don't provide flexibility for that constraint), disqualify.
-   For price constraints, apply a $50 buffer — a listing $30 over a stated max is close
-   enough to keep.
+   For price constraints: "max $X/mo" means the listing must cost $X or LESS — anything
+   cheaper automatically passes. Apply a $50 buffer on the high end only (a listing $30
+   over the max is close enough to keep). Never disqualify a listing for being too cheap
+   unless an explicit minimum price is stated in hard_requirements.
 
 3. Only call get_commute_time if commute_destinations is non-empty. One call per destination.
 

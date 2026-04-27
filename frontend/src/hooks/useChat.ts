@@ -120,15 +120,18 @@ export function useChat() {
       reconnectAttempt.current = 0
       setConnected(true)
       setConnectionState('connected')
+      console.log(`[ws] connected — session ${sid}`)
     }
-    socket.onclose = () => {
+    socket.onclose = (ev) => {
       setConnected(false)
       setConnectionState('disconnected')
+      console.log(`[ws] disconnected (code ${ev.code})`)
       if (!manualClose.current) reconnect(sid)
     }
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
+      console.log('[ws:raw]', data.type, data)
 
       if (data.type === 'message') {
         setMessages(prev => [...prev, { id: generateId(), role: data.role, content: data.content }])
@@ -185,6 +188,7 @@ export function useChat() {
         } : m))
 
       } else if (data.type === 'agent_update') {
+        if (data.status === 'rate limited') console.warn(`[listing_agent] rate limited: ${data.url} — waiting ${data.wait_seconds}s`)
         const pid = processId.current
         if (!pid) return
         setMessages(prev => prev.map(m => m.id === pid ? {
@@ -201,7 +205,15 @@ export function useChat() {
         } : m))
 
       } else if (data.type === 'debug_log') {
-        console.log(`[listing_agent] ${data.msg}`)
+        console.log(`[timing] ${data.msg}`)
+
+      } else if (data.type === 'debug_error') {
+        const prefix = `[${data.node || 'server'}]`
+        if (data.level === 'warn') {
+          console.warn(prefix, data.msg)
+        } else {
+          console.error(prefix, data.msg)
+        }
 
       } else if (data.type === 'process_end') {
         const pid = processId.current
@@ -219,6 +231,7 @@ export function useChat() {
         setIsThinking(false)
 
       } else if (data.type === 'error') {
+        console.error('[graph] fatal error:', data.content)
         const pid = processId.current
         if (pid) setMessages(prev => prev.map(m => m.id === pid ? { ...m, isRunning: false } : m))
         processId.current = null
@@ -228,6 +241,7 @@ export function useChat() {
 
       } else if (data.type === 'connection_state') {
         const state = data.state === 'connected' || data.state === 'error' ? data.state : 'disconnected'
+        if (state === 'error') console.error('[ws] connection_state: error')
         setConnectionState(state)
       }
     }

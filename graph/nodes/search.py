@@ -1,9 +1,10 @@
 import os
 from serpapi import GoogleSearch
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..state import SearchNodeState
 
 
-def search_node(state: SearchNodeState) -> dict:
+async def search_node(state: SearchNodeState) -> dict:
     """
     Executes a single SerpAPI search query. This node gets called in parallel
     for each query the planner generated (via LangGraph's Send API in builder.py).
@@ -30,6 +31,11 @@ def search_node(state: SearchNodeState) -> dict:
         raw = search.get_dict()
         organic = raw.get("organic_results", [])
     except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "search",
+            "error": f"{type(e).__name__} for query '{query[:80]}': {str(e)[:300]}",
+            "level": "error",
+        })
         return {
             "search_results": [{
                 "query": query,
@@ -49,6 +55,12 @@ def search_node(state: SearchNodeState) -> dict:
             "source": r.get("source", ""),
         })
 
+    links = [r["link"] for r in results if r.get("link")]
+    await adispatch_custom_event("error_log", {
+        "node": "search",
+        "error": f"query '{query[:80]}' → {len(links)} results: {links[:5]}",
+        "level": "warn",
+    })
     return {
         "search_results": [{
             "query": query,

@@ -1,6 +1,7 @@
 import json
 import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.analyzer_prompts import ANALYZER_PROMPT
@@ -39,7 +40,12 @@ async def analyzer_node(state: RentalState) -> dict:
                 f"{json.dumps(disqualified_profiles, indent=2)}"
             ))
         ]), timeout=20)
-    except Exception:
+    except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "analyzer",
+            "error": f"{type(e).__name__}: {str(e)[:300]}",
+            "level": "error",
+        })
         return {"analysis_insights": ""}
 
     insights = response.content if isinstance(response.content, str) else ""

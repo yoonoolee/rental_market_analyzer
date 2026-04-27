@@ -139,12 +139,27 @@ class _RetryableMixin:
             try:
                 return await super()._agenerate(messages, stop=stop, run_manager=run_manager, **kwargs)
             except Exception as e:
-                if not _is_rate_limit_error(e) or attempt == 5:
+                is_rate_limit = _is_rate_limit_error(e)
+                if not is_rate_limit or attempt == 5:
+                    try:
+                        if run_manager:
+                            await run_manager.on_custom_event("error_log", {
+                                "node": "llm",
+                                "error": f"{type(e).__name__} (attempt {attempt + 1}/6): {str(e)[:300]}",
+                                "level": "error",
+                            })
+                    except Exception:
+                        pass
                     raise
                 wait = min(4 * (2 ** attempt), 60)
                 try:
                     if run_manager:
                         await run_manager.on_custom_event("rate_limit_wait", {"wait": wait})
+                        await run_manager.on_custom_event("error_log", {
+                            "node": "llm",
+                            "error": f"Rate limit (attempt {attempt + 1}/6) — retrying in {wait}s: {str(e)[:200]}",
+                            "level": "warn",
+                        })
                 except Exception:
                     pass
                 await asyncio.sleep(wait)

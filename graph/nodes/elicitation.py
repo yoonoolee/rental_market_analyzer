@@ -2,6 +2,7 @@ import json
 import re
 import asyncio
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.elicitation_prompts import SYSTEM_PROMPT, EXTRACTION_PROMPT
@@ -122,8 +123,12 @@ async def elicitation_node(state: RentalState) -> dict:
             ), timeout=8)
             extra = _extract_json(extraction_response.content)
             merged_prefs = {**merged_prefs, **extra.get("new_preferences", {})}
-        except Exception:
-            pass
+        except Exception as e:
+            await adispatch_custom_event("error_log", {
+                "node": "elicitation:extract",
+                "error": f"{type(e).__name__}: {str(e)[:300]}",
+                "level": "error",
+            })
         return {"preferences": merged_prefs, "ready_to_search": True}
 
     # Need more info — try LLM extraction to find anything the heuristic missed.
@@ -145,8 +150,12 @@ async def elicitation_node(state: RentalState) -> dict:
         merged_prefs = {**merged_prefs, **parsed.get("new_preferences", {})}
         if parsed.get("ready_to_search") or _has_enough(merged_prefs):
             return {"preferences": merged_prefs, "ready_to_search": True}
-    except Exception:
-        pass
+    except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "elicitation:extract",
+            "error": f"{type(e).__name__}: {str(e)[:300]}",
+            "level": "error",
+        })
 
     # Still not ready — generate a clarifying question.
     try:
@@ -168,8 +177,13 @@ async def elicitation_node(state: RentalState) -> dict:
         parsed_q = _extract_json(question_response.content)
         question_text = parsed_q["question"]
         options = parsed_q.get("options", [])
-    except Exception:
+    except Exception as e:
         question_text, options = _fallback_question(merged_prefs)
+        await adispatch_custom_event("error_log", {
+            "node": "elicitation:ask_question",
+            "error": f"{type(e).__name__}: {str(e)[:300]}",
+            "level": "error",
+        })
 
     return {
         "preferences": merged_prefs,

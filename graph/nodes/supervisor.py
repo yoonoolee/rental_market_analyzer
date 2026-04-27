@@ -1,6 +1,9 @@
 import re
 import os
+import asyncio
 from urllib.parse import urlparse
+from firecrawl import AsyncFirecrawl
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..state import RentalState
 
 TRUSTED_DOMAINS = {
@@ -13,11 +16,26 @@ TRUSTED_DOMAINS = {
     # "padmapper.com",
 }
 
+# how many top listings to surface in the final response
+MAX_SHOWN = int(os.getenv("MAX_SHOWN", "20"))
+
+# how many good (non-disqualified) listing profiles we want before proceeding to reducer
+MIN_GOOD_RESULTS = MAX_SHOWN
+
+# cap on how many search + listing cycles we'll run before giving up and going to reducer
+MAX_SEARCH_ATTEMPTS = int(os.getenv("MAX_SEARCH_ATTEMPTS", "2"))
+
+# per-round URL budget to bound end-to-end latency and API spend.
+MAX_URLS_PER_ROUND = int(os.getenv("MAX_URLS_PER_ROUND", "80"))
+
+# max category pages to scrape per round
+MAX_CATEGORY_PAGES = int(os.getenv("MAX_CATEGORY_PAGES", "10"))
+
 
 def _is_valid_listing(url: str) -> bool:
     """
     Keep only individual listing pages from trusted rental sites.
-    - Zillow: must start with /homedetails/ (not category/pagination pages)
+    - Zillow: must start with /homedetails/
     - apartments.com: 2 segments where the last is a short alphanumeric listing ID
     - Others: 3+ segments (heuristic for detail pages vs search pages)
     """
@@ -30,97 +48,148 @@ def _is_valid_listing(url: str) -> bool:
             return False
         segments = [s for s in parsed.path.split("/") if s]
 
-        # Zillow individual listings always live under /homedetails/
         if "zillow.com" in hostname:
             return len(segments) >= 2 and segments[0] == "homedetails"
 
-        # apartments.com individual listings: exactly 2 segments, last is short alphanumeric ID
         if "apartments.com" in hostname:
-            return len(segments) == 2 and bool(re.match(r'^[a-z0-9]{4,10}$', segments[-1]))
+            if len(segments) != 2:
+                return False
+            slug, listing_id = segments
+            if not re.match(r'^[a-z0-9]{6,9}$', listing_id):
+                return False
+            # Property slug must be a street address (starts with digit) or a long property name (>30 chars)
+            return slug[0].isdigit() or len(slug) > 30
 
-        # trulia and other trusted domains: 3+ segment paths are individual listings
         return len(segments) >= 3
     except Exception:
         return False
 
 
-# how many top listings to surface in the final response
-MAX_SHOWN = int(os.getenv("MAX_SHOWN", "20"))
+def _is_category_page(url: str) -> bool:
+    """
+    Return True if the URL is a trusted domain search/browse results page
+    (not an individual listing, but a page that likely contains listing links).
+    """
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname or ""
+        if not any(hostname == d or hostname.endswith("." + d) for d in TRUSTED_DOMAINS):
+            return False
+        if parsed.query:
+            return False
+        if _is_valid_listing(url):
+            return False
+        segments = [s for s in parsed.path.split("/") if s]
+        return 1 <= len(segments) <= 4
+    except Exception:
+        return False
 
-# how many good (non-disqualified) listing profiles we want before proceeding to reducer
-MIN_GOOD_RESULTS = MAX_SHOWN
 
-# cap on how many search + listing cycles we'll run before giving up and going to reducer
-# with whatever we have. prevents infinite loops when the market is thin.
-MAX_SEARCH_ATTEMPTS = int(os.getenv("MAX_SEARCH_ATTEMPTS", "2"))
-
-# per-round URL budget to bound end-to-end latency and API spend.
-MAX_URLS_PER_ROUND = int(os.getenv("MAX_URLS_PER_ROUND", "80"))
+async def _scrape_category_page(url: str) -> list[str]:
+    """
+    Use Firecrawl to render a category/search page and extract individual listing URLs.
+    Returns a deduplicated list of URLs that pass _is_valid_listing().
+    """
+    try:
+        app = AsyncFirecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
+        result = await asyncio.wait_for(app.scrape(url, formats=["links"]), timeout=30)
+        links = result.links or []
+        found = []
+        seen = set()
+        for href in links:
+            href = href.split("?")[0].split("#")[0]
+            if href not in seen and _is_valid_listing(href):
+                seen.add(href)
+                found.append(href)
+        return found
+    except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "supervisor:expand",
+            "error": f"{type(e).__name__} scraping {url[:80]}: {str(e)[:200]}",
+            "level": "error",
+        })
+        return []
 
 
 async def supervisor_node(state: RentalState) -> dict:
-    """
-    Extracts new listing URLs from search results and queues them for listing agents.
-
-    On each call (initial or retry), supervisor looks at all accumulated search_results,
-    filters out URLs already sent to a listing agent (tracked in searched_urls), and
-    queues the remaining ones in pending_urls for this round.
-
-    The fan_out_to_listing_agents routing function in builder.py reads pending_urls
-    to create the parallel Send calls - same pattern as fan_out_to_searches for search nodes.
-    """
     all_search_results = state.get("search_results", [])
     already_searched = set(state.get("searched_urls", []))
 
-    # extract all URLs from accumulated search results across all rounds
-    all_urls = []
+    # collect all raw URLs from search results
+    raw_urls = []
     for result_batch in all_search_results:
         for r in result_batch.get("results", []):
             link = r.get("link", "")
             if link:
-                all_urls.append(link)
+                raw_urls.append(link)
 
-    # filter to trusted listing sites and individual detail pages, deduplicate, skip already-processed
-    seen = set()
-    new_urls = []
-    for url in all_urls:
-        if url not in already_searched and url not in seen and _is_valid_listing(url):
-            seen.add(url)
-            new_urls.append(url)
-            if len(new_urls) >= MAX_URLS_PER_ROUND:
-                break
+    # bucket into individual listings vs category pages, skipping already-seen URLs
+    seen = set(already_searched)
+    direct_listings = []
+    category_pages = []
+
+    for url in raw_urls:
+        if url in seen:
+            continue
+        seen.add(url)
+        if _is_valid_listing(url):
+            direct_listings.append(url)
+        elif _is_category_page(url):
+            category_pages.append(url)
+
+    # scrape category pages in parallel to extract individual listing URLs
+    extracted_listings = []
+    if category_pages:
+        pages_to_scrape = category_pages[:MAX_CATEGORY_PAGES]
+        scrape_results = await asyncio.gather(*[_scrape_category_page(u) for u in pages_to_scrape])
+        for batch in scrape_results:
+            for url in batch:
+                if url not in seen:
+                    seen.add(url)
+                    extracted_listings.append(url)
+
+        console_msg = (
+            f"Scraped {len(pages_to_scrape)} category pages → "
+            f"{len(extracted_listings)} additional listings found"
+        )
+        await adispatch_custom_event("error_log", {
+            "node": "supervisor",
+            "error": console_msg,
+            "level": "warn",
+        })
+
+        # emit a UI process step if we found anything from category pages
+        if extracted_listings:
+            await adispatch_custom_event("supervisor_expand", {
+                "category_count": len(pages_to_scrape),
+                "extracted_count": len(extracted_listings),
+                "detail": extracted_listings,
+            })
+
+    # combine: direct first (higher confidence), then extracted — deduplicated by `seen` above
+    all_new_urls = (direct_listings + extracted_listings)[:MAX_URLS_PER_ROUND]
+
+    await adispatch_custom_event("error_log", {
+        "node": "supervisor",
+        "error": (
+            f"Final queue: {len(direct_listings)} direct + {len(extracted_listings)} extracted "
+            f"= {len(all_new_urls)} total (cap {MAX_URLS_PER_ROUND})"
+        ),
+        "level": "warn",
+    })
 
     return {
-        # pending_urls is a plain list (replaced each round) - fan_out reads from this
-        "pending_urls": new_urls,
-        # searched_urls uses operator.add, so returning new_urls appends them
-        # to the running history. subsequent supervisor calls won't re-queue these.
-        "searched_urls": new_urls,
+        "pending_urls": all_new_urls,
+        # track both individual URLs and category pages so retry rounds skip them
+        "searched_urls": all_new_urls + category_pages,
     }
 
 
 async def results_check_node(state: RentalState) -> dict:
-    """
-    Runs after all listing agents complete. Counts good results and increments
-    the attempt counter.
-
-    The routing decision (reducer vs retry) lives in route_after_results_check
-    in builder.py - this node just updates the attempt count so the router
-    can make that decision.
-    """
     return {"search_attempts": state.get("search_attempts", 0) + 1}
 
 
 def route_after_results_check(state: RentalState) -> str:
-    """
-    Decide whether we have enough good listings or need to retry.
-
-    Proceeds to reducer if:
-    - We have MIN_GOOD_RESULTS or more non-disqualified profiles, OR
-    - We've hit MAX_SEARCH_ATTEMPTS (go with what we have, don't loop forever)
-
-    Otherwise routes back to planner to generate new queries and try again.
-    """
     good_profiles = [
         p for p in state.get("listing_profiles", [])
         if not p.get("disqualified")
@@ -128,9 +197,6 @@ def route_after_results_check(state: RentalState) -> str:
     attempts = state.get("search_attempts", 0)
 
     if len(good_profiles) >= MIN_GOOD_RESULTS or attempts >= MAX_SEARCH_ATTEMPTS:
-        if attempts >= MAX_SEARCH_ATTEMPTS and len(good_profiles) < MIN_GOOD_RESULTS:
-            # hit the cap with fewer results than ideal - reducer will note this
-            pass
         return "reducer"
 
     return "planner"

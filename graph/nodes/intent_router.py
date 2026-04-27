@@ -2,6 +2,7 @@ import json
 import re
 import asyncio
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
 from ..tools.commute import get_commute_time
@@ -110,7 +111,12 @@ async def intent_router_node(state: RentalState) -> dict:
                 config={"run_name": "intent_router:classify", "tags": ["intent_router"]},
             ), timeout=12)
             parsed = _extract_json(response.content)
-        except Exception:
+        except Exception as e:
+            await adispatch_custom_event("error_log", {
+                "node": "intent_router:classify",
+                "error": f"{type(e).__name__}: {str(e)[:300]}",
+                "level": "error",
+            })
             parsed = {"intent": "needs_search"}
 
     if not isinstance(parsed, dict):

@@ -1,7 +1,9 @@
 import json
+import os
 import re
 import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
 from prompts.planner_prompts import PLANNER_PROMPT
@@ -9,6 +11,7 @@ from ..nodes.supervisor import TRUSTED_DOMAINS
 
 
 llm = make_llm("planner")
+NUM_QUERIES = int(os.getenv("NUM_QUERIES", "8"))
 
 
 def _extract_json(text) -> dict:
@@ -53,13 +56,18 @@ async def planner_node(state: RentalState) -> dict:
             HumanMessage(content=(
                 f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
                 f"Allowed site: operators (use only these): {', '.join(sorted(TRUSTED_DOMAINS))}\n\n"
-                "Return JSON with key 'search_queries' as a list of strings. Exactly 8 queries."
+                f"Return JSON with key 'search_queries' as a list of strings. Exactly {NUM_QUERIES} queries."
                 + retry_context
             ))
         ]), timeout=12)
         parsed = _extract_json(response.content)
         queries = parsed.get("search_queries", [])
-    except Exception:
+    except Exception as e:
+        await adispatch_custom_event("error_log", {
+            "node": "planner",
+            "error": f"{type(e).__name__}: {str(e)[:300]}",
+            "level": "error",
+        })
         queries = []
 
     fallback_queries = [
@@ -71,7 +79,7 @@ async def planner_node(state: RentalState) -> dict:
     for q in list(queries) + fallback_queries:
         if isinstance(q, str) and q.strip() and q not in deduped:
             deduped.append(q)
-    queries = deduped[:8]
+    queries = deduped[:NUM_QUERIES]
 
     return {
         "search_queries": queries,

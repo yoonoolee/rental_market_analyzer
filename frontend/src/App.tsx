@@ -69,11 +69,7 @@ export default function App() {
                 Abort run
               </button>
               <button
-                onClick={() => {
-                  if (window.confirm('Delete all saved chats? This cannot be undone.')) {
-                    deleteAllSessions()
-                  }
-                }}
+                onClick={deleteAllSessions}
                 className="text-xs px-2.5 py-1.5 rounded-full border border-red-300 text-red-600 hover:bg-red-50"
               >
                 Delete all
