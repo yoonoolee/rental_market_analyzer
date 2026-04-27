@@ -13,7 +13,6 @@ export default function App() {
     messages,
     isThinking,
     connected,
-    connectionState,
     sessions,
     preferences,
     sendMessage,
@@ -21,10 +20,14 @@ export default function App() {
     switchSession,
     deleteSession,
     deleteAllSessions,
-    abortRun,
   } = useChat()
   const bottomRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [showMobileListings, setShowMobileListings] = useState(false)
+
+  const scrollToListing = (url: string) => {
+    cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
   const currentId = localStorage.getItem('rental_session_id') ?? ''
   const isInitial = messages.length === 0
 
@@ -50,33 +53,14 @@ export default function App() {
 
       <div className="flex-1 min-w-0 min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_28rem]" style={{height: '100vh'}}>
         <section className="min-w-0 flex flex-col h-screen">
-          <header className="h-14 shrink-0 border-b border-gray-200 px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${connectionState === 'connected' ? 'bg-green-500' : connectionState === 'error' ? 'bg-amber-500' : 'bg-gray-400'}`} />
-              <p className="text-sm font-medium text-gray-700">Real Estate AIgent</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={newChat}
-                className="text-xs px-2.5 py-1.5 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
-              >
-                New chat
-              </button>
-              <button
-                onClick={abortRun}
-                disabled={!isThinking}
-                className="text-xs px-2.5 py-1.5 rounded-full border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-40"
-              >
-                Abort run
-              </button>
-              <button
-                onClick={deleteAllSessions}
-                className="text-xs px-2.5 py-1.5 rounded-full border border-red-300 text-red-600 hover:bg-red-50"
-              >
-                Delete all
-              </button>
-            </div>
-          </header>
+          <div className="h-11 shrink-0 flex items-center px-4">
+            <button
+              onClick={deleteAllSessions}
+              className="text-xs px-3 py-1.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors font-medium"
+            >
+              DELETE ALL CHATS (TEMP)
+            </button>
+          </div>
 
           {isInitial ? (
             <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
@@ -126,12 +110,14 @@ export default function App() {
             </div>
             <div className="h-72 px-4 mb-4">
               <div className="w-full h-full rounded-xl overflow-hidden">
-                <ListingMap listings={latestListings} />
+                <ListingMap listings={latestListings} onSelect={l => scrollToListing(l.url)} />
               </div>
             </div>
             <div className="px-4 pb-8 flex flex-col gap-6">
               {latestListings.map((l, i) => (
-                <ListingCard key={i} listing={l} preferences={preferences} />
+                <div key={i} ref={el => { if (el) cardRefs.current.set(l.url, el); else cardRefs.current.delete(l.url) }}>
+                  <ListingCard listing={l} preferences={preferences} />
+                </div>
               ))}
             </div>
           </aside>

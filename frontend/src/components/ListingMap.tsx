@@ -10,7 +10,7 @@ type PinnedListing = {
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY as string
 
-function Markers({ listings }: { listings: ListingProfile[] }) {
+function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void }) {
   const geocodingLib = useMapsLibrary('geocoding')
   const [pinned, setPinned] = useState<PinnedListing[]>([])
   const [selected, setSelected] = useState<PinnedListing | null>(null)
@@ -61,7 +61,7 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
         <Marker
           key={i}
           position={{ lat: p.lat, lng: p.lng }}
-          onClick={() => setSelected(p)}
+          onClick={() => { setSelected(p); onSelect?.(p.listing) }}
           icon={makeBubbleIcon(p.listing.price)}
         />
       ))}
@@ -91,7 +91,7 @@ function Markers({ listings }: { listings: ListingProfile[] }) {
   )
 }
 
-export function ListingMap({ listings }: { listings: ListingProfile[] }) {
+export function ListingMap({ listings, onSelect }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void }) {
   const addressedListings = listings.filter(l => l.address)
   if (!addressedListings.length) return null
 
@@ -104,7 +104,7 @@ export function ListingMap({ listings }: { listings: ListingProfile[] }) {
         disableDefaultUI
         zoomControl
       >
-        <Markers listings={addressedListings} />
+        <Markers listings={addressedListings} onSelect={onSelect} />
       </Map>
     </APIProvider>
   )

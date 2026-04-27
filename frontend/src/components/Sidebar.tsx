@@ -1,5 +1,4 @@
 import type { SessionMeta } from '../hooks/useChat'
-import { useEffect, useState } from 'react'
 
 type Props = {
   sessions: SessionMeta[]
@@ -10,29 +9,15 @@ type Props = {
 }
 
 export function Sidebar({ sessions, currentId, onNewChat, onSwitch, onDelete }: Props) {
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar_collapsed') !== 'false')
-
-  useEffect(() => {
-    localStorage.setItem('sidebar_collapsed', String(collapsed))
-  }, [collapsed])
-
   return (
-    <aside className={`${collapsed ? 'w-12' : 'w-64'} hidden sm:flex h-screen bg-[#f7f6f3] flex-col shrink-0 transition-all duration-200 overflow-hidden border-r border-gray-200`}>
+    <aside className="group w-12 hover:w-64 h-screen bg-[#f7f6f3] flex flex-col shrink-0 transition-all duration-200 overflow-hidden">
 
       {/* Header */}
       <div className="flex items-center gap-2 px-3 pt-4 pb-2 shrink-0">
         <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain shrink-0" />
-        <span className={`${collapsed ? 'opacity-0' : 'opacity-100'} transition-opacity text-sm font-semibold text-gray-700 whitespace-nowrap`}>
+        <span className="opacity-0 group-hover:opacity-100 transition-opacity text-sm font-semibold text-gray-700 whitespace-nowrap">
           Real Estate AIgent
         </span>
-        <button
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!collapsed}
-          onClick={() => setCollapsed(v => !v)}
-          className="ml-auto w-6 h-6 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1a3f6f]"
-        >
-          {collapsed ? '›' : '‹'}
-        </button>
       </div>
 
       {/* New Chat button */}
@@ -45,14 +30,14 @@ export function Sidebar({ sessions, currentId, onNewChat, onSwitch, onDelete }: 
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          <span className={`${collapsed ? 'opacity-0' : 'opacity-100'} transition-opacity text-sm whitespace-nowrap`}>
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity text-sm whitespace-nowrap">
             New Chat
           </span>
         </button>
       </div>
 
       {/* Session list */}
-      <div className={`flex-1 overflow-y-auto px-2 flex flex-col gap-0.5 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-opacity duration-150`}>
+      <div className="flex-1 overflow-y-auto px-2 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         {sessions.length === 0 && (
           <p className="text-xs text-gray-400 text-center mt-4">No past conversations</p>
         )}
