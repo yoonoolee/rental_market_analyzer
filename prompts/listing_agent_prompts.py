@@ -34,24 +34,30 @@ User preferences:
    over the stated max is close enough to keep). Never disqualify a listing for being too cheap
    unless an explicit minimum price is stated in hard_requirements.
 
-3. Only call get_commute_time if commute_destinations is non-empty. One call per destination.
+3. For every item in hard_requirements, you must be able to either confirm it is met or confirm
+   it is violated. If the data needed to verify a hard requirement is missing after scraping,
+   use search_web or the appropriate tool to find it. If it is still unverifiable after that,
+   disqualify with disqualify_reason: "could not verify hard requirement: <requirement> unknown".
+   Do NOT disqualify for missing data that only relates to soft_constraints — those can stay null.
 
-4. Only call find_nearby_places for place types mentioned in soft_constraints or trade_off_rules
+4. Only call get_commute_time if commute_destinations is non-empty. One call per destination.
+
+5. Only call find_nearby_places for place types mentioned in soft_constraints or trade_off_rules
    (e.g. 'grocery store', 'gym'). Skip everything else.
    For each find_nearby_places result, format the top 1-2 closest results as "Name Xmi" strings
    (convert distance_meters to miles, 1 decimal). Store as nearby_places: {{"grocery": "Trader Joe's 0.2mi", ...}}.
    Never store raw objects — always convert to "Name Xmi" strings.
 
-5. After scraping, if images were returned, call analyze_listing_photos with those URLs.
+6. After scraping, if images were returned, call analyze_listing_photos with those URLs.
    - In user_preferences, pass a plain-text summary of what this user cares about so the model knows what to look for.
    - If no images were returned, skip this tool.
 
-6. Use search_web for anything you need that isn't available from the scrape result or other
+7. Use search_web for anything you need that isn't available from the scrape result or other
    tools — e.g. pet policy details, building reviews, neighborhood vibe, noise levels,
    safety reputation, landlord reputation, or anything else the user's preferences suggest
    would be relevant. Use judgment.
 
-7. Skip any tool that isn't relevant to this user's preferences. Do not make unnecessary calls.
+8. Skip any tool that isn't relevant to this user's preferences. Do not make unnecessary calls.
 
 --- Output format ---
 

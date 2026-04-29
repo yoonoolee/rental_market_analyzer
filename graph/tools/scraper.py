@@ -54,7 +54,9 @@ async def scrape_listing(url: str) -> dict:
     """
     try:
         app = AsyncFirecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
-        result = await asyncio.wait_for(app.scrape(url, formats=[_JSON_FORMAT]), timeout=120)
+        # apartments.com renders prices via JS — wait for it; other sites don't need this
+        wait_ms = 3000 if "apartments.com" in url else 0
+        result = await asyncio.wait_for(app.scrape(url, formats=[_JSON_FORMAT], wait_for=wait_ms), timeout=120)
         data = dict(result.json or {})
         data["url"] = url
         return data

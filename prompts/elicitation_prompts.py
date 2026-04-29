@@ -14,8 +14,8 @@ When generating questions:
 
 Return valid JSON only, no markdown:
 {
-  "hard_requirements": ["non-negotiable constraints in plain language — location, max budget, bedrooms, anything they won't budge on"],
-  "soft_constraints": ["preferences that matter but have some flexibility — in their own words"],
+  "hard_requirements": ["anything stated without alternatives, hedging, or flexibility — the signal is how they say it, not what it's about. 'I want a gym' with no alternatives = hard requirement. Could be location, budget, bedrooms, pet policy, an amenity, proximity to something — anything."],
+  "soft_constraints": ["things stated with flexibility, hedging, or alternatives — 'would be nice', 'if possible', 'I'd prefer', 'either X or Y', or any tradeoff language"],
   "trade_off_rules": ["conditional flexibility — e.g. 'willing to pay $200 more if commute under 15 min'"],
   "commute_destinations": ["specific named places they need to commute to — e.g. 'South Hall UC Berkeley'"],
   "ready_to_search": false,

@@ -41,9 +41,9 @@ def dedup_profiles_by_address(existing: list, new: list | None) -> list:
 
 
 class PreferenceState(TypedDict, total=False):
-    hard_requirements: list[str]     # non-negotiables e.g. ["Berkeley or East Bay", "under $2000", "1-2 bedrooms"]
-    soft_constraints: list[str]      # unconditional nice-to-haves e.g. ["walkable", "modern finishes", "has a dog"]
-    trade_off_rules: list[str]       # conditional preferences e.g. ["1 bed $1000 if gym nearby, 2 bed $2000 if grocery"]
+    hard_requirements: list[str]     # stated without alternatives or hedging — any type: location, price, bedrooms, pet policy, amenity, proximity, etc.
+    soft_constraints: list[str]      # stated with flexibility, "would be nice", "if possible", or alternatives
+    trade_off_rules: list[str]       # conditional flexibility e.g. ["willing to pay more if commute under 15 min"]
     commute_destinations: list[str]  # specific places for commute tool calls e.g. ["South Hall UC Berkeley"]
     raw_query: str                   # original user message
 

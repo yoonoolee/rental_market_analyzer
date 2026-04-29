@@ -124,6 +124,14 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
         profile["disqualified"] = True
         profile["disqualify_reason"] = "scrape returned no usable data"
 
+    # If price is null and price verification is needed for a hard requirement, disqualify.
+    # The LLM agent is instructed to search for it, but can't always find it.
+    hard_reqs = preferences.get("hard_requirements", [])
+    price_is_required = any("$" in r or "budget" in r.lower() or "price" in r.lower() or "rent" in r.lower() for r in hard_reqs)
+    if not profile.get("disqualified") and price_is_required and not profile.get("price"):
+        profile["disqualified"] = True
+        profile["disqualify_reason"] = "price unknown — could not verify budget requirement"
+
     # Pull raw scrape data from tool messages — used for images and multi-unit expansion.
     scrape_data = {}
     for msg in result["messages"]:
