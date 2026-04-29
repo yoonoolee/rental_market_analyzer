@@ -88,6 +88,11 @@ async def intent_router_node(state: RentalState) -> dict:
     if not messages:
         return {"intent": "needs_search"}
 
+    # If we're mid-elicitation (active batch, not yet ready to search), any user
+    # message is a batch answer — skip classification and continue the search flow.
+    if not state.get("ready_to_search") and state.get("elicitation_batch"):
+        return {"intent": "needs_search"}
+
     latest = messages[-1].content if hasattr(messages[-1], "content") else ""
     preferences = state.get("preferences", {})
     has_prior_results = bool(state.get("final_response"))

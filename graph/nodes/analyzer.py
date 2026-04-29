@@ -51,5 +51,4 @@ async def analyzer_node(state: RentalState) -> dict:
     insights = response.content if isinstance(response.content, str) else ""
     return {
         "analysis_insights": insights,
-        "messages": [AIMessage(content=insights)] if insights else [],
     }

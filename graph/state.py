@@ -16,6 +16,30 @@ def append_or_reset(existing: list, new: list | None) -> list:
     return (existing or []) + list(new)
 
 
+def dedup_profiles_by_address(existing: list, new: list | None) -> list:
+    """
+    Like append_or_reset but deduplicates listing profiles by normalized address.
+    Keeps the first profile seen for a given address — later duplicates (same
+    address from a different listing site or retry round) are dropped.
+    """
+    if new is None:
+        return []
+    combined = list(existing or [])
+    seen = {
+        (p.get("address") or "").lower().strip()
+        for p in combined
+        if (p.get("address") or "").strip()
+    }
+    for p in new:
+        addr = (p.get("address") or "").lower().strip()
+        if addr and addr in seen:
+            continue
+        combined.append(p)
+        if addr:
+            seen.add(addr)
+    return combined
+
+
 class PreferenceState(TypedDict, total=False):
     hard_requirements: list[str]     # non-negotiables e.g. ["Berkeley or East Bay", "under $2000", "1-2 bedrooms"]
     soft_constraints: list[str]      # unconditional nice-to-haves e.g. ["walkable", "modern finishes", "has a dog"]
@@ -65,19 +89,20 @@ class RentalState(TypedDict):
     searched_urls: Annotated[list[str], append_or_reset]
 
     # structured per-listing profiles returned by listing agents.
-    # Parallel listing agents append here; intent_router resets on new search.
-    listing_profiles: Annotated[list[dict], append_or_reset]
+    # Parallel listing agents append here; deduplicates by address automatically.
+    # intent_router resets by passing None when starting a new search.
+    listing_profiles: Annotated[list[dict], dedup_profiles_by_address]
 
     # how many full search + listing cycles have completed.
     # supervisor_check increments this and uses it to cap retries at MAX_SEARCH_ATTEMPTS.
     search_attempts: int
 
-    questions_asked: int
+    elicitation_iteration: int
+    elicitation_batch: list[dict]
     ready_to_search: bool
     final_response: str
     ranked_listings: list[dict]
     analysis_insights: str
-    elicitation_options: list[str]
 
     # set by the intent_router node on every message: one of
     # "needs_search", "conversational", "tool_call", "off_topic".

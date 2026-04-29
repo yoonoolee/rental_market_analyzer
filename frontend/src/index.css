@@ -101,9 +101,3 @@ body {
   color: #6b7280;
 }
 
-/* Closing question line */
-.assistant-message p:last-child {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-top: 0.75rem;
-}

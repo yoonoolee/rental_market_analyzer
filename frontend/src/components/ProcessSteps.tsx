@@ -113,7 +113,9 @@ export function ProcessSteps({ steps, isRunning }: Props) {
                     ) : (
                       <span className="w-2 h-2 border border-gray-300 border-t-gray-500 rounded-full animate-spin shrink-0" />
                     )}
-                    <span className="text-gray-400 shrink-0 font-mono">{agent.hostname}</span>
+                    <a href={agent.url.split('#')[0]} target="_blank" rel="noopener noreferrer" className="text-gray-400 shrink-0 font-mono hover:text-gray-600 hover:underline truncate max-w-[200px]">
+                      {agent.url.replace(/^https?:\/\/[^/]+\//, '').replace(/#.*$/, '').replace(/\/$/, '') || agent.hostname}
+                    </a>
                     {agent.wait_seconds && agent.wait_started_at ? (
                       <Countdown waitSeconds={agent.wait_seconds} startedAt={agent.wait_started_at} />
                     ) : (

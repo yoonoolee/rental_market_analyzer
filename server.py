@@ -103,16 +103,29 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     }
 
     prior_state = await graph.aget_state(config)
-    if prior_state and prior_state.values.get("messages"):
-        for m in prior_state.values["messages"]:
+    if prior_state and prior_state.values:
+        for m in prior_state.values.get("messages", []):
             if isinstance(m, HumanMessage) and m.content:
-                await websocket.send_json({"type": "message", "role": "user", "content": m.content})
+                if m.content.strip().startswith("Q:") and "\nA:" in m.content:
+                    await websocket.send_json({"type": "elicitation_answered", "content": m.content})
+                else:
+                    await websocket.send_json({"type": "message", "role": "user", "content": m.content})
             elif isinstance(m, AIMessage) and m.content:
                 await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
 
-        ranked_listings = prior_state.values.get("ranked_listings", [])
+        # Replay unanswered elicitation batch if session is still mid-elicitation
+        if not prior_state.values.get("ready_to_search"):
+            batch = prior_state.values.get("elicitation_batch") or []
+            if batch:
+                await websocket.send_json({"type": "elicitation_batch", "questions": batch})
+
+        ranked_listings = prior_state.values.get("ranked_listings") or []
         if ranked_listings:
             await websocket.send_json({"type": "listings", "listings": ranked_listings})
+
+        analysis_insights = prior_state.values.get("analysis_insights") or ""
+        if analysis_insights:
+            await websocket.send_json({"type": "message", "role": "assistant", "content": analysis_insights})
 
     try:
         while True:
@@ -422,9 +435,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         if ranked:
                             await websocket.send_json({"type": "listings", "listings": ranked})
                             logger.info("[reducer] returned %s ranked listings", len(ranked))
-                        final_response = output.get("final_response", "")
-                        if final_response:
-                            await websocket.send_json({"type": "message", "role": "assistant", "content": final_response})
 
                     elif name == "analyzer":
                         await websocket.send_json({
@@ -460,13 +470,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "label": "Clarifying your requirements",
                                 "detail": [],
                             })
-                        messages_out = output.get("messages", [])
-                        options = output.get("elicitation_options", [])
-                        for m in messages_out:
-                            if isinstance(m, AIMessage) and m.content:
-                                if options:
-                                    await websocket.send_json({"type": "options", "content": m.content, "options": options})
-                                else:
+                        batch = output.get("elicitation_batch", [])
+                        if batch:
+                            await websocket.send_json({"type": "elicitation_batch", "questions": batch})
+                        else:
+                            messages_out = output.get("messages", [])
+                            for m in messages_out:
+                                if isinstance(m, AIMessage) and m.content:
                                     await websocket.send_json({"type": "message", "role": "assistant", "content": m.content})
 
                     elif name == "intent_router":

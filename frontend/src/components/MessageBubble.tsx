@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Message } from '../hooks/useChat'
 import { OptionsMessage } from './OptionsMessage'
+import { ElicitationBatch } from './ElicitationBatch'
 import { ProcessSteps } from './ProcessSteps'
 import { ListingCard } from './ListingCard'
 
@@ -27,6 +28,18 @@ export function MessageBubble({ message, onSend }: Props) {
       <div className="flex justify-start">
         <ProcessSteps steps={message.steps || []} isRunning={message.isRunning ?? false} />
       </div>
+    )
+  }
+
+  if (message.batch !== undefined) {
+    return (
+      <ElicitationBatch
+        id={message.id}
+        questions={message.batch}
+        answered={message.answered ?? false}
+        answeredPairs={message.answeredPairs}
+        onSend={onSend}
+      />
     )
   }
 

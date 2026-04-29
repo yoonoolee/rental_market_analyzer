@@ -6,15 +6,17 @@ from langchain_core.callbacks.manager import adispatch_custom_event
 
 _JSON_FORMAT = {
     "type": "json",
-    "prompt": "Extract apartment listing details from this page. Return all fields you can find, null for anything not present.",
+    "prompt": (
+        "Extract apartment listing details from this page. "
+        "If the page shows multiple floor plans or unit types at different prices, "
+        "capture each as a separate entry in 'units'. "
+        "For a single-unit listing, put that one unit in the 'units' array. "
+        "Building-level fields (address, amenities, images, pet policy, etc.) go at the top level."
+    ),
     "schema": {
         "type": "object",
         "properties": {
-            "price":        {"type": ["number", "null"]},
             "address":      {"type": ["string", "null"]},
-            "bedrooms":     {"type": ["number", "null"]},
-            "bathrooms":    {"type": ["number", "null"]},
-            "sqft":         {"type": ["number", "null"]},
             "floor":        {"type": ["number", "null"]},
             "pet_friendly": {"type": ["boolean", "null"]},
             "pet_deposit":  {"type": ["number", "null"]},
@@ -22,6 +24,19 @@ _JSON_FORMAT = {
             "amenities":    {"type": "array", "items": {"type": "string"}},
             "images":       {"type": "array", "items": {"type": "string"}},
             "description":  {"type": ["string", "null"]},
+            "units": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "price":      {"type": ["number", "null"]},
+                        "bedrooms":   {"type": ["number", "null"]},
+                        "bathrooms":  {"type": ["number", "null"]},
+                        "sqft":       {"type": ["number", "null"]},
+                        "floor_plan": {"type": ["string", "null"]},
+                    }
+                }
+            }
         }
     }
 }
@@ -39,7 +54,7 @@ async def scrape_listing(url: str) -> dict:
     """
     try:
         app = AsyncFirecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
-        result = await asyncio.wait_for(app.scrape(url, formats=[_JSON_FORMAT]), timeout=50)
+        result = await asyncio.wait_for(app.scrape(url, formats=[_JSON_FORMAT]), timeout=120)
         data = dict(result.json or {})
         data["url"] = url
         return data

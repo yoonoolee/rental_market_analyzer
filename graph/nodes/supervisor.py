@@ -17,13 +17,13 @@ TRUSTED_DOMAINS = {
 }
 
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer
-MIN_GOOD_RESULTS = 20
+MIN_GOOD_RESULTS = 3
 
 # cap on how many search + listing cycles we'll run before giving up and going to reducer
 MAX_SEARCH_ATTEMPTS = int(os.getenv("MAX_SEARCH_ATTEMPTS", "2"))
 
 # per-round URL budget to bound end-to-end latency and API spend.
-MAX_URLS_PER_ROUND = int(os.getenv("MAX_URLS_PER_ROUND", "80"))
+MAX_URLS_PER_ROUND = int(os.getenv("MAX_URLS_PER_ROUND", "9"))
 
 # max category pages to scrape per round
 MAX_CATEGORY_PAGES = int(os.getenv("MAX_CATEGORY_PAGES", "10"))

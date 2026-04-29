@@ -26,7 +26,7 @@ llm = make_base_llm("listing_agent")
 
 # Global cap across listing agents to avoid provider rate-limit collisions.
 # Raise this when your API tier allows more parallel calls.
-_CONCURRENCY = asyncio.Semaphore(int(os.getenv("LISTING_CONCURRENCY", "9999")))
+_CONCURRENCY = asyncio.Semaphore(int(os.getenv("LISTING_CONCURRENCY", "3")))
 
 
 def _extract_json(text) -> dict:
@@ -120,21 +120,53 @@ async def listing_agent_node(state: ListingAgentState) -> dict:
 
     # If the profile has no meaningful scraped data, force-disqualify here rather
     # than letting an empty shell reach the reducer.
-    if not profile.get("disqualified") and not profile.get("price") and not profile.get("address"):
+    if not profile.get("disqualified") and not profile.get("price") and not profile.get("address") and not profile.get("units"):
         profile["disqualified"] = True
         profile["disqualify_reason"] = "scrape returned no usable data"
 
-    # Override images with the full list from the scrape tool result — the LLM
-    # tends to truncate long image arrays in its JSON summary.
+    # Pull raw scrape data from tool messages — used for images and multi-unit expansion.
+    scrape_data = {}
     for msg in result["messages"]:
         if isinstance(msg, ToolMessage) and msg.name == "scrape_listing":
             try:
                 scrape_data = json.loads(msg.content) if isinstance(msg.content, str) else msg.content
-                scraped_images = scrape_data.get("images") if isinstance(scrape_data, dict) else None
-                if scraped_images:
-                    profile["images"] = [u for u in scraped_images if u][:10]
+                if not isinstance(scrape_data, dict):
+                    scrape_data = {}
             except Exception:
                 pass
             break
+
+    # Override images with the full list from scrape — LLM tends to truncate long arrays.
+    scraped_images = scrape_data.get("images")
+    if scraped_images:
+        profile["images"] = [u for u in scraped_images if u][:10]
+
+    # Expand multi-unit buildings: if the scrape returned multiple units, create
+    # one profile per unit so each gets individually qualified by the reducer.
+    units = scrape_data.get("units") or profile.pop("units", None) or []
+    if len(units) > 1:
+        # Building-level disqualification that isn't price-based propagates to all units.
+        disqualify_reason = profile.get("disqualify_reason", "")
+        building_disqualified = profile.get("disqualified") and "price" not in disqualify_reason.lower()
+
+        # Fields shared across all units (commute, places, images, amenities, etc.)
+        unit_only_keys = {"price", "bedrooms", "bathrooms", "sqft", "floor_plan", "disqualified", "disqualify_reason", "url"}
+        shared = {k: v for k, v in profile.items() if k not in unit_only_keys}
+
+        profiles = []
+        for i, unit in enumerate(units):
+            if not isinstance(unit, dict):
+                continue
+            floor_plan = unit.get("floor_plan") or str(i)
+            safe_plan = re.sub(r"[^a-z0-9-]", "-", floor_plan.lower())
+            p = {**shared, **{k: v for k, v in unit.items() if v is not None}}
+            p["url"] = f"{url}#{safe_plan}"
+            p["building_url"] = url
+            if building_disqualified:
+                p["disqualified"] = True
+                p["disqualify_reason"] = disqualify_reason
+            profiles.append(p)
+
+        return {"listing_profiles": profiles}
 
     return {"listing_profiles": [profile]}

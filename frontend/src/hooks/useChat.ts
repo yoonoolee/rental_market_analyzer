@@ -46,6 +46,11 @@ export type ListingProfile = {
   description?: string
 }
 
+export type ElicitationQuestion = {
+  question: string
+  options: string[]
+}
+
 export type Message = {
   id: string
   role: 'user' | 'assistant' | 'process' | 'listings'
@@ -55,6 +60,8 @@ export type Message = {
   steps?: ProcessStep[]
   isRunning?: boolean
   listings?: ListingProfile[]
+  batch?: ElicitationQuestion[]
+  answeredPairs?: { question: string; answer: string }[]
 }
 
 export type SessionMeta = {
@@ -121,6 +128,10 @@ export function useChat() {
       reconnectAttempt.current = 0
       setConnected(true)
       setConnectionState('connected')
+      setMessages([])
+      setIsThinking(false)
+      processId.current = null
+      processInjected.current = false
       console.log(`[ws] connected — session ${sid}`)
     }
     socket.onclose = (ev) => {
@@ -141,6 +152,29 @@ export function useChat() {
         setMessages(prev => [...prev, {
           id: generateId(), role: 'assistant', content: data.content,
           options: data.options, answered: false,
+        }])
+
+      } else if (data.type === 'elicitation_batch') {
+        setMessages(prev => [...prev, {
+          id: generateId(), role: 'assistant', content: '',
+          batch: data.questions, answered: false,
+        }])
+
+      } else if (data.type === 'elicitation_answered') {
+        // Parse "Q: ...\nA: ..." format back into a answered batch for display
+        const pairs = (data.content as string).split(/\n\n+/).map((block: string) => {
+          const qMatch = block.match(/^Q:\s*(.+?)(?:\n|$)/s)
+          const aMatch = block.match(/\nA:\s*(.+)$/s)
+          return {
+            question: qMatch?.[1]?.trim() ?? block,
+            answer: aMatch?.[1]?.trim() ?? '',
+          }
+        }).filter((p: {question: string, answer: string}) => p.question)
+        setMessages(prev => [...prev, {
+          id: generateId(), role: 'assistant', content: '',
+          batch: pairs.map((p: {question: string, answer: string}) => ({ question: p.question, options: [] })),
+          answeredPairs: pairs,
+          answered: true,
         }])
 
       } else if (data.type === 'listings') {

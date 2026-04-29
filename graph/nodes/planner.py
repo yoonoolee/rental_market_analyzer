@@ -27,20 +27,12 @@ async def planner_node(state: RentalState) -> dict:
     """
     Generates listing-discovery search queries for SerpAPI.
 
-    The planner's scope is narrower than before: it only generates queries to find
-    listing URLs. Commute times, neighborhood context, and nearby amenities are
-    handled per-listing by the ReAct listing agents.
-
-    On retry rounds (search_attempts > 0), the planner receives all previously run
-    queries via all_search_queries and must avoid repeating them. It tries different
-    listing sites, adjacent neighborhoods, or adjusted price ranges to surface new URLs.
+    On retry rounds (search_attempts > 0), receives all previously run queries
+    and must avoid repeating them — targets different neighborhoods or features.
     """
     preferences = state.get("preferences", {})
     search_attempts = state.get("search_attempts", 0)
     past_queries = state.get("all_search_queries", [])
-    city = preferences.get("city", "apartment")
-    beds = preferences.get("bedrooms", 1)
-    max_price = preferences.get("max_price", 2500)
 
     retry_context = ""
     if search_attempts > 0 and past_queries:
@@ -70,11 +62,14 @@ async def planner_node(state: RentalState) -> dict:
         })
         queries = []
 
+    # Fallback: derive a basic query from hard_requirements or raw_query
+    hard_reqs = preferences.get("hard_requirements", [])
+    search_hint = " ".join(hard_reqs[:3]) if hard_reqs else preferences.get("raw_query", "apartment rental")
     fallback_queries = [
-            f"{beds} bedroom apartment {city} under ${max_price} site:{d}"
-            for d in sorted(TRUSTED_DOMAINS)
+        f"{search_hint} site:{d}"
+        for d in sorted(TRUSTED_DOMAINS)
     ]
-    # Keep model output first, then fill with deterministic fallback to guarantee 8.
+
     deduped = []
     for q in list(queries) + fallback_queries:
         if isinstance(q, str) and q.strip() and q not in deduped:
@@ -83,6 +78,5 @@ async def planner_node(state: RentalState) -> dict:
 
     return {
         "search_queries": queries,
-        # accumulate all queries ever run so subsequent planner calls can avoid them
         "all_search_queries": queries,
     }

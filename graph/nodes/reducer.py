@@ -2,7 +2,7 @@ import json
 import json_repair
 import re
 import asyncio
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
@@ -85,13 +85,25 @@ async def reducer_node(state: RentalState) -> dict:
     except (json.JSONDecodeError, AttributeError, ValueError):
         pass
 
-    profile_by_url = {p.get("url"): p for p in good_profiles}
+    # Index by both fragment URL (unit-level) and building_url (base) so the reducer
+    # LLM can match either form when multi-unit expansion is in play.
+    profile_by_url = {}
+    for p in good_profiles:
+        if p.get("url"):
+            profile_by_url[p["url"]] = p
+        if p.get("building_url"):
+            profile_by_url.setdefault(p["building_url"], p)
+
     ranked_listings = [profile_by_url[u] for u in ranked_urls if u in profile_by_url]
     if not ranked_listings:
         ranked_listings = good_profiles
 
+    # If still nothing (all disqualified or all scrapes failed), show what we have
+    # so the user can see what was found rather than a blank screen.
+    if not ranked_listings:
+        ranked_listings = listing_profiles
+
     return {
         "final_response": final_response,
         "ranked_listings": ranked_listings,
-        "messages": [AIMessage(content=final_response)],
     }
