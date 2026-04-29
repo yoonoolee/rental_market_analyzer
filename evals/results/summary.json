@@ -181,57 +181,69 @@
       "per_query": [
         {
           "query": "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
-          "num_returned": 5,
-          "listing_precision": 0.0,
+          "num_search_returned": 5,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 4,
-          "embedding_similarity": 0.0805,
-          "has_valid_listing": false,
-          "latency_ms": 885.1
+          "has_any_listing": false,
+          "latency_ms": 61.5
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-          "num_returned": 5,
-          "listing_precision": 0.8,
-          "query_relevance": 4,
-          "embedding_similarity": 0.0104,
-          "has_valid_listing": true,
-          "latency_ms": 7949.9
+          "num_search_returned": 5,
+          "direct_listings": 5,
+          "extracted_listings": 0,
+          "total_listings": 5,
+          "category_pages_scraped": 0,
+          "query_relevance": 3,
+          "has_any_listing": true,
+          "latency_ms": 72.3
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
-          "num_returned": 5,
-          "listing_precision": 0.6,
-          "query_relevance": 4,
-          "embedding_similarity": 0.0455,
-          "has_valid_listing": true,
-          "latency_ms": 4864.3
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:apartments.com",
+          "num_search_returned": 5,
+          "direct_listings": 0,
+          "extracted_listings": 23,
+          "total_listings": 23,
+          "category_pages_scraped": 3,
+          "query_relevance": 3,
+          "has_any_listing": true,
+          "latency_ms": 29480.6
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
-          "num_returned": 5,
-          "listing_precision": 0.8,
+          "num_search_returned": 5,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 10,
-          "embedding_similarity": 0.0536,
-          "has_valid_listing": true,
-          "latency_ms": 1366.9
+          "has_any_listing": false,
+          "latency_ms": 72.7
         },
         {
           "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
-          "num_returned": 5,
-          "listing_precision": 0.2,
+          "num_search_returned": 5,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 3,
-          "embedding_similarity": 0.0125,
-          "has_valid_listing": true,
-          "latency_ms": 2581.6
+          "has_any_listing": false,
+          "latency_ms": 94.6
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.48,
-        "mean_query_relevance": 5.0,
-        "mean_embedding_similarity": 0.0405,
-        "yield_rate": 0.8,
-        "mean_latency_ms": 3529.6,
-        "estimated_api_credits": 5
+        "mean_listings_per_query": 5.6,
+        "mean_direct_per_query": 1.0,
+        "mean_extracted_per_query": 4.6,
+        "mean_query_relevance": 4.6,
+        "yield_rate": 0.4,
+        "mean_latency_ms": 5956.3,
+        "estimated_serpapi_credits": 5,
+        "estimated_firecrawl_scrapes": 3
       }
     },
     "reduced_3": {
@@ -242,57 +254,69 @@
       "per_query": [
         {
           "query": "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
-          "num_returned": 3,
-          "listing_precision": 0.0,
+          "num_search_returned": 3,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 3,
-          "embedding_similarity": 0.1053,
-          "has_valid_listing": false,
-          "latency_ms": 206.0
+          "has_any_listing": false,
+          "latency_ms": 82.9
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-          "num_returned": 3,
-          "listing_precision": 0.667,
+          "num_search_returned": 3,
+          "direct_listings": 3,
+          "extracted_listings": 0,
+          "total_listings": 3,
+          "category_pages_scraped": 0,
           "query_relevance": 3,
-          "embedding_similarity": 0.0156,
-          "has_valid_listing": true,
-          "latency_ms": 187.8
+          "has_any_listing": true,
+          "latency_ms": 78.8
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
-          "num_returned": 3,
-          "listing_precision": 0.667,
-          "query_relevance": 4,
-          "embedding_similarity": 0.0278,
-          "has_valid_listing": true,
-          "latency_ms": 189.6
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:apartments.com",
+          "num_search_returned": 3,
+          "direct_listings": 0,
+          "extracted_listings": 23,
+          "total_listings": 23,
+          "category_pages_scraped": 3,
+          "query_relevance": 5,
+          "has_any_listing": true,
+          "latency_ms": 22774.4
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
-          "num_returned": 3,
-          "listing_precision": 0.667,
+          "num_search_returned": 3,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 9,
-          "embedding_similarity": 0.0588,
-          "has_valid_listing": true,
-          "latency_ms": 248.8
+          "has_any_listing": false,
+          "latency_ms": 73.5
         },
         {
           "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
-          "num_returned": 3,
-          "listing_precision": 0.0,
+          "num_search_returned": 3,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 3,
-          "embedding_similarity": 0.0192,
-          "has_valid_listing": false,
-          "latency_ms": 201.2
+          "has_any_listing": false,
+          "latency_ms": 73.7
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.4,
-        "mean_query_relevance": 4.4,
-        "mean_embedding_similarity": 0.0453,
-        "yield_rate": 0.6,
-        "mean_latency_ms": 206.7,
-        "estimated_api_credits": 5
+        "mean_listings_per_query": 5.2,
+        "mean_direct_per_query": 0.6,
+        "mean_extracted_per_query": 4.6,
+        "mean_query_relevance": 4.6,
+        "yield_rate": 0.4,
+        "mean_latency_ms": 4616.7,
+        "estimated_serpapi_credits": 5,
+        "estimated_firecrawl_scrapes": 3
       }
     },
     "expanded_10": {
@@ -303,57 +327,69 @@
       "per_query": [
         {
           "query": "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
-          "num_returned": 10,
-          "listing_precision": 0.1,
+          "num_search_returned": 10,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 5,
-          "embedding_similarity": 0.0435,
-          "has_valid_listing": true,
-          "latency_ms": 216.1
+          "has_any_listing": false,
+          "latency_ms": 76.4
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-          "num_returned": 10,
-          "listing_precision": 0.9,
+          "num_search_returned": 10,
+          "direct_listings": 10,
+          "extracted_listings": 0,
+          "total_listings": 10,
+          "category_pages_scraped": 0,
           "query_relevance": 7,
-          "embedding_similarity": 0.0114,
-          "has_valid_listing": true,
-          "latency_ms": 173.8
+          "has_any_listing": true,
+          "latency_ms": 75.3
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
-          "num_returned": 5,
-          "listing_precision": 0.6,
-          "query_relevance": 4,
-          "embedding_similarity": 0.0455,
-          "has_valid_listing": true,
-          "latency_ms": 191.9
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:apartments.com",
+          "num_search_returned": 10,
+          "direct_listings": 0,
+          "extracted_listings": 23,
+          "total_listings": 23,
+          "category_pages_scraped": 3,
+          "query_relevance": 2,
+          "has_any_listing": true,
+          "latency_ms": 15962.5
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
-          "num_returned": 10,
-          "listing_precision": 0.8,
-          "query_relevance": 8,
-          "embedding_similarity": 0.0348,
-          "has_valid_listing": true,
-          "latency_ms": 229.1
+          "num_search_returned": 10,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
+          "query_relevance": 9,
+          "has_any_listing": false,
+          "latency_ms": 76.5
         },
         {
           "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
-          "num_returned": 5,
-          "listing_precision": 0.2,
+          "num_search_returned": 5,
+          "direct_listings": 0,
+          "extracted_listings": 0,
+          "total_listings": 0,
+          "category_pages_scraped": 0,
           "query_relevance": 3,
-          "embedding_similarity": 0.0125,
-          "has_valid_listing": true,
-          "latency_ms": 194.8
+          "has_any_listing": false,
+          "latency_ms": 78.9
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.52,
-        "mean_query_relevance": 5.4,
-        "mean_embedding_similarity": 0.0295,
-        "yield_rate": 1.0,
-        "mean_latency_ms": 201.1,
-        "estimated_api_credits": 5
+        "mean_listings_per_query": 6.6,
+        "mean_direct_per_query": 2.0,
+        "mean_extracted_per_query": 4.6,
+        "mean_query_relevance": 5.2,
+        "yield_rate": 0.4,
+        "mean_latency_ms": 3253.9,
+        "estimated_serpapi_credits": 5,
+        "estimated_firecrawl_scrapes": 3
       }
     }
   },

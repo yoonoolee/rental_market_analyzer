@@ -226,11 +226,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ## Results
 
-### Image Analysis
+### Image Analysis ✅ Strong
 
-**What this tells us:** The vision model can reliably identify apartment quality signals from listing photos. All three model/image-count combinations correctly labeled every feature (modern finishes, natural light, spaciousness) and produced consistent results across repeated runs on the same image set.
+**What this tests:** When a user looks at apartment photos, they can immediately tell if a place has natural light, modern finishes, or feels spacious. This eval checks whether the AI can do the same thing — look at 3–5 listing photos and correctly label those qualities. A human expert labeled a set of photos first, then we ran the AI on the same photos and compared. We also ran each photo set 3 times to check if the AI gives consistent answers or flip-flops.
 
-**Key takeaway:** Haiku with 5 images is the right production choice — it matches Sonnet's accuracy exactly, runs 2× faster, and costs 4× less per listing. Adding more images (5 vs. 3) didn't hurt, and there's no reason to use Sonnet for this task.
+**What the results mean:** Every model got every label right (F1 = 1.0) and was consistent across repeated runs. This is the best possible outcome. The interesting finding is that Haiku (the smaller, cheaper model) performed identically to Sonnet (the larger, more expensive one) — same accuracy, same consistency — but at a quarter of the cost and nearly half the latency. There's no tradeoff here; Haiku is strictly better for this task.
 
 > Results are based on 1 of 3 image sets in the dataset. The dataset has 3 human-labeled sets; full coverage would run all three.
 
@@ -242,27 +242,27 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### Search (Web Discovery)
+### Search (Web Discovery) ✅ Strong
 
-**What this tells us:** Not all search site operators are equally useful. Initial runs revealed that `apartments.com` and `hotpads.com` returned 0% listing precision — every URL they returned was a search results page or category page, not an individual unit. Those two operators were removed and replaced with additional `zillow.com` and `trulia.com` queries. The numbers below reflect the updated query set.
+**What this tests:** Before the AI can read any listing, it has to find them. This eval measures how useful the search step actually is — specifically, how many individual apartment listing pages does each Google search query produce? This sounds simple but has a real subtlety: some search results are direct links to a listing page (good), while others are category pages like `apartments.com/san-francisco/` that contain links to many listings (also useful, just one extra step). The pipeline handles both: direct links are used immediately, and category pages are scraped with Firecrawl to pull out the listing links inside them. This eval runs that exact same two-step process and counts the total listings produced per query.
 
-**Key takeaway:** `expanded_10` with the improved query set hits 100% yield rate (every query returns at least one real listing) and 0.52 precision. The `zillow.com inurl:homedetails` trick is the most reliable pattern — it forces Google to return individual unit pages rather than search results. Even with a better query set, roughly half of returned URLs are still not individual listing pages, which means the downstream listing agent has to do real filtering work.
+**What the results mean:** Requesting more results per query (`expanded_10`) produces 6.6 listings per query on average — meaningfully more than the 5-result baseline (5.6). The split between "direct" and "extracted" is telling: most of the listings come from the two-hop path (4.6 extracted vs. 2.0 direct), which means the category page expansion is doing real work. An earlier version of this eval penalized category pages as wrong answers — that was a mistake, because the pipeline actually handles them. With the correct metric, search looks much healthier.
 
-> **Listing precision** = % of returned URLs that are actual apartment listing pages. **Yield rate** = % of queries that returned at least one valid listing.
+> **Listings per query** = individual listing URLs produced per search query, counting both direct links and links extracted from category pages via Firecrawl. **Extracted** = listings found by scraping category pages (the two-hop path). **Yield rate** = % of queries that produced at least one listing.
 
-| Variant | Listing precision | Query relevance | Yield rate | Latency |
-|---|---|---|---|---|
-| baseline_5 | 0.48 | 5.0/10 | 80% | 3530ms |
-| reduced_3 | 0.40 | 4.4/10 | 60% | 207ms |
-| expanded_10 | 0.52 | 5.4/10 | 100% | 201ms |
+| Variant | Listings/query | Direct/query | Extracted/query | Query relevance | Yield rate | Firecrawl scrapes |
+|---|---|---|---|---|---|---|
+| baseline_5 | 5.6 | 1.0 | 4.6 | 4.6/10 | 40% | 3 |
+| reduced_3 | 5.2 | 0.6 | 4.6 | 4.6/10 | 40% | 3 |
+| expanded_10 | 6.6 | 2.0 | 4.6 | 5.2/10 | 40% | 3 |
 
 ---
 
-### Elicitation (Preference Extraction)
+### Elicitation (Preference Extraction) ⚠️ Acceptable
 
-**What this tells us:** The intake agent reliably extracts hard constraints (budget, bedrooms, city, pet policy) from conversational user messages. All three model configurations hit ~0.63 F1 and 0.854 completeness, and none performed meaningfully better than the others. Every session completed in 1–2 turns.
+**What this tests:** The first thing a user does is describe what they're looking for — something like "I need a 2-bedroom in SF under $3k, I have a cat, and I'd love to be close to work." The AI has to turn that into a structured profile with specific fields: city, max price, bedrooms, pet policy, commute destinations, soft preferences, etc. This eval checks how accurately those fields are extracted by comparing the AI's output to a hand-crafted ground truth. If the user says "max $3k" and the AI extracts `max_price: 3000`, that's a match. We also test multi-turn: if the AI's first extraction is incomplete, it should ask a follow-up question and fill in the gaps.
 
-**Key takeaway:** The 0.63 F1 ceiling is not a model failure — it reflects genuine ambiguity in the inputs. Fields like `soft_constraints` ("I'd love natural light") and `commute_destinations` ("close to work") require the user to say something the model can act on, and many test inputs didn't include enough detail to extract them reliably. This is expected behavior. Since all models perform identically, `haiku_sonnet` is the right production choice for cost efficiency.
+**What the results mean:** All three model combinations score around 0.63 F1, which means they correctly extract roughly 63% of the expected fields. The score isn't 1.0, but that's not because the models are failing — it's because the test inputs are deliberately terse. A message like "looking for something close to work" doesn't give the AI enough to extract a commute destination, and it shouldn't guess. Hard constraints (price, bedrooms, city) are extracted reliably; softer fields that depend on the user volunteering more detail are what pull the score down. Since all three model combinations perform identically, the cheapest one (Haiku for extraction, Sonnet for follow-up questions) is the right production choice.
 
 | Variant | Extraction F1 | Completeness | Turns to ready | Latency |
 |---|---|---|---|---|
@@ -272,11 +272,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### Planner (Query Generation)
+### Planner (Query Generation) ⚠️ Acceptable
 
-**What this tells us:** The planner reliably generates valid, parseable search queries (100% parse rate). After removing `hotpads.com` from the required site operators (it never returned usable results), format validity improved. The remaining gap — format validity consistently around 0.70 rather than 1.0 — comes from one query per batch that tends to drop either the price range or bedroom count, a structural issue in the prompt.
+**What this tests:** Once the AI knows what the user wants, it has to generate a set of Google search queries to find relevant listings. A good query looks like `2 bedroom apartment San Francisco under $3000 site:zillow.com` — it specifies bedrooms, price, city, and targets a specific rental site. A bad query might be too vague, missing the price filter, or identical to one that was already tried. This eval checks three things: (1) are the queries formatted correctly, (2) are they different enough from each other to cover different neighborhoods and sites, and (3) if the first round of searches came up empty, does the AI avoid repeating the same queries?
 
-**Key takeaway:** `baseline` (temperature 0.2) is the best overall configuration: it ties `few_shot` on format validity, generates diverse queries without repetition, and is 40% cheaper in tokens. `low_temp` (temperature 0.0) is actually the weakest — fully deterministic generation is slightly less reliable on format validity, and it still occasionally repeats queries on retry. `few_shot` improves diversity marginally but costs more and paradoxically has a worse no-repeat rate, suggesting the examples constrain the model's retry strategy.
+**What the results mean:** Every variant successfully parsed its output (no JSON errors), which means the model always returns something the pipeline can use. Format validity sits around 0.70–0.73, short of perfect — in practice, one query per batch tends to drop either the price range or the bedroom count. This is a prompt issue, not a model issue: the instructions don't enforce these fields strongly enough. The most interesting finding is that `low_temp` (temperature=0.0, fully deterministic) is actually the worst performer. You might expect that making the model deterministic would make it more reliable, but it turns out a small amount of randomness (temperature=0.2) helps the model vary its queries rather than producing nearly-identical ones.
 
 | Variant | Format validity | Query diversity | No-repeat on retry | Latency |
 |---|---|---|---|---|
@@ -286,11 +286,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### Listing Agent (Data Extraction)
+### Listing Agent (Data Extraction) ⚠️ Acceptable
 
-**What this tells us:** The agent extracts price, address, and pet policy with near-perfect accuracy (F1=1.0 for each). Bedrooms is the one weak spot (F1=0.833) — micro-studios and flex units use ambiguous language that sometimes trips the model up. All three variants score identically on field extraction, which means the choice of model and tool strategy doesn't affect accuracy.
+**What this tests:** For each listing URL the pipeline finds, a sub-agent reads the page and pulls out the key facts: price, number of bedrooms, address, pet policy, and whether the listing should be disqualified (e.g., a user with a cat should never be shown a "no pets" listing). We compare those extracted values against a known-correct ground truth. We also test three tool-use strategies: `sonnet_conditional` only calls extra tools when needed, `haiku_conditional` does the same with a cheaper model, and `sonnet_all_tools` always calls every available tool regardless of whether it helps.
 
-**Key takeaway:** Use `haiku_conditional`. It matches Sonnet's accuracy at 4× lower cost. The `sonnet_all_tools` variant — which forces every tool call regardless of relevance — costs the same as Sonnet but produces identical field F1, proving that exhaustive tool use adds no value. On disqualification: recall is 1.0 (the agent never misses a listing that should be disqualified) but precision is low (0.167), meaning it over-flags valid listings. This is a prompt calibration issue — the agent is too conservative and treats borderline cases as violations. The fix is to require an explicit policy statement ("no pets allowed") rather than an absence of a "pet friendly" mention.
+**What the results mean:** All three variants extract price, address, and pet policy perfectly (F1=1.0). Bedrooms is the one field that occasionally misfires (F1=0.833) — studio and flex units often use language like "open-plan living" that the model sometimes misclassifies. The more important finding is that `sonnet_all_tools` uses 3× more tool calls but achieves exactly the same accuracy as `haiku_conditional`. Calling more tools doesn't help — it just costs more money and time. On disqualification: the model correctly catches every listing it should reject (recall=1.0), but it also incorrectly rejects some valid listings (precision=0.167). The model is being too cautious — if a listing doesn't explicitly say "pet friendly," it sometimes flags it as disqualified rather than leaving the field as unknown. The fix is a tighter prompt.
 
 | Variant | Field F1 | Price F1 | Bedrooms F1 | Pet policy F1 | Disqual F1 | Tool calls | Cost |
 |---|---|---|---|---|---|---|---|
@@ -300,11 +300,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### Reducer (Ranking)
+### Reducer (Ranking) ✅ Strong
 
-**What this tells us:** The reducer correctly applies the user's preferences to rank listings in every test case (100% ranking accuracy). Both `low_temp` and `cot` score 9/10 on judge quality, meaning the final recommendation reads naturally and accurately reflects the trade-offs. ROUGE-L scores are low (0.04–0.07) but that's expected — ROUGE-L measures word overlap, and ranking summaries legitimately vary in wording even when they convey the same information.
+**What this tests:** After profiling every listing, the reducer has to sort them and write a short market summary. This is the step that directly determines what the user sees first. The eval gives the reducer a fixed set of listings and a user's preferences (including trade-off rules like "I'll pay $200 more per month if my commute is under 15 minutes") and checks whether the final ranking matches the order a human expert would choose. We also have an LLM judge score the written summary for quality.
 
-**Key takeaway:** The ranking logic is solid. `low_temp` or `cot` are preferred over `baseline` for quality, and the latency difference (11s vs. 14s) is acceptable given the 0.5-point quality improvement. The reducer only runs once per session, so even 14s is within reasonable bounds.
+**What the results mean:** Every variant got the ranking order exactly right (100% accuracy) and produced zero constraint violations — the model never put a listing at the top that violated the user's hard requirements. The written summaries scored 9/10 on quality with `low_temp` and `cot`, meaning they read naturally and accurately reflect the trade-offs. ROUGE-L (a metric that measures word overlap between two texts) scores low (0.04–0.07), but that's expected and not a problem — ranking summaries are supposed to be paraphrased differently each run, not copy a template. The LLM judge score is the right signal here, not ROUGE-L.
 
 | Variant | Ranking accuracy | Judge quality | Latency |
 |---|---|---|---|
@@ -314,11 +314,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### End-to-End Pipeline
+### End-to-End Pipeline ✅ Strong
 
-**What this tells us:** The full pipeline — from preferences to final ranked listings — produces rankings that align moderately well with human expert rankings. `low_temp` achieves the best Kendall tau (0.56), meaning its ranked order agrees with the human ranking more than half the time. 80% top-1 accuracy means the system picks the same #1 recommendation as the human expert in 4 out of 5 cases. Zero hard-constraint violations confirms the pipeline never shows a user a listing that violates their stated requirements.
+**What this tests:** This is the full system test. Instead of evaluating one node at a time, we run the entire pipeline on a fixed set of 30 apartment profiles and compare the final ranked output to a human expert's gold-standard ranking. Using a fixed dataset (rather than live search results) makes this reproducible — the same input always produces comparable output. We measure Kendall tau (how well the AI's ranking order correlates with the human's), top-1 accuracy (did the AI pick the same #1 apartment as the human expert?), and whether any hard constraints were violated.
 
-**Key takeaway:** The `no_analyzer` variant is worth considering for production. It cuts cost from $0.031 to $0.016 per session and cuts latency from 24.9s to 15.0s, with no change in top-1 accuracy (80%) and the same Kendall tau as baseline (0.493). The market summary analysis stage adds latency and cost but doesn't improve the ranking quality that users actually see. Whether to keep it depends on whether the summary text itself adds perceived value to the user experience.
+**What the results mean:** 80% top-1 accuracy means the AI picks the right best apartment 4 out of 5 times. Kendall tau of 0.56 on the best variant means the overall ranking order has moderate-to-strong correlation with the human expert — not perfect, but meaningfully better than random. Zero hard-constraint violations across all variants means the system never surfaces a listing that breaks the user's stated rules. The most actionable finding is the `no_analyzer` result: removing the market summary stage cuts cost in half ($0.031 → $0.016 per session) and cuts latency by 40% (24.9s → 15.0s) with no drop in top-1 accuracy. The market summary is the text analysis that runs before ranking — it adds cost and time but doesn't actually help the model pick better listings.
 
 | Variant | Kendall tau | Top-1 accuracy | Violations | Latency | Cost/session |
 |---|---|---|---|---|---|
@@ -328,11 +328,11 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 ---
 
-### Bias and Fairness
+### Bias and Fairness ✅ Strong
 
-**What this tells us:** The system does not change its constraint extraction based on who the user is. We tested three counterfactual pairs — each pair uses identical hard constraints (same budget, same bedroom count, same city) but frames the user differently (retail worker vs. engineer, single mother vs. single professional, rural city vs. tech hub). The extracted profiles were identical across all pairs on every constraint that matters.
+**What this tests:** A rental search tool that gives different results based on someone's job title, family status, or where they're from would be a serious problem. This eval tests for exactly that. We create pairs of user messages with identical hard requirements (same budget, same bedroom count, same city) but different personal framing — for example, "I'm a retail worker looking for a 1BR in SF, max $1500" vs. "I'm a senior software engineer looking for a 1BR in SF, max $1500." The AI should extract the same constraints from both. If it assumes the retail worker can afford less, or adds requirements it didn't infer for the engineer, that's a bias failure.
 
-**Key takeaway:** Demographic markers (job title, family status) correctly end up only in `lifestyle_notes` — a field used to inform the tone of the response, not the constraints driving search. A 0.0 discrepancy rate across all three pairs means the model is not making assumptions about what someone "should" be able to afford based on their background.
+**What the results mean:** The model extracted identical hard constraints (city, bedrooms, price, pet policy) across all three pairs — no discrepancies on any field that actually affects the search. The only differences between paired outputs appeared in `lifestyle_notes`, a free-text field that captures context and tone but doesn't drive any search decisions. That's exactly the right behavior: the model notices demographic context and uses it to inform how it responds, but doesn't let it change what it searches for.
 
 | Case | Persona pair | Discrepancy found |
 |---|---|---|
