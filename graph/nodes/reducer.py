@@ -6,7 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
-from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS, MAX_SHOWN
+from ..nodes.supervisor import MIN_GOOD_RESULTS, MAX_SEARCH_ATTEMPTS
 from prompts.reducer_prompts import REDUCER_PROMPT
 
 
@@ -43,7 +43,7 @@ async def reducer_node(state: RentalState) -> dict:
 
     try:
         response = await asyncio.wait_for(llm.ainvoke([
-            SystemMessage(content=REDUCER_PROMPT.replace("MAX_SHOWN", str(MAX_SHOWN))),
+            SystemMessage(content=REDUCER_PROMPT),
             HumanMessage(content=(
                 f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
                 f"Qualifying listings ({len(good_profiles)}):\n"
@@ -61,9 +61,9 @@ async def reducer_node(state: RentalState) -> dict:
         })
         fallback = (
             f"I hit an LLM error while ranking listings ({str(e)[:80]}). "
-            f"Showing the best available {min(len(good_profiles), MAX_SHOWN)} listing(s) by discovery order."
+            f"Showing the best available {len(good_profiles)} listing(s) by discovery order."
         )
-        ranked_listings = good_profiles[:MAX_SHOWN]
+        ranked_listings = good_profiles
         return {
             "final_response": fallback,
             "ranked_listings": ranked_listings,
@@ -88,7 +88,7 @@ async def reducer_node(state: RentalState) -> dict:
     profile_by_url = {p.get("url"): p for p in good_profiles}
     ranked_listings = [profile_by_url[u] for u in ranked_urls if u in profile_by_url]
     if not ranked_listings:
-        ranked_listings = good_profiles[:MAX_SHOWN]
+        ranked_listings = good_profiles
 
     return {
         "final_response": final_response,

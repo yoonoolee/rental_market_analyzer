@@ -16,11 +16,8 @@ TRUSTED_DOMAINS = {
     # "padmapper.com",
 }
 
-# how many top listings to surface in the final response
-MAX_SHOWN = int(os.getenv("MAX_SHOWN", "20"))
-
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer
-MIN_GOOD_RESULTS = MAX_SHOWN
+MIN_GOOD_RESULTS = 20
 
 # cap on how many search + listing cycles we'll run before giving up and going to reducer
 MAX_SEARCH_ATTEMPTS = int(os.getenv("MAX_SEARCH_ATTEMPTS", "2"))

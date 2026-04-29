@@ -23,7 +23,7 @@ Return JSON in exactly this format:
   "response": "..."
 }
 
-ranked_urls: best-first, URLs only, max MAX_SHOWN.
+ranked_urls: best-first, URLs only. Include all qualifying listings.
 
 Ranking rules — apply in order:
 1. Hard constraints first: exclude any listing marked disqualified or that violates budget/bedrooms/pet policy.
