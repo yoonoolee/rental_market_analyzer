@@ -1499,56 +1499,56 @@
       "per_preference": [
         {
           "preferences_id": "pref_001",
-          "num_queries_r1": 8,
+          "num_queries_r1": 3,
           "mean_format_validity": 0.75,
-          "query_diversity": 0.5381,
+          "query_diversity": 0.1538,
           "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 3037.0,
-          "total_tokens_r1": 447,
+          "latency_ms_r1": 1609.4,
+          "total_tokens_r1": 611,
           "sample_queries_r1": [
-            "site:craigslist.org 2 bedroom apartment San Francisco $3000 pet friendly",
-            "site:zillow.com 2 bedroom apartment San Francisco max $3000 cat friendly",
-            "site:apartments.com 2 bedroom rental San Francisco under $3000 pet allowed"
+            "site:craigslist.org 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:apartments.com 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower"
           ],
           "sample_queries_r2": [
-            "site:craigslist.org 2 bedroom apartment San Francisco $3000 max pet friendly",
-            "site:zillow.com 2 bedroom San Francisco rental under $3000 cat allowed",
-            "site:apartments.com 2 bedroom apartment in San Francisco $3000 pet-friendly"
+            "site:trulia.com 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:craigslist.org 2 bedroom San Francisco max $3000 cat friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco $3000 pet allowed near Salesforce Tower"
           ]
         },
         {
           "preferences_id": "pref_005",
-          "num_queries_r1": 8,
-          "mean_format_validity": 0.719,
-          "query_diversity": 0.7641,
+          "num_queries_r1": 3,
+          "mean_format_validity": 0.75,
+          "query_diversity": 0.282,
           "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
-          "judge_validity_score": 0,
-          "latency_ms_r1": 3197.1,
-          "total_tokens_r1": 547,
+          "judge_validity_score": 1,
+          "latency_ms_r1": 2492.9,
+          "total_tokens_r1": 731,
           "sample_queries_r1": [
-            "site:craigslist.org 2br apartment Chicago Wicker Park max $2400",
-            "site:zillow.com 2 bedroom rental Chicago Logan Square under $2700 pet friendly",
-            "site:apartments.com 2br Chicago Wicker Park $2400-$2700 natural light"
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking pet friendly",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings no smoking pet friendly",
+            "site:apartments.com 2 bedroom Chicago Wicker Park Logan Square under $2700 natural light high ceilings no smoking pet friendly near Blue Line"
           ],
           "sample_queries_r2": [
-            "site:craigslist.org 2br apartment Chicago Logan Square max $2700 pet friendly high ceilings",
-            "site:zillow.com 2 bedroom rental Chicago Wicker Park under $2400 natural light no smoking",
-            "site:apartments.com 2br Chicago Logan Square $2400-$2700 near Blue Line pet friendly"
+            "site:trulia.com 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking pet friendly",
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings no smoking pet friendly",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 natural light high ceilings no smoking pet friendly near Blue Line"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.734,
-        "mean_query_diversity": 0.6511,
+        "mean_format_validity": 0.75,
+        "mean_query_diversity": 0.2179,
         "mean_no_repetition_rate": 1.0,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 3117.1,
-        "mean_tokens": 497
+        "mean_latency_ms": 2051.2,
+        "mean_tokens": 671
       }
     },
     "low_temp": {
@@ -1560,56 +1560,56 @@
       "per_preference": [
         {
           "preferences_id": "pref_001",
-          "num_queries_r1": 8,
-          "mean_format_validity": 0.562,
-          "query_diversity": 0.5942,
-          "no_repetition_rate": 0.875,
+          "num_queries_r1": 3,
+          "mean_format_validity": 0.75,
+          "query_diversity": 0.2491,
+          "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 2507.3,
-          "total_tokens_r1": 446,
+          "latency_ms_r1": 2056.9,
+          "total_tokens_r1": 610,
           "sample_queries_r1": [
-            "2 bedroom apartment for rent in San Francisco under 3000 site:craigslist.org",
-            "2 bedroom pet friendly rentals in San Francisco max 3000 site:zillow.com",
-            "2 bedroom apartments San Francisco $3000 max site:apartments.com"
+            "site:craigslist.org 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco max $3000 pet friendly near Salesforce Tower",
+            "site:apartments.com 2 bedroom San Francisco $3000 pet friendly near Salesforce Tower"
           ],
           "sample_queries_r2": [
-            "2 bedroom apartment for rent in San Francisco under 3000 site:craigslist.org",
-            "pet friendly 2 bedroom apartments in San Francisco max 3000 site:trulia.com",
-            "2 bedroom rentals in San Francisco near Salesforce Tower budget 3000 site:zillow.com"
+            "site:trulia.com 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:craigslist.org 2 bedroom San Francisco max $3000 cat friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco $3000 pet allowed near Salesforce Tower"
           ]
         },
         {
           "preferences_id": "pref_005",
-          "num_queries_r1": 8,
+          "num_queries_r1": 3,
           "mean_format_validity": 0.75,
-          "query_diversity": 0.7555,
+          "query_diversity": 0.3936,
           "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
-          "judge_validity_score": 0,
-          "latency_ms_r1": 3354.2,
-          "total_tokens_r1": 553,
+          "judge_validity_score": 1,
+          "latency_ms_r1": 2046.6,
+          "total_tokens_r1": 726,
           "sample_queries_r1": [
-            "site:craigslist.org 2br apartment Chicago Wicker Park max $2400",
-            "site:zillow.com 2 bedroom rental Chicago Logan Square under $2700 pet friendly",
-            "site:apartments.com 2br Chicago Wicker Park natural light high ceilings no smoking max $2700"
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking building",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings pet friendly",
+            "site:apartments.com 2 bedroom Chicago Wicker Park Logan Square under $2700 high ceilings natural light no smoking building pet friendly"
           ],
           "sample_queries_r2": [
-            "site:craigslist.org 2br apartment Chicago Wicker Park max $2700 pet friendly near Blue Line",
-            "site:zillow.com 2 bedroom rental Chicago Logan Square max $2400 natural light high ceilings",
-            "site:apartments.com 2br Chicago Wicker Park pet friendly max $2700 no smoking building"
+            "site:trulia.com 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking building pet friendly",
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings no smoking building",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 high ceilings natural light pet friendly near Blue Line"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.656,
-        "mean_query_diversity": 0.6748,
-        "mean_no_repetition_rate": 0.938,
+        "mean_format_validity": 0.75,
+        "mean_query_diversity": 0.3214,
+        "mean_no_repetition_rate": 1.0,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 2930.8,
-        "mean_tokens": 500
+        "mean_latency_ms": 2051.8,
+        "mean_tokens": 668
       }
     },
     "few_shot": {
@@ -1621,56 +1621,56 @@
       "per_preference": [
         {
           "preferences_id": "pref_001",
-          "num_queries_r1": 8,
+          "num_queries_r1": 3,
           "mean_format_validity": 0.75,
-          "query_diversity": 0.5995,
-          "no_repetition_rate": 0.75,
+          "query_diversity": 0.2491,
+          "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 2406.7,
-          "total_tokens_r1": 646,
+          "latency_ms_r1": 2351.5,
+          "total_tokens_r1": 610,
           "sample_queries_r1": [
-            "2 bedroom apartment San Francisco under $3000 site:craigslist.org",
-            "2br apartment San Francisco pet-friendly $3000 site:zillow.com inurl:homedetails",
-            "2 bedroom apartment San Francisco Mission District under $3000 site:apartments.com"
+            "site:craigslist.org 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco max $3000 pet friendly near Salesforce Tower",
+            "site:apartments.com 2 bedroom San Francisco $3000 pet friendly near Salesforce Tower"
           ],
           "sample_queries_r2": [
-            "2 bedroom apartment San Francisco $2500 $3000 site:craigslist.org",
-            "2br apartment San Francisco pet-friendly $3000 site:zillow.com inurl:homedetails",
-            "2 bedroom apartment San Francisco SOMA under $3000 site:apartments.com"
+            "site:trulia.com 2 bedroom San Francisco under $3000 pet friendly near Salesforce Tower",
+            "site:craigslist.org 2 bedroom San Francisco max $3000 cat friendly near Salesforce Tower",
+            "site:zillow.com 2 bedroom San Francisco $3000 pet allowed near Salesforce Tower"
           ]
         },
         {
           "preferences_id": "pref_005",
-          "num_queries_r1": 8,
-          "mean_format_validity": 0.719,
-          "query_diversity": 0.7429,
-          "no_repetition_rate": 0.875,
+          "num_queries_r1": 3,
+          "mean_format_validity": 0.75,
+          "query_diversity": 0.4127,
+          "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 2713.7,
-          "total_tokens_r1": 729,
+          "latency_ms_r1": 2337.5,
+          "total_tokens_r1": 727,
           "sample_queries_r1": [
-            "2 bedroom apartment Chicago Wicker Park Logan Square max $2700 site:craigslist.org",
-            "2br Chicago Wicker Park near Blue Line $2400 site:zillow.com inurl:homedetails",
-            "2 bedroom apartment Chicago Logan Square under $2700 site:apartments.com"
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking building",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings pet friendly",
+            "site:apartments.com 2 bedroom Chicago Wicker Park Logan Square under $2700 natural light high ceilings no smoking building near Blue Line"
           ],
           "sample_queries_r2": [
-            "2 bedroom apartment Chicago Wicker Park Logan Square max $2700 site:craigslist.org",
-            "2br Chicago Wicker Park near Blue Line $2700 site:zillow.com inurl:homedetails",
-            "2 bedroom apartment Chicago Logan Square pet friendly under $2700 site:apartments.com"
+            "site:trulia.com 2 bedroom Chicago Wicker Park Logan Square under $2400 natural light high ceilings no smoking building pet friendly",
+            "site:craigslist.org 2 bedroom Chicago Wicker Park Logan Square under $2700 walkable to Blue Line natural light high ceilings no smoking building",
+            "site:zillow.com 2 bedroom Chicago Wicker Park Logan Square under $2700 natural light high ceilings no smoking building near Blue Line pet friendly"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.734,
-        "mean_query_diversity": 0.6712,
-        "mean_no_repetition_rate": 0.812,
+        "mean_format_validity": 0.75,
+        "mean_query_diversity": 0.3309,
+        "mean_no_repetition_rate": 1.0,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 2560.2,
-        "mean_tokens": 688
+        "mean_latency_ms": 2344.5,
+        "mean_tokens": 668
       }
     }
   },
@@ -1692,13 +1692,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
+          "profile_completeness": 0.65,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's maximum budget, which is a valid decision. However, the listing only offers 1 bedroom instead of the requested 2, which impacts its relevance to the user's preferences.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3030.4,
-          "cost_usd": 0.003507,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is relevant to the user's preferences, being located in Berkeley, priced under the maximum budget, and pet-friendly. However, it lacks information on the number of bathrooms and does not explicitly mention the presence of images, which could enhance the completeness of the profile.",
+          "estimated_tool_calls": 3,
+          "latency_ms": 3678.5,
+          "cost_usd": 0.00663,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1711,13 +1711,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
+          "profile_completeness": 0.45,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the insufficient number of bedrooms as the reason for disqualification, which aligns with the user's preference for 2 bedrooms. The price is within the user's budget, and the pet-friendly feature is noted, but the address is in Berkeley, not San Francisco, which slightly affects relevance.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3214.0,
-          "cost_usd": 0.003876,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is relevant to the user's preferences, being located in Berkeley, priced well below the maximum budget, and pet-friendly. However, it lacks information on the number of bathrooms and other amenities, which could enhance the completeness of the profile.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3231.1,
+          "cost_usd": 0.006636,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1730,12 +1730,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.385,
+          "profile_completeness": 0.35,
           "judge_quality_score": 5,
-          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's maximum budget. However, the missing information about the number of bedrooms is a significant gap, as it is a key preference for the user. Overall, while the disqualification is justified, the lack of completeness in key fields affects the score.",
+          "judge_rationale": "The listing is disqualified correctly due to not meeting the bedroom requirement, as it has 0 bedrooms instead of the requested 1. However, it does provide relevant information such as price and address, but lacks completeness in other key fields like bathrooms and additional amenities.",
           "estimated_tool_calls": 1,
-          "latency_ms": 2669.4,
-          "cost_usd": 0.003456,
+          "latency_ms": 5187.6,
+          "cost_usd": 0.006669,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -1749,12 +1749,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 6,
-          "judge_rationale": "The profile correctly identifies the listing as disqualified due to exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2, which is a significant mismatch with user preferences.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 4017.1,
-          "cost_usd": 0.003825,
+          "profile_completeness": 0.35,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluation. It correctly disqualifies the listing based on the price exceeding the user's maximum limit, and it notes that the apartment is pet-friendly, aligning with user preferences.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3983.6,
+          "cost_usd": 0.006741,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -1768,13 +1768,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.45,
           "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to the price exceeding the user's maximum budget. It provides relevant details such as the address, number of bedrooms, and pet-friendliness, which align with the user's preferences. However, it could improve by including more information about the commute to the specified destination.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 3929.1,
-          "cost_usd": 0.003723,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is complete with key fields such as price, address, and number of bedrooms. It is relevant to the user's preferences, being pet-friendly and within the budget, and it correctly identifies the commute time to UC Berkeley. However, the absence of some details like bathrooms and images slightly detracts from the completeness.",
+          "estimated_tool_calls": 3,
+          "latency_ms": 3432.4,
+          "cost_usd": 0.006618,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1787,13 +1787,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.35,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to exceeding the user's budget, which is a valid decision. However, it only lists 1 bedroom instead of the requested 2, which impacts its relevance to the user's preferences.",
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. However, the absence of specific commute times and other details like bathrooms and nearby places slightly detracts from its completeness.",
           "estimated_tool_calls": 2,
-          "latency_ms": 2976.0,
-          "cost_usd": 0.003777,
-          "predicted_disqualified": true,
+          "latency_ms": 3754.1,
+          "cost_usd": 0.006588,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1806,13 +1806,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.5,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the mismatch in bedroom requirements, which aligns with the user's preferences. However, while the price and pet-friendly status are relevant, the listing lacks some key details such as furnishing and condition, which could enhance completeness.",
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which align with the user's preferences. It correctly identifies the apartment as pet-friendly and falls within the user's budget. However, the absence of commute times and nearby places limits its completeness.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3912.0,
-          "cost_usd": 0.003927,
-          "predicted_disqualified": true,
+          "latency_ms": 4556.5,
+          "cost_usd": 0.006579,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1825,13 +1825,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 6,
-          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, it falls short on completeness as it only offers 1 bedroom instead of the requested 2 bedrooms. Additionally, while it is pet-friendly, the overall relevance to user preferences is limited due to the mismatch in bedroom count and budget.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 2599.7,
-          "cost_usd": 0.003474,
-          "predicted_disqualified": true,
+          "profile_completeness": 0.4,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing meets the user's preferences with a price of $3100, a 1-bedroom unit, and it is pet-friendly. However, it lacks information on bathrooms and commute times, which could enhance its completeness.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 4094.0,
+          "cost_usd": 0.006588,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1844,14 +1844,14 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 4,
-          "judge_rationale": "The profile correctly disqualifies the listing due to the lack of pet-friendliness, which aligns with the user's preferences. However, it fails to meet the user's requirements for bedrooms, as it lists 0 bedrooms instead of the requested 2. Additionally, the address is in Berkeley, not San Francisco, which is outside the user's specified city.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 5,
+          "judge_rationale": "The listing provides a price and address, but it lacks key information such as the number of bedrooms and bathrooms. The disqualification is appropriate due to the pet policy, which does not align with user preferences for pet-friendly options.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3037.2,
-          "cost_usd": 0.003444,
+          "latency_ms": 4752.5,
+          "cost_usd": 0.006651,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": false
+          "ground_truth_disqualified": true
         },
         {
           "listing_id": "listing_010",
@@ -1863,13 +1863,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
+          "profile_completeness": 0.4,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile provides key fields such as price, address, and number of bedrooms, which are essential for evaluating the listing. The disqualification decision is correct based on the price exceeding the user's budget, but the listing is not relevant to the user's preference for San Francisco.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3590.7,
-          "cost_usd": 0.003435,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms, which align well with the user's preferences. It is also pet-friendly and falls within the user's budget, making it a relevant option. However, the absence of information on bathrooms and other amenities slightly detracts from its completeness.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3649.6,
+          "cost_usd": 0.006588,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1882,12 +1882,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The listing is correctly disqualified due to the lack of pet-friendliness, which aligns with the user's preferences. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance. The price is within the budget, but the bedroom count is a significant factor.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 3154.5,
-          "cost_usd": 0.003654,
+          "profile_completeness": 0.35,
+          "judge_quality_score": 7,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluation. However, it disqualifies the listing correctly due to the lack of pet-friendliness, which is a critical preference for the user.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 4302.6,
+          "cost_usd": 0.006552,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         },
@@ -1901,23 +1901,23 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
+          "profile_completeness": 0.35,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies that the apartment exceeds the user's maximum budget and disqualifies it accordingly. However, it only offers 1 bedroom instead of the requested 2 bedrooms, which is a significant mismatch to the user's preferences.",
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluation. It correctly disqualifies the listing based on the price exceeding the user's maximum budget, and the pet-friendly feature aligns with user preferences. However, the absence of some details like bathrooms and commute times slightly affects completeness.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3155.2,
-          "cost_usd": 0.003681,
+          "latency_ms": 4150.3,
+          "cost_usd": 0.006537,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.167,
+        "precision": 0.6,
         "recall": 1.0,
-        "f1": 0.286,
-        "tp": 2,
-        "fp": 10,
-        "tn": 0,
+        "f1": 0.75,
+        "tp": 3,
+        "fp": 2,
+        "tn": 7,
         "fn": 0
       },
       "aggregate": {
@@ -1928,13 +1928,13 @@
           "address": 1.0,
           "pet_friendly": 1.0
         },
-        "mean_profile_completeness": 0.532,
-        "mean_judge_quality": 7.17,
-        "mean_tool_calls": 1.33,
-        "mean_latency_ms": 3273.8,
-        "mean_cost_usd": 0.003648,
-        "disqualification_f1": 0.286,
-        "disqualification_precision": 0.167,
+        "mean_profile_completeness": 0.413,
+        "mean_judge_quality": 7.5,
+        "mean_tool_calls": 1.67,
+        "mean_latency_ms": 4064.4,
+        "mean_cost_usd": 0.006615,
+        "disqualification_f1": 0.75,
+        "disqualification_precision": 0.6,
         "disqualification_recall": 1.0
       }
     },
@@ -1955,13 +1955,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
+          "profile_completeness": 0.6,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly disqualified the listing due to the price exceeding the user's maximum budget. However, it only offers 1 bedroom instead of the requested 2, which is a significant factor. The address is also in Berkeley, not San Francisco, which does not align with the user's city preference.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3791.5,
-          "cost_usd": 0.000935,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is relevant to the user's preferences, being located in Berkeley, priced below the maximum budget, and pet-friendly. However, it only offers 1 bedroom, which may not fully meet the user's unspecified bedroom needs, and lacks some key details like the number of bathrooms.",
+          "estimated_tool_calls": 3,
+          "latency_ms": 3546.7,
+          "cost_usd": 0.001772,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1974,13 +1974,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
+          "profile_completeness": 0.45,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the insufficient number of bedrooms as the reason for disqualification, which aligns with the user's preference for 2 bedrooms. The price is within the user's budget, and the property is pet-friendly, which is a positive aspect. However, the address is in Berkeley, not San Francisco, which is a significant factor for relevance.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 4077.0,
-          "cost_usd": 0.001034,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is relevant to the user's preferences, being located in Berkeley, priced well below the maximum budget, and pet-friendly. However, it lacks information on the number of bathrooms and other key details that could enhance completeness.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3865.5,
+          "cost_usd": 0.00177,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -1993,12 +1993,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.385,
+          "profile_completeness": 0.35,
           "judge_quality_score": 5,
-          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, it lacks the number of bedrooms, which is a critical piece of information for the user. Additionally, while it mentions pet-friendliness, the absence of a specified bedroom count diminishes its overall completeness.",
+          "judge_rationale": "The listing is disqualified correctly due to not meeting the bedroom requirement, as it is a studio instead of a 1-bedroom. However, it lacks completeness in key fields such as bathrooms and commute times, which are important for a comprehensive evaluation.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3170.7,
-          "cost_usd": 0.000922,
+          "latency_ms": 3998.7,
+          "cost_usd": 0.001834,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -2012,12 +2012,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 6,
-          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's budget, which is a valid decision. However, it fails to meet the user's preference for 2 bedrooms, as it only offers 1 bedroom, which significantly impacts its relevance.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 3698.3,
-          "cost_usd": 0.00102,
+          "profile_completeness": 0.35,
+          "judge_quality_score": 7,
+          "judge_rationale": "The profile contains key fields such as price, address, and number of bedrooms, which are essential for evaluation. However, the disqualification reason is valid as the price exceeds the user's maximum limit, and while it meets the pet-friendly requirement, the absence of additional relevant details like commute times and nearby places slightly reduces its completeness.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3680.9,
+          "cost_usd": 0.001814,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -2031,13 +2031,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.45,
           "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's maximum budget. While the apartment has 3 bedrooms instead of the requested 2, it is still relevant as it is pet-friendly and located in the Bay Area, which may appeal to the user despite the disqualification.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 3228.8,
-          "cost_usd": 0.000993,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing is complete with key fields such as price, address, and number of bedrooms. It is relevant to the user's preferences, being pet-friendly and within the budget, and the commute time to UC Berkeley is provided. There are no hallucinated data points, and the disqualification decision is appropriate.",
+          "estimated_tool_calls": 3,
+          "latency_ms": 4947.9,
+          "cost_usd": 0.001765,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2050,13 +2050,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.4,
           "judge_quality_score": 8,
-          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's budget, which is a valid decision. However, it only offers 1 bedroom instead of the requested 2, which is a significant shortcoming. The pet-friendly feature aligns with user preferences, but the overall relevance is diminished due to the bedroom count.",
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. It is also pet-friendly and falls within the budget, but lacks details on bathrooms and commute times, which could enhance its completeness.",
           "estimated_tool_calls": 2,
-          "latency_ms": 4121.0,
-          "cost_usd": 0.001007,
-          "predicted_disqualified": true,
+          "latency_ms": 3737.3,
+          "cost_usd": 0.001745,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2069,13 +2069,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the lack of the required number of bedrooms. It includes key fields such as price, address, and pet-friendliness, aligning well with user preferences. The only minor issue is the absence of additional details that could enhance the listing's appeal.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3184.2,
-          "cost_usd": 0.000967,
-          "predicted_disqualified": true,
+          "profile_completeness": 0.5,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. It is also pet-friendly, which is a soft constraint for the user. However, the absence of some details like bathrooms and commute times may affect the completeness.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3386.3,
+          "cost_usd": 0.001778,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2088,13 +2088,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 7,
-          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's budget, which is a valid decision. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance to the user's preferences.",
+          "profile_completeness": 0.45,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. It correctly identifies the apartment as pet-friendly and does not disqualify it, which is appropriate given the user's requirements. However, the absence of details like bathrooms and commute times slightly detracts from its completeness.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3640.0,
-          "cost_usd": 0.000922,
-          "predicted_disqualified": true,
+          "latency_ms": 7044.3,
+          "cost_usd": 0.001717,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2107,14 +2107,14 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 4,
-          "judge_rationale": "The profile correctly disqualifies the listing due to the absence of pet-friendliness, which aligns with the user's preferences. However, the listing is incomplete as it does not meet the user's requirement for 2 bedrooms, and the address is in Berkeley rather than San Francisco, making it less relevant.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 5,
+          "judge_rationale": "The profile provides a complete address and price, but it disqualifies the listing correctly due to the pet policy, which is a key preference for the user. However, the listing is for a studio (0 bedrooms), which may not align with the user's unspecified bedroom preference, leading to a moderate score.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3114.3,
-          "cost_usd": 0.000918,
+          "latency_ms": 4027.7,
+          "cost_usd": 0.001774,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": false
+          "ground_truth_disqualified": true
         },
         {
           "listing_id": "listing_010",
@@ -2126,13 +2126,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
+          "profile_completeness": 0.45,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluating the listing. The disqualification decision is correct as the price exceeds the user's maximum budget, and the listing is relevant to the user's preferences regarding pet-friendliness. However, the address is in Berkeley, not San Francisco, which slightly detracts from its relevance.",
-          "estimated_tool_calls": 1,
-          "latency_ms": 3079.4,
-          "cost_usd": 0.000916,
-          "predicted_disqualified": true,
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms, which are relevant to the user's preferences. It correctly identifies the apartment as pet-friendly and is within the user's budget, but lacks some details like bathrooms and images, which could enhance the completeness.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3264.2,
+          "cost_usd": 0.001749,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2145,12 +2145,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to the lack of pet-friendliness, which aligns with the user's preference for a pet-friendly option. However, the listing only includes 1 bedroom instead of the requested 2 bedrooms, which affects its relevance. Overall, it provides key fields like price and address, but the bedroom count is a significant shortcoming.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 3017.9,
-          "cost_usd": 0.000974,
+          "profile_completeness": 0.35,
+          "judge_quality_score": 6,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluation. However, it disqualifies the listing correctly due to the pet-unfriendly policy, which does not align with the user's preferences. The absence of additional relevant details like commute times and nearby places limits its completeness.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 4703.7,
+          "cost_usd": 0.001747,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         },
@@ -2164,23 +2164,23 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
+          "profile_completeness": 0.35,
           "judge_quality_score": 8,
-          "judge_rationale": "The listing correctly identifies that the price is over budget and disqualifies it, which aligns with user preferences. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance.",
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are relevant to the user's preferences. The disqualification decision is correct as the price exceeds the user's maximum budget, and the apartment is pet-friendly, aligning with the user's soft constraints. However, the absence of some details like bathrooms and commute times slightly affects completeness.",
           "estimated_tool_calls": 1,
-          "latency_ms": 5546.8,
-          "cost_usd": 0.000982,
+          "latency_ms": 4148.4,
+          "cost_usd": 0.001763,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.167,
+        "precision": 0.6,
         "recall": 1.0,
-        "f1": 0.286,
-        "tp": 2,
-        "fp": 10,
-        "tn": 0,
+        "f1": 0.75,
+        "tp": 3,
+        "fp": 2,
+        "tn": 7,
         "fn": 0
       },
       "aggregate": {
@@ -2191,13 +2191,13 @@
           "address": 1.0,
           "pet_friendly": 1.0
         },
-        "mean_profile_completeness": 0.519,
+        "mean_profile_completeness": 0.421,
         "mean_judge_quality": 7.33,
-        "mean_tool_calls": 1.33,
-        "mean_latency_ms": 3639.2,
-        "mean_cost_usd": 0.000966,
-        "disqualification_f1": 0.286,
-        "disqualification_precision": 0.167,
+        "mean_tool_calls": 1.67,
+        "mean_latency_ms": 4196.0,
+        "mean_cost_usd": 0.001769,
+        "disqualification_f1": 0.75,
+        "disqualification_precision": 0.6,
         "disqualification_recall": 1.0
       }
     },
@@ -2218,13 +2218,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.692,
+          "profile_completeness": 0.65,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly disqualifies the listing due to the price exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2, which affects its relevance to the user's preferences.",
+          "judge_rationale": "The listing is relevant to the user's preferences, being located in Berkeley, priced within the budget, and pet-friendly. However, it lacks information on the number of bathrooms and does not specify the floor, which slightly affects completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 4160.4,
-          "cost_usd": 0.003888,
-          "predicted_disqualified": true,
+          "latency_ms": 4243.8,
+          "cost_usd": 0.006621,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2237,13 +2237,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
+          "profile_completeness": 0.45,
           "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the bedroom count not meeting user preferences. It includes key fields such as price, address, and the pet-friendly status, but the location is not in San Francisco, which is a significant factor for the user.",
+          "judge_rationale": "The listing is relevant to the user's preferences as it is located in Berkeley, is pet-friendly, and falls well within the budget. However, it lacks some key details such as the number of bathrooms and additional amenities, which could enhance the completeness of the profile.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3601.6,
-          "cost_usd": 0.003942,
-          "predicted_disqualified": true,
+          "latency_ms": 3279.7,
+          "cost_usd": 0.006627,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2256,12 +2256,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.385,
-          "judge_quality_score": 5,
-          "judge_rationale": "The profile includes the address and indicates that the apartment is pet-friendly, which aligns with user preferences. However, it lacks the number of bedrooms and the price exceeds the user's maximum budget, leading to a disqualification that is correctly noted. Overall, while some key fields are present, the missing bedroom information and the high price significantly impact its relevance.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 4,
+          "judge_rationale": "The profile is missing key information such as the number of bathrooms and commute times, which are relevant to the user preferences. While it correctly disqualified the listing due to the bedroom requirement not being met, the overall completeness and relevance to the user's preferences are lacking.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3307.8,
-          "cost_usd": 0.003507,
+          "latency_ms": 4116.6,
+          "cost_usd": 0.00687,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -2275,12 +2275,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 5,
-          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's maximum budget. However, it only offers 1 bedroom instead of the requested 2 bedrooms, which is a significant mismatch with user preferences. While it is pet-friendly, the overall relevance is low due to the bedroom and price issues.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 7,
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms. However, it is disqualified correctly due to the price exceeding the user's maximum limit. While it meets the pet-friendly requirement, the absence of some details like bathrooms and commute times affects completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3678.7,
-          "cost_usd": 0.003816,
+          "latency_ms": 3487.0,
+          "cost_usd": 0.006552,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
@@ -2294,13 +2294,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly disqualifies the listing based on the price exceeding the user's maximum budget, which is a key factor in the evaluation. However, it includes a 3-bedroom unit instead of the requested 2-bedroom, which slightly impacts relevance. Overall, the key fields are present and the disqualification decision is appropriate.",
+          "profile_completeness": 0.6,
+          "judge_quality_score": 9,
+          "judge_rationale": "The listing is highly relevant to the user's preferences, featuring a pet-friendly 3-bedroom apartment in Berkeley within the budget. It includes key fields such as price and address, and the commute time to UC Berkeley is provided, enhancing its completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3384.6,
-          "cost_usd": 0.003714,
-          "predicted_disqualified": true,
+          "latency_ms": 4407.9,
+          "cost_usd": 0.006594,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2313,13 +2313,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly disqualifies the listing due to the price exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2 bedrooms, which affects its relevance to the user's preferences.",
+          "profile_completeness": 0.7,
+          "judge_quality_score": 9,
+          "judge_rationale": "The profile contains all key fields such as price, address, and number of bedrooms, which align with the user's preferences. It is also pet-friendly and within the budget, with a reasonable commute time to Salesforce Tower. The only missing information is the number of bathrooms, but overall, it is a strong match.",
           "estimated_tool_calls": 4,
-          "latency_ms": 2757.0,
-          "cost_usd": 0.003783,
-          "predicted_disqualified": true,
+          "latency_ms": 3489.5,
+          "cost_usd": 0.006624,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2332,13 +2332,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
+          "profile_completeness": 0.55,
           "judge_quality_score": 8,
-          "judge_rationale": "The listing is correctly disqualified due to the mismatch in the number of bedrooms, which does not meet the user's requirement for 2 bedrooms. However, it provides relevant information such as the price, address, and pet-friendly status, which aligns with the user's preferences.",
+          "judge_rationale": "The listing provides key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. However, it lacks details on bathrooms and commute times, which could enhance the completeness of the profile. The disqualification decision is appropriate as the listing meets the user's criteria.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3197.7,
-          "cost_usd": 0.003918,
-          "predicted_disqualified": true,
+          "latency_ms": 3769.7,
+          "cost_usd": 0.006705,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2351,13 +2351,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
-          "judge_quality_score": 7,
-          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, the apartment only has 1 bedroom instead of the requested 2, which is a significant mismatch with user preferences.",
+          "profile_completeness": 0.45,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, all of which align with the user's preferences. It correctly identifies the apartment as pet-friendly and falls within the user's budget. However, the absence of some details like bathrooms and commute times slightly detracts from completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 3157.6,
-          "cost_usd": 0.003465,
-          "predicted_disqualified": true,
+          "latency_ms": 3385.7,
+          "cost_usd": 0.006429,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2370,14 +2370,14 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.462,
+          "profile_completeness": 0.4,
           "judge_quality_score": 4,
-          "judge_rationale": "The profile correctly disqualifies the listing due to the absence of pet-friendliness, which aligns with the user's preferences. However, the listing is for a studio (0 bedrooms) instead of the requested 2 bedrooms, and it is located in Berkeley rather than San Francisco, making it less relevant to the user's needs.",
+          "judge_rationale": "The listing is disqualified correctly for being not pet-friendly, which aligns with the user's preference for pet-friendly options. However, the profile lacks completeness in key fields such as the number of bedrooms and bathrooms, which are important for evaluating the listing against user preferences.",
           "estimated_tool_calls": 4,
-          "latency_ms": 4410.7,
-          "cost_usd": 0.003495,
+          "latency_ms": 3520.3,
+          "cost_usd": 0.006567,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": false
+          "ground_truth_disqualified": true
         },
         {
           "listing_id": "listing_010",
@@ -2389,13 +2389,13 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.538,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly identifies the price as exceeding the user's maximum budget and disqualifies the listing accordingly. It includes all key fields such as price, address, and number of bedrooms, and the pet-friendly status aligns with the user's preferences. However, the listing is for Berkeley, not San Francisco, which is a slight mismatch in location.",
+          "profile_completeness": 0.65,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing includes key fields such as price, address, and number of bedrooms, all of which align with user preferences. It is pet-friendly and within the budget, but lacks information on bathrooms and additional amenities that could enhance the profile's completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 2885.8,
-          "cost_usd": 0.003816,
-          "predicted_disqualified": true,
+          "latency_ms": 5232.6,
+          "cost_usd": 0.006624,
+          "predicted_disqualified": false,
           "ground_truth_disqualified": false
         },
         {
@@ -2408,12 +2408,12 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to the pet policy, which aligns with the user's preference for pet-friendly options. However, the listing only includes one bedroom instead of the requested two, which affects its relevance. Overall, the key fields are mostly complete and accurate.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 7,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are relevant to the user's preferences. However, it disqualifies the listing correctly due to the pet-unfriendly policy, aligning with the user's requirement for a pet-friendly apartment. The absence of additional details like bathrooms and commute times slightly reduces the completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 2884.8,
-          "cost_usd": 0.003645,
+          "latency_ms": 4287.7,
+          "cost_usd": 0.006543,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         },
@@ -2427,23 +2427,23 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.615,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile correctly identifies that the apartment exceeds the user's budget and disqualifies it accordingly. However, it only offers 1 bedroom instead of the requested 2, which is a significant factor in the user's preferences.",
+          "profile_completeness": 0.35,
+          "judge_quality_score": 7,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluation. However, while it correctly disqualifies the listing due to the price exceeding the user's budget, it lacks additional details like bathrooms and commute times that could enhance its completeness.",
           "estimated_tool_calls": 4,
-          "latency_ms": 2788.9,
-          "cost_usd": 0.003672,
+          "latency_ms": 4292.6,
+          "cost_usd": 0.006588,
           "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.167,
+        "precision": 0.6,
         "recall": 1.0,
-        "f1": 0.286,
-        "tp": 2,
-        "fp": 10,
-        "tn": 0,
+        "f1": 0.75,
+        "tp": 3,
+        "fp": 2,
+        "tn": 7,
         "fn": 0
       },
       "aggregate": {
@@ -2454,13 +2454,13 @@
           "address": 1.0,
           "pet_friendly": 1.0
         },
-        "mean_profile_completeness": 0.564,
-        "mean_judge_quality": 7.17,
+        "mean_profile_completeness": 0.487,
+        "mean_judge_quality": 7.25,
         "mean_tool_calls": 4.0,
-        "mean_latency_ms": 3351.3,
-        "mean_cost_usd": 0.003722,
-        "disqualification_f1": 0.286,
-        "disqualification_precision": 0.167,
+        "mean_latency_ms": 3959.4,
+        "mean_cost_usd": 0.006612,
+        "disqualification_f1": 0.75,
+        "disqualification_precision": 0.6,
         "disqualification_recall": 1.0
       }
     }

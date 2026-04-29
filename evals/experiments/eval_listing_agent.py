@@ -8,7 +8,7 @@ Variants compared:
 
 Held constant:
   - Listing URLs and preferences (from datasets/listings.json)
-  - Tool prompt template (replicated from prompts/listing_agent_prompts.py)
+  - Tool prompt template (production prompt from prompts/listing_agent_prompts.py)
   - Available tools: scraper, analyze_listing_photos, search_web
     (commute and places tools are stubs — excluded from this eval)
   - Structured JSON output format
@@ -31,36 +31,10 @@ from anthropic import Anthropic
 from evals.config import RESULTS_DIR, LISTING_AGENT_VARIANTS, DATASETS_DIR, SONNET_MODEL, HAIKU_MODEL
 from evals.metrics.nlp import LatencyTimer, field_f1
 from evals.metrics.llm_judge import LLMJudge
+from prompts.listing_agent_prompts import build_listing_agent_prompt
 
 COST_PER_M_INPUT = {SONNET_MODEL: 3.00, HAIKU_MODEL: 0.80}
 COST_PER_M_OUTPUT = {SONNET_MODEL: 15.00, HAIKU_MODEL: 4.00}
-
-# Simplified listing agent prompt (mirrors listing_agent_prompts.py)
-LISTING_AGENT_SYSTEM = """You are extracting structured data from a rental listing page.
-
-You will receive the scraped listing text and the user's preferences. Your job:
-1. Extract fields directly from the listing text — do not guess or infer
-2. Set disqualified=true only if the listing explicitly violates a hard requirement
-   (e.g. "no pets" when user has pets, or price clearly over budget)
-3. Set any field to null if it is not mentioned in the listing text
-
-Return ONLY valid JSON with these fields (null if unknown):
-{
-  "url": "<string>",
-  "disqualified": <true|false>,
-  "disqualify_reason": <string|null>,
-  "price": <int|null>,
-  "bedrooms": <int|null>,
-  "address": <string|null>,
-  "pet_friendly": <bool|null>,
-  "pet_deposit": <int|null>,
-  "furnishing": <string|null>,
-  "modern_finishes": <bool|null>,
-  "natural_light": <bool|null>,
-  "spacious": <bool|null>,
-  "condition": <string|null>,
-  "notes": <string|null>
-}"""
 
 
 def simulate_listing_agent(
@@ -117,7 +91,7 @@ def simulate_listing_agent(
         resp = client.messages.create(
             model=model,
             max_tokens=1024,
-            system=LISTING_AGENT_SYSTEM,
+            system=build_listing_agent_prompt(url, preferences),
             messages=[{"role": "user", "content": user_content}],
         )
 

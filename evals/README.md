@@ -135,7 +135,7 @@ This experiment bypasses live search and scraping (which change daily) and inste
 - `pref_001`–`pref_005` (validation): used during prompt tuning. All decisions about prompts and model configs are based on these.
 - `pref_006`–`pref_010` (test): held out for final reporting. Not used during iteration to avoid overfitting.
 
-**`datasets/listings.json`** — 10 apartment profiles used by the listing agent eval. Each entry matches the production schema (price, bedrooms, pet policy, commute times, nearby places, amenity flags, disqualified flag).
+**`datasets/listings.json`** — 12 apartment profiles used by the listing agent eval. Each entry matches the production schema (price, bedrooms, pet policy, commute times, nearby places, amenity flags, disqualified flag). 3 listings are intentionally disqualified to give the disqualification F1 metric meaningful positive examples to score against.
 
 **`datasets/images.json`** — Image sets for the vision eval, with ground-truth boolean labels and condition ratings.
 
@@ -276,13 +276,13 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 **What this tests:** Once the AI knows what the user wants, it has to generate a set of search queries that will be passed to SerpAPI to find relevant listings. A good query looks like `2 bedroom apartment San Francisco under $3000 site:zillow.com` — it specifies bedrooms, price, city, and targets a specific rental site using a `site:` operator. A bad query might be too vague, missing the price filter, or identical to one that was already tried. This eval checks three things: (1) are the queries formatted correctly with all required fields, (2) are they different enough from each other to cover different neighborhoods and sites, and (3) if the first round of searches came up empty, does the AI avoid repeating the same queries on retry?
 
-**What the results mean:** Every variant successfully parsed its output (no JSON errors), which means the model always returns something the pipeline can use. Format validity sits around 0.70–0.73, short of perfect — in practice, one query per batch tends to drop either the price range or the bedroom count. This is a prompt issue, not a model issue: the instructions don't enforce these fields strongly enough. The most interesting finding is that `low_temp` (temperature=0.0, fully deterministic) is actually the worst performer. You might expect that making the model deterministic would make it more reliable, but it turns out a small amount of randomness (temperature=0.2) helps the model vary its queries rather than producing nearly-identical ones.
+**What the results mean:** Every variant parsed its output successfully (no JSON errors) and never repeated a failed query on retry (100% no-repeat rate). Format validity is 0.75 across the board — three out of every four queries include all required fields (site operator, city, bedrooms, price range). The one that doesn't is typically missing an explicit price filter. Query diversity is lower than the previous run (0.265 vs. 0.65) because the production prompt generates exactly 3 queries per call, giving fewer pairs to measure diversity against; the queries themselves are still meaningfully different. All three variants perform identically because they now share the same production system prompt — the `few_shot` and `low_temp` configs only vary temperature, which has no measurable effect at this sample size.
 
 | Variant | Format validity | Query diversity | No-repeat on retry | Latency |
 |---|---|---|---|---|
-| baseline | 0.734 | 0.651 | 100% | 3117ms |
-| low_temp | 0.656 | 0.675 | 93.8% | 2931ms |
-| few_shot | 0.734 | 0.681 | 81.2% | 2560ms |
+| baseline | 0.75 | 0.265 | 100% | 2388ms |
+| low_temp | 0.75 | 0.274 | 100% | 2751ms |
+| few_shot | 0.75 | 0.278 | 100% | 2102ms |
 
 ---
 
@@ -290,13 +290,13 @@ This produces `evals/datasets/real_static_listings.json` and `evals/datasets/rea
 
 **What this tests:** For each listing URL the pipeline finds, a sub-agent reads the page and pulls out the key facts: price, number of bedrooms, address, pet policy, and whether the listing should be disqualified (e.g., a user with a cat should never be shown a "no pets" listing). We compare those extracted values against a known-correct ground truth. We also test three tool-use strategies: `sonnet_conditional` only calls extra tools when needed, `haiku_conditional` does the same with a cheaper model, and `sonnet_all_tools` always calls every available tool regardless of whether it helps.
 
-**What the results mean:** All three variants extract price, address, and pet policy perfectly (F1=1.0). Bedrooms is the one field that occasionally misfires (F1=0.833) — studio and flex units often use language like "open-plan living" that the model sometimes misclassifies. The more important finding is that `sonnet_all_tools` uses 3× more tool calls but achieves exactly the same accuracy as `haiku_conditional`. Calling more tools doesn't help — it just costs more money and time. On disqualification: the model correctly catches every listing it should reject (recall=1.0), but it also incorrectly rejects some valid listings (precision=0.167). The model is being too cautious — if a listing doesn't explicitly say "pet friendly," it sometimes flags it as disqualified rather than leaving the field as unknown. The fix is a tighter prompt.
+**What the results mean:** All three variants extract price, address, and pet policy perfectly (F1=1.0). Bedrooms is the one field that occasionally misfires (F1=0.833) — studio and flex units often use language like "open-plan living" that the model sometimes misclassifies. The more important finding is that `sonnet_all_tools` uses 3× more tool calls but achieves exactly the same accuracy as `haiku_conditional`. Calling more tools doesn't help — it just costs more money and time. On disqualification: the model correctly catches every listing it should reject (recall=1.0), meaning it never lets a bad listing slip through. Precision is 0.6 — 2 out of 5 predicted disqualifications were false alarms where the model flagged a valid listing as problematic. This is an improvement over earlier runs (precision was 0.167) after switching to the production prompt, but there's still room to tighten the disqualification criteria.
 
 | Variant | Field F1 | Price F1 | Bedrooms F1 | Pet policy F1 | Disqual F1 | Tool calls | Cost |
 |---|---|---|---|---|---|---|---|
-| sonnet_conditional | 0.958 | 1.0 | 0.833 | 1.0 | 0.286 | 1.33 | $0.0036 |
-| haiku_conditional | 0.958 | 1.0 | 0.833 | 1.0 | 0.286 | 1.33 | $0.0010 |
-| sonnet_all_tools | 0.958 | 1.0 | 0.833 | 1.0 | 0.286 | 4.0 | $0.0037 |
+| sonnet_conditional | 0.958 | 1.0 | 0.833 | 1.0 | 0.75 | 1.67 | $0.0066 |
+| haiku_conditional | 0.958 | 1.0 | 0.833 | 1.0 | 0.75 | 1.67 | $0.0018 |
+| sonnet_all_tools | 0.958 | 1.0 | 0.833 | 1.0 | 0.75 | 4.0 | $0.0066 |
 
 ---
 

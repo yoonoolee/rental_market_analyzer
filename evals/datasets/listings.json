@@ -16,7 +16,8 @@
       "uc_berkeley": 5
     },
     "description": "Modern apartment steps from UC Berkeley campus. Features floor-to-ceiling windows, refreshing pool, and assigned garage parking. Pet friendly.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_bk"
   },
   {
     "id": "listing_002",
@@ -35,7 +36,8 @@
       "uc_berkeley": 8
     },
     "description": "Charming units with shared laundry and gated entry. Ideally located near shopping and dining on Telegraph Ave.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_bk"
   },
   {
     "id": "listing_003",
@@ -54,7 +56,8 @@
       "salesforce_tower": 10
     },
     "description": "NEMA is a next-generation residential community with floor-to-ceiling windows, 7,000 sq ft fitness center, and a saline pool.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_004",
@@ -73,7 +76,8 @@
       "salesforce_tower": 15
     },
     "description": "Astella offers modern 1-bedroom units with pet washing stations, rooftop lounges, and premium finishes in the heart of SoMa.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_005",
@@ -92,7 +96,8 @@
       "uc_berkeley": 10
     },
     "description": "Large 3-bedroom flat with modern appliances and gated entry. Perfect for groups or families.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_bk"
   },
   {
     "id": "listing_006",
@@ -111,7 +116,8 @@
       "salesforce_tower": 20
     },
     "description": "The Fitzgerald offers modern living in the vibrant Mission District with incredible city views, a rooftop deck, and updated appliances.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_007",
@@ -130,7 +136,8 @@
       "salesforce_tower": 25
     },
     "description": "The Fillmore Center features spacious apartments with private balconies, city views, and access to a massive fitness club.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_008",
@@ -149,7 +156,8 @@
       "salesforce_tower": 15
     },
     "description": "Trinity Place offers luxury living with modern amenities, a stunning courtyard with public art, and easy transit access.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_009",
@@ -168,7 +176,9 @@
       "uc_berkeley": 5
     },
     "description": "The Panoramic Berkeley offers efficient micro-studios directly adjacent to the UC Berkeley campus with incredible rooftop views.",
-    "disqualified": false
+    "disqualified": true,
+    "disqualify_reason": "No pets allowed — user requires pet-friendly unit",
+    "preferences_used": "pref_eval_bk"
   },
   {
     "id": "listing_010",
@@ -187,7 +197,8 @@
       "uc_berkeley": 10
     },
     "description": "Stonefire features premium 2-bedroom apartments with high-end appliances, an outdoor terrace, and walkable access to BART and campus.",
-    "disqualified": false
+    "disqualified": false,
+    "preferences_used": "pref_eval_bk"
   },
   {
     "id": "listing_011",
@@ -208,7 +219,7 @@
     "description": "Modern SoMa loft with exposed concrete ceilings and industrial finishes. No pets allowed.",
     "disqualified": true,
     "disqualify_reason": "No pets allowed — user requires pet-friendly unit",
-    "preferences_used": "pref_001"
+    "preferences_used": "pref_eval_sf"
   },
   {
     "id": "listing_012",
@@ -228,7 +239,7 @@
     },
     "description": "Luxury Nob Hill apartment with panoramic bay views, concierge service, and premium finishes throughout.",
     "disqualified": true,
-    "disqualify_reason": "Price $4500 exceeds user's max budget of $3000",
-    "preferences_used": "pref_001"
+    "disqualify_reason": "Price $4500 exceeds user's max budget of $4000",
+    "preferences_used": "pref_eval_sf"
   }
 ]

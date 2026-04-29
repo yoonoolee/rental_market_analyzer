@@ -30,6 +30,7 @@ from anthropic import Anthropic
 from evals.config import RESULTS_DIR, PLANNER_VARIANTS, DATASETS_DIR, SONNET_MODEL
 from evals.metrics.nlp import LatencyTimer, embedding_similarity
 from evals.metrics.llm_judge import LLMJudge
+from prompts.planner_prompts import PLANNER_PROMPT
 
 REQUIRED_SITE_OPERATORS = [
     "craigslist.org", "zillow.com", "apartments.com", "trulia.com"
@@ -37,64 +38,35 @@ REQUIRED_SITE_OPERATORS = [
 # hotpads.com excluded: consistently returns 0-1 results across all search variants
 # and is not a reliable source for individual listing URLs via site: operator
 
-FEW_SHOT_EXAMPLES = """
-Example 1 — Chicago, 2br, $1800-$2400:
-{"search_queries": [
-  "2 bedroom apartment Chicago $1800 $2400 site:craigslist.org",
-  "2br apartment Chicago under $2400 site:zillow.com inurl:homedetails",
-  "2 bedroom apartment Chicago Wicker Park Logan Square site:apartments.com",
-  "2 bedroom Chicago $2000 $2400 transit site:trulia.com"
-]}
-
-Example 2 — Seattle, 2br, under $2200:
-{"search_queries": [
-  "2 bedroom apartment Seattle under $2200 site:craigslist.org",
-  "2br Seattle Capitol Hill Queen Anne $2200 site:zillow.com inurl:homedetails",
-  "2 bedroom apartment Seattle with parking under $2200 site:apartments.com",
-  "2br Seattle $1800 $2200 near downtown site:trulia.com"
-]}
-"""
-
-BASE_PLANNER_PROMPT = """Generate search queries to find rental listing URLs matching these preferences.
-Target these sites with site: operators: craigslist.org, zillow.com, apartments.com, trulia.com.
-
-RULES:
-- Include bedroom count, price range, and city in every query
-- Use site: operator in every query
-- Generate 4-8 diverse queries covering different neighborhoods and sites
-- Return ONLY valid JSON: {{"search_queries": [...]}}
-
-User preferences:
-{preferences}
-{few_shot_block}
-Previous queries (avoid repeating these):
-{previous_queries}"""
+ALLOWED_SITES = "craigslist.org, zillow.com, apartments.com, trulia.com"
 
 
-def build_planner_prompt(preferences: dict, use_few_shot: bool, previous_queries: list[str]) -> str:
-    few_shot_block = f"\n\nExamples of good queries:\n{FEW_SHOT_EXAMPLES}" if use_few_shot else ""
-    prev = json.dumps(previous_queries) if previous_queries else "[]"
-    return BASE_PLANNER_PROMPT.format(
-        preferences=json.dumps(preferences, indent=2),
-        few_shot_block=few_shot_block,
-        previous_queries=prev,
+def build_planner_prompt(preferences: dict, previous_queries: list[str]) -> str:
+    prev_block = (
+        f"\n\nPrevious queries already tried (do not repeat these):\n{json.dumps(previous_queries)}"
+        if previous_queries else ""
+    )
+    return (
+        f"User preferences:\n{json.dumps(preferences, indent=2)}\n\n"
+        f"Allowed sites: {ALLOWED_SITES}"
+        f"{prev_block}"
     )
 
 
 def run_planner(
     preferences: dict,
     temperature: float,
-    use_few_shot: bool,
     previous_queries: list[str],
     client: Anthropic,
 ) -> tuple[list[str], dict]:
-    prompt = build_planner_prompt(preferences, use_few_shot, previous_queries)
+    prompt = build_planner_prompt(preferences, previous_queries)
 
     with LatencyTimer() as timer:
         resp = client.messages.create(
             model=SONNET_MODEL,
             max_tokens=1024,
             temperature=temperature,
+            system=PLANNER_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
 
@@ -158,12 +130,12 @@ def evaluate_variant(
     for prefs in test_preferences:
         # Round 1: fresh queries
         queries_r1, usage_r1 = run_planner(
-            prefs, config["temperature"], config["use_few_shot"], [], client
+            prefs, config["temperature"], [], client
         )
 
         # Round 2: retry (simulate retrying after insufficient results)
         queries_r2, usage_r2 = run_planner(
-            prefs, config["temperature"], config["use_few_shot"], queries_r1, client
+            prefs, config["temperature"], queries_r1, client
         )
 
         # Format validity for all round-1 queries
@@ -229,7 +201,7 @@ def run(variants: list[str] | None = None) -> dict:
     all_results = {}
     for name in targets:
         config = PLANNER_VARIANTS[name]
-        print(f"  Running planner variant: {name} (temp={config['temperature']}, few_shot={config['use_few_shot']})")
+        print(f"  Running planner variant: {name} (temp={config['temperature']})")
         all_results[name] = evaluate_variant(name, config, test_prefs, judge)
 
     output_path = RESULTS_DIR / "planner_eval.json"

@@ -183,5 +183,39 @@
       "trade_off_rules": ["willing to pay up to $3100 if the listing has a view or modern finishes"],
       "lifestyle_notes": "dog owner"
     }
+  },
+  {
+    "id": "pref_eval_sf",
+    "split": "eval_only",
+    "description": "1BR SF renter with pet — used by listing agent eval for SF listings",
+    "conversation": [
+      {"role": "user", "content": "Looking for a 1-bedroom apartment in San Francisco, max $4000/month. I have a cat so it needs to be pet-friendly. I work at Salesforce Tower."}
+    ],
+    "expected_preferences": {
+      "city": "San Francisco",
+      "bedrooms": 1,
+      "max_price": 4000,
+      "pet_friendly": true,
+      "commute_destinations": ["Salesforce Tower, San Francisco"],
+      "soft_constraints": ["pet-friendly"],
+      "trade_off_rules": []
+    }
+  },
+  {
+    "id": "pref_eval_bk",
+    "split": "eval_only",
+    "description": "Berkeley renter with pet — used by listing agent eval for Berkeley listings",
+    "conversation": [
+      {"role": "user", "content": "Looking for an apartment in Berkeley, max $6000/month. I have a dog so it needs to be pet-friendly. I go to UC Berkeley campus."}
+    ],
+    "expected_preferences": {
+      "city": "Berkeley",
+      "bedrooms": null,
+      "max_price": 6000,
+      "pet_friendly": true,
+      "commute_destinations": ["UC Berkeley"],
+      "soft_constraints": ["pet-friendly"],
+      "trade_off_rules": []
+    }
   }
 ]
