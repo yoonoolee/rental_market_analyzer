@@ -91,7 +91,8 @@
     "commute_times": {
       "uc_berkeley": 10
     },
-    "description": "Large 3-bedroom flat with modern appliances and gated entry. Perfect for groups or families."
+    "description": "Large 3-bedroom flat with modern appliances and gated entry. Perfect for groups or families.",
+    "disqualified": false
   },
   {
     "id": "listing_006",
@@ -187,5 +188,47 @@
     },
     "description": "Stonefire features premium 2-bedroom apartments with high-end appliances, an outdoor terrace, and walkable access to BART and campus.",
     "disqualified": false
+  },
+  {
+    "id": "listing_011",
+    "url": "https://www.zillow.com/apartments/san-francisco-ca/no-pets-soma/Zz9Kp1/",
+    "price": 2800,
+    "bedrooms": 1.0,
+    "address": "450 Brannan St, San Francisco, CA 94107",
+    "neighborhood": "SoMa",
+    "pet_friendly": false,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": false,
+    "gym": false,
+    "sqft": 620,
+    "commute_times": {
+      "salesforce_tower": 12
+    },
+    "description": "Modern SoMa loft with exposed concrete ceilings and industrial finishes. No pets allowed.",
+    "disqualified": true,
+    "disqualify_reason": "No pets allowed — user requires pet-friendly unit",
+    "preferences_used": "pref_001"
+  },
+  {
+    "id": "listing_012",
+    "url": "https://www.craigslist.org/d/apartments/over-budget-nob-hill/7654321/",
+    "price": 4500,
+    "bedrooms": 1.0,
+    "address": "1200 California St, San Francisco, CA 94108",
+    "neighborhood": "Nob Hill",
+    "pet_friendly": true,
+    "in_unit_laundry": true,
+    "dishwasher": true,
+    "parking": true,
+    "gym": true,
+    "sqft": 800,
+    "commute_times": {
+      "salesforce_tower": 18
+    },
+    "description": "Luxury Nob Hill apartment with panoramic bay views, concierge service, and premium finishes throughout.",
+    "disqualified": true,
+    "disqualify_reason": "Price $4500 exceeds user's max budget of $3000",
+    "preferences_used": "pref_001"
   }
 ]

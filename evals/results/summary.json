@@ -182,55 +182,55 @@
         {
           "query": "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
           "num_returned": 5,
-          "listing_precision": 0.2,
+          "listing_precision": 0.0,
           "query_relevance": 4,
-          "embedding_similarity": 0.049,
-          "has_valid_listing": true,
-          "latency_ms": 1720.0
+          "embedding_similarity": 0.0805,
+          "has_valid_listing": false,
+          "latency_ms": 885.1
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-          "num_returned": 4,
-          "listing_precision": 1.0,
-          "query_relevance": 9,
-          "embedding_similarity": 0.0109,
+          "num_returned": 5,
+          "listing_precision": 0.8,
+          "query_relevance": 4,
+          "embedding_similarity": 0.0104,
           "has_valid_listing": true,
-          "latency_ms": 2805.1
+          "latency_ms": 7949.9
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco max $3000 site:apartments.com",
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
           "num_returned": 5,
-          "listing_precision": 0.0,
-          "query_relevance": 5,
-          "embedding_similarity": 0.1096,
-          "has_valid_listing": false,
-          "latency_ms": 1482.1
+          "listing_precision": 0.6,
+          "query_relevance": 4,
+          "embedding_similarity": 0.0455,
+          "has_valid_listing": true,
+          "latency_ms": 4864.3
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
           "num_returned": 5,
-          "listing_precision": 0.6,
-          "query_relevance": 3,
-          "embedding_similarity": 0.0316,
+          "listing_precision": 0.8,
+          "query_relevance": 10,
+          "embedding_similarity": 0.0536,
           "has_valid_listing": true,
-          "latency_ms": 1342.1
+          "latency_ms": 1366.9
         },
         {
-          "query": "2br flat San Francisco SOMA Mission $2500 $3000 site:hotpads.com",
-          "num_returned": 1,
-          "listing_precision": 0.0,
-          "query_relevance": 1,
-          "embedding_similarity": 0.0667,
-          "has_valid_listing": false,
-          "latency_ms": 1374.0
+          "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
+          "num_returned": 5,
+          "listing_precision": 0.2,
+          "query_relevance": 3,
+          "embedding_similarity": 0.0125,
+          "has_valid_listing": true,
+          "latency_ms": 2581.6
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.36,
-        "mean_query_relevance": 4.4,
-        "mean_embedding_similarity": 0.0536,
-        "yield_rate": 0.6,
-        "mean_latency_ms": 1744.7,
+        "mean_listing_precision": 0.48,
+        "mean_query_relevance": 5.0,
+        "mean_embedding_similarity": 0.0405,
+        "yield_rate": 0.8,
+        "mean_latency_ms": 3529.6,
         "estimated_api_credits": 5
       }
     },
@@ -245,53 +245,53 @@
           "num_returned": 3,
           "listing_precision": 0.0,
           "query_relevance": 3,
-          "embedding_similarity": 0.0299,
+          "embedding_similarity": 0.1053,
           "has_valid_listing": false,
-          "latency_ms": 381.1
+          "latency_ms": 206.0
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
           "num_returned": 3,
-          "listing_precision": 1.0,
-          "query_relevance": 8,
-          "embedding_similarity": 0.0135,
+          "listing_precision": 0.667,
+          "query_relevance": 3,
+          "embedding_similarity": 0.0156,
           "has_valid_listing": true,
-          "latency_ms": 372.4
+          "latency_ms": 187.8
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco max $3000 site:apartments.com",
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
           "num_returned": 3,
-          "listing_precision": 0.0,
-          "query_relevance": 6,
-          "embedding_similarity": 0.0727,
-          "has_valid_listing": false,
-          "latency_ms": 300.0
+          "listing_precision": 0.667,
+          "query_relevance": 4,
+          "embedding_similarity": 0.0278,
+          "has_valid_listing": true,
+          "latency_ms": 189.6
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
           "num_returned": 3,
           "listing_precision": 0.667,
-          "query_relevance": 2,
-          "embedding_similarity": 0.0462,
+          "query_relevance": 9,
+          "embedding_similarity": 0.0588,
           "has_valid_listing": true,
-          "latency_ms": 283.1
+          "latency_ms": 248.8
         },
         {
-          "query": "2br flat San Francisco SOMA Mission $2500 $3000 site:hotpads.com",
-          "num_returned": 1,
+          "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
+          "num_returned": 3,
           "listing_precision": 0.0,
-          "query_relevance": 1,
-          "embedding_similarity": 0.0667,
+          "query_relevance": 3,
+          "embedding_similarity": 0.0192,
           "has_valid_listing": false,
-          "latency_ms": 228.9
+          "latency_ms": 201.2
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.333,
-        "mean_query_relevance": 4.0,
-        "mean_embedding_similarity": 0.0458,
-        "yield_rate": 0.4,
-        "mean_latency_ms": 313.1,
+        "mean_listing_precision": 0.4,
+        "mean_query_relevance": 4.4,
+        "mean_embedding_similarity": 0.0453,
+        "yield_rate": 0.6,
+        "mean_latency_ms": 206.7,
         "estimated_api_credits": 5
       }
     },
@@ -304,55 +304,55 @@
         {
           "query": "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
           "num_returned": 10,
-          "listing_precision": 0.3,
+          "listing_precision": 0.1,
           "query_relevance": 5,
-          "embedding_similarity": 0.0368,
+          "embedding_similarity": 0.0435,
           "has_valid_listing": true,
-          "latency_ms": 129.1
+          "latency_ms": 216.1
         },
         {
           "query": "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-          "num_returned": 7,
-          "listing_precision": 1.0,
-          "query_relevance": 10,
-          "embedding_similarity": 0.0081,
+          "num_returned": 10,
+          "listing_precision": 0.9,
+          "query_relevance": 7,
+          "embedding_similarity": 0.0114,
           "has_valid_listing": true,
-          "latency_ms": 132.0
+          "latency_ms": 173.8
         },
         {
-          "query": "2 bedroom pet friendly apartment San Francisco max $3000 site:apartments.com",
-          "num_returned": 10,
-          "listing_precision": 0.0,
-          "query_relevance": 8,
-          "embedding_similarity": 0.0762,
-          "has_valid_listing": false,
-          "latency_ms": 107.7
+          "query": "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
+          "num_returned": 5,
+          "listing_precision": 0.6,
+          "query_relevance": 4,
+          "embedding_similarity": 0.0455,
+          "has_valid_listing": true,
+          "latency_ms": 191.9
         },
         {
           "query": "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
           "num_returned": 10,
-          "listing_precision": 0.9,
-          "query_relevance": 5,
-          "embedding_similarity": 0.0274,
+          "listing_precision": 0.8,
+          "query_relevance": 8,
+          "embedding_similarity": 0.0348,
           "has_valid_listing": true,
-          "latency_ms": 84.2
+          "latency_ms": 229.1
         },
         {
-          "query": "2br flat San Francisco SOMA Mission $2500 $3000 site:hotpads.com",
-          "num_returned": 1,
-          "listing_precision": 0.0,
-          "query_relevance": 1,
-          "embedding_similarity": 0.0667,
-          "has_valid_listing": false,
-          "latency_ms": 161.5
+          "query": "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
+          "num_returned": 5,
+          "listing_precision": 0.2,
+          "query_relevance": 3,
+          "embedding_similarity": 0.0125,
+          "has_valid_listing": true,
+          "latency_ms": 194.8
         }
       ],
       "aggregate": {
-        "mean_listing_precision": 0.44,
-        "mean_query_relevance": 5.8,
-        "mean_embedding_similarity": 0.043,
-        "yield_rate": 0.6,
-        "mean_latency_ms": 122.9,
+        "mean_listing_precision": 0.52,
+        "mean_query_relevance": 5.4,
+        "mean_embedding_similarity": 0.0295,
+        "yield_rate": 1.0,
+        "mean_latency_ms": 201.1,
         "estimated_api_credits": 5
       }
     }
@@ -376,15 +376,15 @@
             "commute_destinations": [
               "Salesforce Tower"
             ],
-            "soft_constraints": [],
-            "trade_off_rules": [],
+            "soft_constraints": null,
+            "trade_off_rules": null,
             "lifestyle_notes": null
           },
           "turns_to_ready": 1,
           "reached_ready": true,
           "mean_question_quality": null,
-          "total_tokens": 237,
-          "total_latency_ms": 1668.6,
+          "total_tokens": 239,
+          "total_latency_ms": 1608.7,
           "extraction_micro_f1": 0.619,
           "per_field_f1": {
             "city": 1.0,
@@ -418,7 +418,7 @@
           "reached_ready": true,
           "mean_question_quality": null,
           "total_tokens": 252,
-          "total_latency_ms": 2064.7,
+          "total_latency_ms": 1646.1,
           "extraction_micro_f1": 0.6825,
           "per_field_f1": {
             "city": 1.0,
@@ -430,16 +430,298 @@
             "commute_destinations": 0.0
           },
           "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_003",
+          "final_preferences": {
+            "city": "Seattle",
+            "bedrooms": 2,
+            "max_price": 2200,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "downtown Seattle",
+              "Bellevue"
+            ],
+            "soft_constraints": [
+              "gym"
+            ],
+            "trade_off_rules": [
+              "parking is a must"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 290,
+          "total_latency_ms": 1772.7,
+          "extraction_micro_f1": 0.9048,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.6667
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_004",
+          "final_preferences": {
+            "city": null,
+            "bedrooms": null,
+            "max_price": null,
+            "min_price": null,
+            "pet_friendly": null,
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 5,
+          "reached_ready": false,
+          "mean_question_quality": 7.8,
+          "total_tokens": 2690,
+          "total_latency_ms": 12286.5,
+          "extraction_micro_f1": 0.3333,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.0
+        },
+        {
+          "test_id": "pref_005",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 2,
+            "max_price": 2700,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "Blue Line"
+            ],
+            "soft_constraints": [
+              "natural light",
+              "high ceilings"
+            ],
+            "trade_off_rules": [
+              "no smoking building"
+            ],
+            "lifestyle_notes": "works remotely"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 277,
+          "total_latency_ms": 1907.7,
+          "extraction_micro_f1": 0.6023,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "min_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.4211,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_006",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 1,
+            "max_price": 2100,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "BART"
+            ],
+            "soft_constraints": [
+              "near bars",
+              "near coffee shops"
+            ],
+            "trade_off_rules": null,
+            "lifestyle_notes": "grad student at UC Berkeley"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 266,
+          "total_latency_ms": 1568.1,
+          "extraction_micro_f1": 0.6182,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.5455,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.4
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_007",
+          "final_preferences": {
+            "city": "SF",
+            "bedrooms": 2,
+            "max_price": 3200,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "Salesforce Tower"
+            ],
+            "soft_constraints": [],
+            "trade_off_rules": [
+              "willing to pay an extra $200 for a commute under 15 minutes by transit or walking"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 263,
+          "total_latency_ms": 1744.9,
+          "extraction_micro_f1": 0.4937,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.3333,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.6286
+          },
+          "completeness_score": 0.833
+        },
+        {
+          "test_id": "pref_008",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 2,
+            "max_price": 2500,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UC Berkeley",
+              "Downtown Oakland"
+            ],
+            "soft_constraints": [
+              "natural light"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "I work from home."
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 259,
+          "total_latency_ms": 1815.1,
+          "extraction_micro_f1": 0.7333,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.2
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_009",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 1,
+            "max_price": 1700,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "downtown"
+            ],
+            "soft_constraints": [
+              "close to any L stop"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 234,
+          "total_latency_ms": 1461.4,
+          "extraction_micro_f1": 0.6482,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.8889,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_010",
+          "final_preferences": {
+            "city": "SF",
+            "bedrooms": 2,
+            "max_price": 3100,
+            "min_price": 2800,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UCSF Mission Bay"
+            ],
+            "soft_constraints": [
+              "quiet",
+              "walkable",
+              "near a park"
+            ],
+            "trade_off_rules": [
+              "can stretch to $3100 if there's a view or modern finishes"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 281,
+          "total_latency_ms": 1645.1,
+          "extraction_micro_f1": 0.6731,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.7692,
+            "trade_off_rules": 0.6154,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 0.875
         }
       ],
       "aggregate": {
-        "mean_extraction_f1": 0.651,
-        "mean_completeness": 0.916,
-        "mean_turns_to_ready": 1.0,
-        "ready_rate": 1.0,
-        "mean_question_quality": 0.0,
-        "mean_total_tokens": 244,
-        "mean_latency_ms": 1866.6
+        "mean_extraction_f1": 0.631,
+        "mean_completeness": 0.854,
+        "mean_turns_to_ready": 1.4,
+        "ready_rate": 0.9,
+        "mean_question_quality": 0.78,
+        "mean_total_tokens": 505,
+        "mean_latency_ms": 2745.6
       }
     },
     "haiku_haiku": {
@@ -468,7 +750,7 @@
           "reached_ready": true,
           "mean_question_quality": null,
           "total_tokens": 239,
-          "total_latency_ms": 1912.8,
+          "total_latency_ms": 1289.3,
           "extraction_micro_f1": 0.619,
           "per_field_f1": {
             "city": 1.0,
@@ -502,7 +784,7 @@
           "reached_ready": true,
           "mean_question_quality": null,
           "total_tokens": 252,
-          "total_latency_ms": 2286.2,
+          "total_latency_ms": 1648.0,
           "extraction_micro_f1": 0.6825,
           "per_field_f1": {
             "city": 1.0,
@@ -514,16 +796,296 @@
             "commute_destinations": 0.0
           },
           "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_003",
+          "final_preferences": {
+            "city": "Seattle",
+            "bedrooms": 2,
+            "max_price": 2200,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "downtown Seattle",
+              "Bellevue"
+            ],
+            "soft_constraints": [
+              "gym"
+            ],
+            "trade_off_rules": [
+              "parking is a must"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 290,
+          "total_latency_ms": 1514.3,
+          "extraction_micro_f1": 0.9048,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.6667
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_004",
+          "final_preferences": {
+            "city": null,
+            "bedrooms": null,
+            "max_price": null,
+            "min_price": null,
+            "pet_friendly": null,
+            "commute_destinations": [],
+            "soft_constraints": [],
+            "trade_off_rules": [],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 5,
+          "reached_ready": false,
+          "mean_question_quality": 8.2,
+          "total_tokens": 2671,
+          "total_latency_ms": 15937.1,
+          "extraction_micro_f1": 0.3333,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.0
+        },
+        {
+          "test_id": "pref_005",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 2,
+            "max_price": 2700,
+            "min_price": 2400,
+            "pet_friendly": true,
+            "commute_destinations": [],
+            "soft_constraints": [
+              "natural light",
+              "high ceilings"
+            ],
+            "trade_off_rules": [
+              "no smoking building"
+            ],
+            "lifestyle_notes": "works remotely"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 276,
+          "total_latency_ms": 1576.4,
+          "extraction_micro_f1": 0.4912,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "min_price": 0.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.4211,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_006",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 1,
+            "max_price": 2100,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "BART"
+            ],
+            "soft_constraints": [
+              "near bars",
+              "near coffee shops"
+            ],
+            "trade_off_rules": null,
+            "lifestyle_notes": "grad student at UC Berkeley"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 266,
+          "total_latency_ms": 1817.7,
+          "extraction_micro_f1": 0.6182,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.5455,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.4
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_007",
+          "final_preferences": {
+            "city": "SF",
+            "bedrooms": 2,
+            "max_price": 3200,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "Salesforce Tower"
+            ],
+            "soft_constraints": [],
+            "trade_off_rules": [
+              "willing to pay an extra $200 for a shorter commute"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 256,
+          "total_latency_ms": 1577.6,
+          "extraction_micro_f1": 0.4349,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.3333,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.2759
+          },
+          "completeness_score": 0.833
+        },
+        {
+          "test_id": "pref_008",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 2,
+            "max_price": 2500,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UC Berkeley",
+              "Downtown Oakland"
+            ],
+            "soft_constraints": [
+              "natural light"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "I work from home."
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 259,
+          "total_latency_ms": 1538.2,
+          "extraction_micro_f1": 0.7333,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.2
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_009",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 1,
+            "max_price": 1700,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "downtown"
+            ],
+            "soft_constraints": [
+              "close to any L stop"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 234,
+          "total_latency_ms": 1783.1,
+          "extraction_micro_f1": 0.6482,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.8889,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_010",
+          "final_preferences": {
+            "city": "SF",
+            "bedrooms": 2,
+            "max_price": 3100,
+            "min_price": 2800,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UCSF Mission Bay"
+            ],
+            "soft_constraints": [
+              "quiet",
+              "walkable",
+              "near a park"
+            ],
+            "trade_off_rules": [
+              "can stretch to $3100 for a view or modern finishes"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 280,
+          "total_latency_ms": 1741.8,
+          "extraction_micro_f1": 0.6662,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.7692,
+            "trade_off_rules": 0.56,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 0.875
         }
       ],
       "aggregate": {
-        "mean_extraction_f1": 0.651,
-        "mean_completeness": 0.916,
-        "mean_turns_to_ready": 1.0,
-        "ready_rate": 1.0,
-        "mean_question_quality": 0.0,
-        "mean_total_tokens": 246,
-        "mean_latency_ms": 2099.5
+        "mean_extraction_f1": 0.613,
+        "mean_completeness": 0.854,
+        "mean_turns_to_ready": 1.4,
+        "ready_rate": 0.9,
+        "mean_question_quality": 0.82,
+        "mean_total_tokens": 502,
+        "mean_latency_ms": 3042.3
       }
     },
     "sonnet_sonnet": {
@@ -552,7 +1114,7 @@
           "reached_ready": true,
           "mean_question_quality": null,
           "total_tokens": 239,
-          "total_latency_ms": 2429.1,
+          "total_latency_ms": 2696.1,
           "extraction_micro_f1": 0.619,
           "per_field_f1": {
             "city": 1.0,
@@ -586,7 +1148,7 @@
           "reached_ready": true,
           "mean_question_quality": null,
           "total_tokens": 252,
-          "total_latency_ms": 2006.1,
+          "total_latency_ms": 2092.2,
           "extraction_micro_f1": 0.6825,
           "per_field_f1": {
             "city": 1.0,
@@ -598,16 +1160,296 @@
             "commute_destinations": 0.0
           },
           "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_003",
+          "final_preferences": {
+            "city": "Seattle",
+            "bedrooms": 2,
+            "max_price": 2200,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "downtown Seattle",
+              "Bellevue"
+            ],
+            "soft_constraints": [
+              "gym"
+            ],
+            "trade_off_rules": [
+              "parking is a must"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 290,
+          "total_latency_ms": 1613.3,
+          "extraction_micro_f1": 0.9048,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.6667
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_004",
+          "final_preferences": {
+            "city": null,
+            "bedrooms": null,
+            "max_price": null,
+            "min_price": null,
+            "pet_friendly": null,
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 5,
+          "reached_ready": false,
+          "mean_question_quality": 7.8,
+          "total_tokens": 2680,
+          "total_latency_ms": 11638.3,
+          "extraction_micro_f1": 0.3333,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 0.0
+        },
+        {
+          "test_id": "pref_005",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 2,
+            "max_price": 2700,
+            "min_price": 2400,
+            "pet_friendly": true,
+            "commute_destinations": [],
+            "soft_constraints": [
+              "natural light",
+              "high ceilings"
+            ],
+            "trade_off_rules": [
+              "no smoking building"
+            ],
+            "lifestyle_notes": "works remotely"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 276,
+          "total_latency_ms": 1597.4,
+          "extraction_micro_f1": 0.4912,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "min_price": 0.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.4211,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_006",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 1,
+            "max_price": 2100,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "BART"
+            ],
+            "soft_constraints": [
+              "near bars",
+              "near coffee shops"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "grad student at UC Berkeley"
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 265,
+          "total_latency_ms": 1497.5,
+          "extraction_micro_f1": 0.6182,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.5455,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.4
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_007",
+          "final_preferences": {
+            "city": "San Francisco",
+            "bedrooms": 2,
+            "max_price": 3200,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "Salesforce Tower"
+            ],
+            "soft_constraints": [],
+            "trade_off_rules": [
+              "Willing to pay an extra $200 for a commute under 15 minutes by transit or walking"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 264,
+          "total_latency_ms": 1972.1,
+          "extraction_micro_f1": 0.6603,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.3333,
+            "soft_constraints": 0.0,
+            "trade_off_rules": 0.6286
+          },
+          "completeness_score": 0.833
+        },
+        {
+          "test_id": "pref_008",
+          "final_preferences": {
+            "city": "Oakland",
+            "bedrooms": 2,
+            "max_price": 2500,
+            "min_price": null,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UC Berkeley",
+              "Downtown Oakland"
+            ],
+            "soft_constraints": [
+              "natural light"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": "I work from home."
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 259,
+          "total_latency_ms": 1470.1,
+          "extraction_micro_f1": 0.7333,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.6667,
+            "trade_off_rules": 0.0,
+            "lifestyle_notes": 0.2
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_009",
+          "final_preferences": {
+            "city": "Chicago",
+            "bedrooms": 1,
+            "max_price": 1700,
+            "min_price": null,
+            "pet_friendly": false,
+            "commute_destinations": [
+              "downtown"
+            ],
+            "soft_constraints": [
+              "close to any L stop"
+            ],
+            "trade_off_rules": [],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 234,
+          "total_latency_ms": 1598.2,
+          "extraction_micro_f1": 0.6482,
+          "per_field_f1": {
+            "city": 1.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "commute_destinations": 0.0,
+            "soft_constraints": 0.8889,
+            "trade_off_rules": 0.0
+          },
+          "completeness_score": 1.0
+        },
+        {
+          "test_id": "pref_010",
+          "final_preferences": {
+            "city": "SF",
+            "bedrooms": 2,
+            "max_price": 3100,
+            "min_price": 2800,
+            "pet_friendly": true,
+            "commute_destinations": [
+              "UCSF Mission Bay"
+            ],
+            "soft_constraints": [
+              "quiet",
+              "walkable",
+              "near a park"
+            ],
+            "trade_off_rules": [
+              "can stretch to $3100 for a view or modern finishes"
+            ],
+            "lifestyle_notes": null
+          },
+          "turns_to_ready": 1,
+          "reached_ready": true,
+          "mean_question_quality": null,
+          "total_tokens": 280,
+          "total_latency_ms": 1812.1,
+          "extraction_micro_f1": 0.6662,
+          "per_field_f1": {
+            "city": 0.0,
+            "bedrooms": 1.0,
+            "max_price": 1.0,
+            "pet_friendly": 1.0,
+            "commute_destinations": 1.0,
+            "soft_constraints": 0.7692,
+            "trade_off_rules": 0.56,
+            "lifestyle_notes": 0.0
+          },
+          "completeness_score": 0.875
         }
       ],
       "aggregate": {
-        "mean_extraction_f1": 0.651,
-        "mean_completeness": 0.916,
-        "mean_turns_to_ready": 1.0,
-        "ready_rate": 1.0,
-        "mean_question_quality": 0.0,
-        "mean_total_tokens": 246,
-        "mean_latency_ms": 2217.6
+        "mean_extraction_f1": 0.636,
+        "mean_completeness": 0.854,
+        "mean_turns_to_ready": 1.4,
+        "ready_rate": 0.9,
+        "mean_question_quality": 0.78,
+        "mean_total_tokens": 504,
+        "mean_latency_ms": 2798.7
       }
     }
   },
@@ -623,32 +1465,54 @@
           "preferences_id": "pref_001",
           "num_queries_r1": 8,
           "mean_format_validity": 0.75,
-          "query_diversity": 0.5398,
-          "no_repetition_rate": 0.875,
+          "query_diversity": 0.5381,
+          "no_repetition_rate": 1.0,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 4421.2,
-          "total_tokens_r1": 450,
+          "latency_ms_r1": 3037.0,
+          "total_tokens_r1": 447,
           "sample_queries_r1": [
             "site:craigslist.org 2 bedroom apartment San Francisco $3000 pet friendly",
             "site:zillow.com 2 bedroom apartment San Francisco max $3000 cat friendly",
-            "site:apartments.com 2 bedroom rentals San Francisco under $3000 pet allowed"
+            "site:apartments.com 2 bedroom rental San Francisco under $3000 pet allowed"
           ],
           "sample_queries_r2": [
-            "site:hotpads.com 2 bedroom apartment San Francisco $3000 pet friendly",
-            "site:craigslist.org 2 bedroom rentals in San Francisco under $3000 cat friendly",
-            "site:apartments.com 2 bedroom apartment San Francisco max $3000 pet allowed"
+            "site:craigslist.org 2 bedroom apartment San Francisco $3000 max pet friendly",
+            "site:zillow.com 2 bedroom San Francisco rental under $3000 cat allowed",
+            "site:apartments.com 2 bedroom apartment in San Francisco $3000 pet-friendly"
+          ]
+        },
+        {
+          "preferences_id": "pref_005",
+          "num_queries_r1": 8,
+          "mean_format_validity": 0.719,
+          "query_diversity": 0.7641,
+          "no_repetition_rate": 1.0,
+          "parse_success_r1": true,
+          "parse_success_r2": true,
+          "judge_validity_score": 0,
+          "latency_ms_r1": 3197.1,
+          "total_tokens_r1": 547,
+          "sample_queries_r1": [
+            "site:craigslist.org 2br apartment Chicago Wicker Park max $2400",
+            "site:zillow.com 2 bedroom rental Chicago Logan Square under $2700 pet friendly",
+            "site:apartments.com 2br Chicago Wicker Park $2400-$2700 natural light"
+          ],
+          "sample_queries_r2": [
+            "site:craigslist.org 2br apartment Chicago Logan Square max $2700 pet friendly high ceilings",
+            "site:zillow.com 2 bedroom rental Chicago Wicker Park under $2400 natural light no smoking",
+            "site:apartments.com 2br Chicago Logan Square $2400-$2700 near Blue Line pet friendly"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.75,
-        "mean_query_diversity": 0.5398,
-        "mean_no_repetition_rate": 0.875,
+        "mean_format_validity": 0.734,
+        "mean_query_diversity": 0.6511,
+        "mean_no_repetition_rate": 1.0,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 4421.2,
-        "mean_tokens": 450
+        "mean_latency_ms": 3117.1,
+        "mean_tokens": 497
       }
     },
     "low_temp": {
@@ -661,33 +1525,55 @@
         {
           "preferences_id": "pref_001",
           "num_queries_r1": 8,
-          "mean_format_validity": 0.75,
-          "query_diversity": 0.5256,
-          "no_repetition_rate": 1.0,
+          "mean_format_validity": 0.562,
+          "query_diversity": 0.5942,
+          "no_repetition_rate": 0.875,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 4045.6,
-          "total_tokens_r1": 458,
+          "latency_ms_r1": 2507.3,
+          "total_tokens_r1": 446,
           "sample_queries_r1": [
-            "site:craigslist.org 2 bedroom apartment San Francisco $3000 pet friendly",
-            "site:zillow.com 2 bedroom apartment San Francisco max $3000 cat friendly",
-            "site:apartments.com 2 bedroom rental San Francisco under $3000 pet allowed"
+            "2 bedroom apartment for rent in San Francisco under 3000 site:craigslist.org",
+            "2 bedroom pet friendly rentals in San Francisco max 3000 site:zillow.com",
+            "2 bedroom apartments San Francisco $3000 max site:apartments.com"
           ],
           "sample_queries_r2": [
-            "site:trulia.com 2 bedroom apartment San Francisco $3000 pet friendly",
-            "site:hotpads.com 2 bedroom rental San Francisco max $3000 cat allowed",
-            "site:craigslist.org 2 bedroom apartment in Pacific Heights San Francisco $3000 pet friendly"
+            "2 bedroom apartment for rent in San Francisco under 3000 site:craigslist.org",
+            "pet friendly 2 bedroom apartments in San Francisco max 3000 site:trulia.com",
+            "2 bedroom rentals in San Francisco near Salesforce Tower budget 3000 site:zillow.com"
+          ]
+        },
+        {
+          "preferences_id": "pref_005",
+          "num_queries_r1": 8,
+          "mean_format_validity": 0.75,
+          "query_diversity": 0.7555,
+          "no_repetition_rate": 1.0,
+          "parse_success_r1": true,
+          "parse_success_r2": true,
+          "judge_validity_score": 0,
+          "latency_ms_r1": 3354.2,
+          "total_tokens_r1": 553,
+          "sample_queries_r1": [
+            "site:craigslist.org 2br apartment Chicago Wicker Park max $2400",
+            "site:zillow.com 2 bedroom rental Chicago Logan Square under $2700 pet friendly",
+            "site:apartments.com 2br Chicago Wicker Park natural light high ceilings no smoking max $2700"
+          ],
+          "sample_queries_r2": [
+            "site:craigslist.org 2br apartment Chicago Wicker Park max $2700 pet friendly near Blue Line",
+            "site:zillow.com 2 bedroom rental Chicago Logan Square max $2400 natural light high ceilings",
+            "site:apartments.com 2br Chicago Wicker Park pet friendly max $2700 no smoking building"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.75,
-        "mean_query_diversity": 0.5256,
-        "mean_no_repetition_rate": 1.0,
+        "mean_format_validity": 0.656,
+        "mean_query_diversity": 0.6748,
+        "mean_no_repetition_rate": 0.938,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 4045.6,
-        "mean_tokens": 458
+        "mean_latency_ms": 2930.8,
+        "mean_tokens": 500
       }
     },
     "few_shot": {
@@ -701,32 +1587,54 @@
           "preferences_id": "pref_001",
           "num_queries_r1": 8,
           "mean_format_validity": 0.75,
-          "query_diversity": 0.6164,
-          "no_repetition_rate": 1.0,
+          "query_diversity": 0.5995,
+          "no_repetition_rate": 0.75,
           "parse_success_r1": true,
           "parse_success_r2": true,
           "judge_validity_score": 1,
-          "latency_ms_r1": 6367.7,
-          "total_tokens_r1": 671,
+          "latency_ms_r1": 2406.7,
+          "total_tokens_r1": 646,
           "sample_queries_r1": [
-            "2 bedroom apartment San Francisco $3000 site:craigslist.org",
-            "2br apartment San Francisco under $3000 pet friendly site:zillow.com",
-            "2 bedroom apartment San Francisco Mission District $3000 site:apartments.com"
+            "2 bedroom apartment San Francisco under $3000 site:craigslist.org",
+            "2br apartment San Francisco pet-friendly $3000 site:zillow.com inurl:homedetails",
+            "2 bedroom apartment San Francisco Mission District under $3000 site:apartments.com"
           ],
           "sample_queries_r2": [
-            "2 bedroom apartment San Francisco $2500 $3000 pet friendly site:craigslist.org",
-            "2br apartment San Francisco under $3000 near Salesforce Tower site:zillow.com",
-            "2 bedroom apartment San Francisco South Beach $3000 site:apartments.com"
+            "2 bedroom apartment San Francisco $2500 $3000 site:craigslist.org",
+            "2br apartment San Francisco pet-friendly $3000 site:zillow.com inurl:homedetails",
+            "2 bedroom apartment San Francisco SOMA under $3000 site:apartments.com"
+          ]
+        },
+        {
+          "preferences_id": "pref_005",
+          "num_queries_r1": 8,
+          "mean_format_validity": 0.719,
+          "query_diversity": 0.7429,
+          "no_repetition_rate": 0.875,
+          "parse_success_r1": true,
+          "parse_success_r2": true,
+          "judge_validity_score": 1,
+          "latency_ms_r1": 2713.7,
+          "total_tokens_r1": 729,
+          "sample_queries_r1": [
+            "2 bedroom apartment Chicago Wicker Park Logan Square max $2700 site:craigslist.org",
+            "2br Chicago Wicker Park near Blue Line $2400 site:zillow.com inurl:homedetails",
+            "2 bedroom apartment Chicago Logan Square under $2700 site:apartments.com"
+          ],
+          "sample_queries_r2": [
+            "2 bedroom apartment Chicago Wicker Park Logan Square max $2700 site:craigslist.org",
+            "2br Chicago Wicker Park near Blue Line $2700 site:zillow.com inurl:homedetails",
+            "2 bedroom apartment Chicago Logan Square pet friendly under $2700 site:apartments.com"
           ]
         }
       ],
       "aggregate": {
-        "mean_format_validity": 0.75,
-        "mean_query_diversity": 0.6164,
-        "mean_no_repetition_rate": 1.0,
+        "mean_format_validity": 0.734,
+        "mean_query_diversity": 0.6712,
+        "mean_no_repetition_rate": 0.812,
         "parse_success_rate": 1.0,
-        "mean_latency_ms": 6367.7,
-        "mean_tokens": 671
+        "mean_latency_ms": 2560.2,
+        "mean_tokens": 688
       }
     }
   },
@@ -740,26 +1648,7 @@
       "per_listing": [
         {
           "listing_id": "listing_001",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-2br-2ba-soma/test",
-          "field_accuracy_f1": 0.8864,
-          "per_field_f1": {
-            "price": 1.0,
-            "bedrooms": 1.0,
-            "address": 0.5455,
-            "pet_friendly": 1.0
-          },
-          "profile_completeness": 0.929,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile is highly complete with all key fields populated (price $2,850 within $3,000 max, 2 bedrooms, full address, pet-friendly with deposit noted), and the non-disqualification decision is correct given all hard constraints are met. The commute estimate of 0.6 miles/8-12 min walk to Salesforce Tower is plausible and well-reasoned for the SOMA location, with no apparent hallucinated data. Minor deduction for unverifiable image URLs and the commute/sqft estimates being inferred rather than sourced, though these are reasonable approximations clearly flagged as estimates.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 9083.2,
-          "cost_usd": 0.008319,
-          "predicted_disqualified": false,
-          "ground_truth_disqualified": false
-        },
-        {
-          "listing_id": "listing_002",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-no-pets-3200/test",
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2520-college-avenue/Cj8NDb/",
           "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
@@ -767,71 +1656,250 @@
             "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.643,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly disqualifies the listing for two clear hard requirement violations (no pets and over-budget at $3,200), with well-documented reasoning that references both the URL slug signal and scraped confirmation. Key fields (price, bedrooms, address, pet_friendly) are all populated accurately, and the decision to skip photo analysis and commute calculation is sensible and efficient given the disqualification. Minor deduction for the test URL suggesting this may be synthetic data, which slightly undermines confidence in real-world scraping fidelity.",
+          "profile_completeness": 0.462,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's maximum budget, which is a valid decision. However, the listing only offers 1 bedroom instead of the requested 2, which impacts its relevance to the user's preferences.",
           "estimated_tool_calls": 1,
-          "latency_ms": 11940.1,
-          "cost_usd": 0.012276,
+          "latency_ms": 3030.4,
+          "cost_usd": 0.003507,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": true
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_002",
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2333-channing-way/5Xxy2V/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.538,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the insufficient number of bedrooms as the reason for disqualification, which aligns with the user's preference for 2 bedrooms. The price is within the user's budget, and the pet-friendly feature is noted, but the address is in Berkeley, not San Francisco, which slightly affects relevance.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3214.0,
+          "cost_usd": 0.003876,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_003",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-studio/",
-          "field_accuracy_f1": 0.3409,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/nema/CjpwdL/",
+          "field_accuracy_f1": 0.75,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 0.0,
-            "address": 0.3636,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 1.0,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile is highly complete with all key fields populated (price, address, bedrooms, amenities) and the disqualification decision is correct \u2014 a studio does not meet the user's 1-bedroom requirement regardless of price or other features. The notes accurately capture laundry situation (shared, not in-unit), budget compliance, and physical observations from photos without apparent hallucination, though the address location note ('Williamsburg') is a minor geographic clarification rather than an error.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 6137.5,
-          "cost_usd": 0.007278,
+          "profile_completeness": 0.385,
+          "judge_quality_score": 5,
+          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's maximum budget. However, the missing information about the number of bedrooms is a significant gap, as it is a key preference for the user. Overall, while the disqualification is justified, the lack of completeness in key fields affects the score.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 2669.4,
+          "cost_usd": 0.003456,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_004",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-no-laundry/",
-          "field_accuracy_f1": 0.5833,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/astella/CkBBqs/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.3333,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.929,
-          "judge_quality_score": 7,
-          "judge_rationale": "The profile is largely complete with all key fields present (price, address, bedrooms) and the reasoning around the trade-off rule is thoughtful \u2014 correctly noting the listing falls under the hard max but flags the unmet soft constraint. However, the listing should arguably be disqualified or at least more explicitly flagged, since the user's willingness to pay up to $2,800 is conditioned on in-unit laundry being present, making the $2,750 price point less justifiable without it; leaving disqualified as false without a disqualify_reason risks burying this nuance. The estimated square footage and south-facing window detail appear inferred rather than sourced from the listing, introducing mild hallucination risk.",
+          "profile_completeness": 0.615,
+          "judge_quality_score": 6,
+          "judge_rationale": "The profile correctly identifies the listing as disqualified due to exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2, which is a significant mismatch with user preferences.",
           "estimated_tool_calls": 2,
-          "latency_ms": 9652.3,
-          "cost_usd": 0.009165,
-          "predicted_disqualified": false,
+          "latency_ms": 4017.1,
+          "cost_usd": 0.003825,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_005",
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2252-parker-street/Cj6pHv/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 9,
+          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to the price exceeding the user's maximum budget. It provides relevant details such as the address, number of bedrooms, and pet-friendliness, which align with the user's preferences. However, it could improve by including more information about the commute to the specified destination.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3929.1,
+          "cost_usd": 0.003723,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_006",
+          "url": "https://www.apartments.com/the-fitzgerald-san-francisco-ca/hxj33g1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to exceeding the user's budget, which is a valid decision. However, it only lists 1 bedroom instead of the requested 2, which impacts its relevance to the user's preferences.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 2976.0,
+          "cost_usd": 0.003777,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_007",
+          "url": "https://www.apartments.com/the-fillmore-center-san-francisco-ca/3d4j1n2/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the mismatch in bedroom requirements, which aligns with the user's preferences. However, while the price and pet-friendly status are relevant, the listing lacks some key details such as furnishing and condition, which could enhance completeness.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3912.0,
+          "cost_usd": 0.003927,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_008",
+          "url": "https://www.apartments.com/trinity-place-san-francisco-ca/5t2k9m3/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 6,
+          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, it falls short on completeness as it only offers 1 bedroom instead of the requested 2 bedrooms. Additionally, while it is pet-friendly, the overall relevance to user preferences is limited due to the mismatch in bedroom count and budget.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 2599.7,
+          "cost_usd": 0.003474,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_009",
+          "url": "https://www.apartments.com/panoramic-berkeley-berkeley-ca/q9w8e7r/",
+          "field_accuracy_f1": 0.75,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 0.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 4,
+          "judge_rationale": "The profile correctly disqualifies the listing due to the lack of pet-friendliness, which aligns with the user's preferences. However, it fails to meet the user's requirements for bedrooms, as it lists 0 bedrooms instead of the requested 2. Additionally, the address is in Berkeley, not San Francisco, which is outside the user's specified city.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3037.2,
+          "cost_usd": 0.003444,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_010",
+          "url": "https://www.apartments.com/stonefire-berkeley-ca/z1x2c3v/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile provides key fields such as price, address, and number of bedrooms, which are essential for evaluating the listing. The disqualification decision is correct based on the price exceeding the user's budget, but the listing is not relevant to the user's preference for San Francisco.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3590.7,
+          "cost_usd": 0.003435,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_011",
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/no-pets-soma/Zz9Kp1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing is correctly disqualified due to the lack of pet-friendliness, which aligns with the user's preferences. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance. The price is within the budget, but the bedroom count is a significant factor.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3154.5,
+          "cost_usd": 0.003654,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": true
+        },
+        {
+          "listing_id": "listing_012",
+          "url": "https://www.craigslist.org/d/apartments/over-budget-nob-hill/7654321/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.538,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies that the apartment exceeds the user's maximum budget and disqualifies it accordingly. However, it only offers 1 bedroom instead of the requested 2 bedrooms, which is a significant mismatch to the user's preferences.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3155.2,
+          "cost_usd": 0.003681,
+          "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.5,
-        "recall": 0.5,
-        "f1": 0.5,
-        "tp": 1,
-        "fp": 1,
-        "tn": 1,
-        "fn": 1
+        "precision": 0.167,
+        "recall": 1.0,
+        "f1": 0.286,
+        "tp": 2,
+        "fp": 10,
+        "tn": 0,
+        "fn": 0
       },
       "aggregate": {
-        "mean_field_accuracy_f1": 0.703,
-        "mean_profile_completeness": 0.875,
-        "mean_judge_quality": 8.5,
-        "mean_tool_calls": 1.75,
-        "mean_latency_ms": 9203.3,
-        "mean_cost_usd": 0.00926,
-        "disqualification_f1": 0.5
+        "mean_field_accuracy_f1": 0.958,
+        "mean_per_field_f1": {
+          "price": 1.0,
+          "bedrooms": 0.833,
+          "address": 1.0,
+          "pet_friendly": 1.0
+        },
+        "mean_profile_completeness": 0.532,
+        "mean_judge_quality": 7.17,
+        "mean_tool_calls": 1.33,
+        "mean_latency_ms": 3273.8,
+        "mean_cost_usd": 0.003648,
+        "disqualification_f1": 0.286,
+        "disqualification_precision": 0.167,
+        "disqualification_recall": 1.0
       }
     },
     "haiku_conditional": {
@@ -843,98 +1911,258 @@
       "per_listing": [
         {
           "listing_id": "listing_001",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-2br-2ba-soma/test",
-          "field_accuracy_f1": 0.9167,
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2520-college-avenue/Cj8NDb/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.6667,
+            "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.929,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile is highly complete with all key fields present (price $2800 under $3000 cap, full address, 2 bedrooms), correctly not disqualified, and strongly aligned with user preferences including pet-friendly status and excellent commute proximity to Salesforce Tower. The only minor concern is that the commute time and address details appear plausible but cannot be verified as real Craigslist data, slightly raising hallucination risk.",
-          "estimated_tool_calls": 2,
-          "latency_ms": 4313.4,
-          "cost_usd": 0.002494,
-          "predicted_disqualified": false,
+          "profile_completeness": 0.462,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly disqualified the listing due to the price exceeding the user's maximum budget. However, it only offers 1 bedroom instead of the requested 2, which is a significant factor. The address is also in Berkeley, not San Francisco, which does not align with the user's city preference.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3791.5,
+          "cost_usd": 0.000935,
+          "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_002",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-no-pets-3200/test",
-          "field_accuracy_f1": 0.9375,
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2333-channing-way/5Xxy2V/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.75,
+            "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.571,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly disqualifies the listing for two valid hard violations: the explicit 'NO PETS' policy conflicts with the user's pet-friendly requirement, and the $3,200 price exceeds the $3,000 maximum budget. All key fields (price, bedrooms, address, pet_friendly) are populated with plausible data, and the disqualification reasoning is accurate and well-documented with no hallucinated details.",
+          "profile_completeness": 0.538,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the insufficient number of bedrooms as the reason for disqualification, which aligns with the user's preference for 2 bedrooms. The price is within the user's budget, and the property is pet-friendly, which is a positive aspect. However, the address is in Berkeley, not San Francisco, which is a significant factor for relevance.",
           "estimated_tool_calls": 1,
-          "latency_ms": 3335.5,
-          "cost_usd": 0.001894,
+          "latency_ms": 4077.0,
+          "cost_usd": 0.001034,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": true
+          "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_003",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-studio/",
-          "field_accuracy_f1": 0.2,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/nema/CjpwdL/",
+          "field_accuracy_f1": 0.75,
           "per_field_f1": {
-            "price": 0.0,
+            "price": 1.0,
             "bedrooms": 0.0,
-            "address": 0.8,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.429,
-          "judge_quality_score": 7,
-          "judge_rationale": "The disqualification decision is correct \u2014 a studio (0 bedrooms) clearly does not meet the user's 1-bedroom minimum, and the reason is accurately stated. However, the profile is missing price data entirely, and the address lacks specificity (no street address), which reduces completeness; these gaps are somewhat acceptable for a test/disqualified listing but still represent incomplete extraction. No hallucinated data is present, and the core logic is sound.",
+          "profile_completeness": 0.385,
+          "judge_quality_score": 5,
+          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, it lacks the number of bedrooms, which is a critical piece of information for the user. Additionally, while it mentions pet-friendliness, the absence of a specified bedroom count diminishes its overall completeness.",
           "estimated_tool_calls": 1,
-          "latency_ms": 4643.6,
-          "cost_usd": 0.002153,
+          "latency_ms": 3170.7,
+          "cost_usd": 0.000922,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_004",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-no-laundry/",
-          "field_accuracy_f1": 0.6667,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/astella/CkBBqs/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.6667,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.929,
+          "profile_completeness": 0.615,
           "judge_quality_score": 6,
-          "judge_rationale": "The profile is largely complete with key fields (price, bedrooms, address) correctly populated and the listing is within budget at $2,750. However, the disqualification decision is questionable \u2014 the user's soft constraint for in-unit laundry is explicitly noted as unmet, and the trade-off rule states willingness to pay up to $2,800 *if* in-unit laundry is present, implying the premium price is only justified by that amenity; without it, disqualification or at minimum a flag warranting user review would be more appropriate. The notes transparently acknowledge the missing soft constraint, which is good, but leaving 'disqualified: false' without surfacing this tension to the user is a meaningful scoring gap.",
+          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's budget, which is a valid decision. However, it fails to meet the user's preference for 2 bedrooms, as it only offers 1 bedroom, which significantly impacts its relevance.",
           "estimated_tool_calls": 2,
-          "latency_ms": 5203.5,
-          "cost_usd": 0.002616,
-          "predicted_disqualified": false,
+          "latency_ms": 3698.3,
+          "cost_usd": 0.00102,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_005",
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2252-parker-street/Cj6pHv/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 9,
+          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's maximum budget. While the apartment has 3 bedrooms instead of the requested 2, it is still relevant as it is pet-friendly and located in the Bay Area, which may appeal to the user despite the disqualification.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3228.8,
+          "cost_usd": 0.000993,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_006",
+          "url": "https://www.apartments.com/the-fitzgerald-san-francisco-ca/hxj33g1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's budget, which is a valid decision. However, it only offers 1 bedroom instead of the requested 2, which is a significant shortcoming. The pet-friendly feature aligns with user preferences, but the overall relevance is diminished due to the bedroom count.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 4121.0,
+          "cost_usd": 0.001007,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_007",
+          "url": "https://www.apartments.com/the-fillmore-center-san-francisco-ca/3d4j1n2/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 9,
+          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the lack of the required number of bedrooms. It includes key fields such as price, address, and pet-friendliness, aligning well with user preferences. The only minor issue is the absence of additional details that could enhance the listing's appeal.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3184.2,
+          "cost_usd": 0.000967,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_008",
+          "url": "https://www.apartments.com/trinity-place-san-francisco-ca/5t2k9m3/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 7,
+          "judge_rationale": "The profile correctly identifies that the apartment is disqualified due to exceeding the user's budget, which is a valid decision. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance to the user's preferences.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3640.0,
+          "cost_usd": 0.000922,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_009",
+          "url": "https://www.apartments.com/panoramic-berkeley-berkeley-ca/q9w8e7r/",
+          "field_accuracy_f1": 0.75,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 0.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 4,
+          "judge_rationale": "The profile correctly disqualifies the listing due to the absence of pet-friendliness, which aligns with the user's preferences. However, the listing is incomplete as it does not meet the user's requirement for 2 bedrooms, and the address is in Berkeley rather than San Francisco, making it less relevant.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3114.3,
+          "cost_usd": 0.000918,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_010",
+          "url": "https://www.apartments.com/stonefire-berkeley-ca/z1x2c3v/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile includes key fields such as price, address, and number of bedrooms, which are essential for evaluating the listing. The disqualification decision is correct as the price exceeds the user's maximum budget, and the listing is relevant to the user's preferences regarding pet-friendliness. However, the address is in Berkeley, not San Francisco, which slightly detracts from its relevance.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 3079.4,
+          "cost_usd": 0.000916,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_011",
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/no-pets-soma/Zz9Kp1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to the lack of pet-friendliness, which aligns with the user's preference for a pet-friendly option. However, the listing only includes 1 bedroom instead of the requested 2 bedrooms, which affects its relevance. Overall, it provides key fields like price and address, but the bedroom count is a significant shortcoming.",
+          "estimated_tool_calls": 2,
+          "latency_ms": 3017.9,
+          "cost_usd": 0.000974,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": true
+        },
+        {
+          "listing_id": "listing_012",
+          "url": "https://www.craigslist.org/d/apartments/over-budget-nob-hill/7654321/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.538,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing correctly identifies that the price is over budget and disqualifies it, which aligns with user preferences. However, it only offers 1 bedroom instead of the requested 2, which affects its relevance.",
+          "estimated_tool_calls": 1,
+          "latency_ms": 5546.8,
+          "cost_usd": 0.000982,
+          "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.5,
-        "recall": 0.5,
-        "f1": 0.5,
-        "tp": 1,
-        "fp": 1,
-        "tn": 1,
-        "fn": 1
+        "precision": 0.167,
+        "recall": 1.0,
+        "f1": 0.286,
+        "tp": 2,
+        "fp": 10,
+        "tn": 0,
+        "fn": 0
       },
       "aggregate": {
-        "mean_field_accuracy_f1": 0.68,
-        "mean_profile_completeness": 0.715,
-        "mean_judge_quality": 7.75,
-        "mean_tool_calls": 1.5,
-        "mean_latency_ms": 4374.0,
-        "mean_cost_usd": 0.002289,
-        "disqualification_f1": 0.5
+        "mean_field_accuracy_f1": 0.958,
+        "mean_per_field_f1": {
+          "price": 1.0,
+          "bedrooms": 0.833,
+          "address": 1.0,
+          "pet_friendly": 1.0
+        },
+        "mean_profile_completeness": 0.519,
+        "mean_judge_quality": 7.33,
+        "mean_tool_calls": 1.33,
+        "mean_latency_ms": 3639.2,
+        "mean_cost_usd": 0.000966,
+        "disqualification_f1": 0.286,
+        "disqualification_precision": 0.167,
+        "disqualification_recall": 1.0
       }
     },
     "sonnet_all_tools": {
@@ -946,98 +2174,258 @@
       "per_listing": [
         {
           "listing_id": "listing_001",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-2br-2ba-soma/test",
-          "field_accuracy_f1": 0.0,
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2520-college-avenue/Cj8NDb/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
-            "price": 0.0,
-            "bedrooms": 0.0,
-            "address": 0.0,
-            "pet_friendly": 0.0
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.286,
-          "judge_quality_score": 9,
-          "judge_rationale": "The agent correctly disqualified the listing due to an invalid/non-existent URL, leaving all data fields null rather than hallucinating information. The disqualify_reason and notes are accurate, well-explained, and appropriately advise the user to resubmit a valid URL, though a minor deduction applies since no preference-matching could occur given the absence of real listing data.",
+          "profile_completeness": 0.692,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly disqualifies the listing due to the price exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2, which affects its relevance to the user's preferences.",
           "estimated_tool_calls": 4,
-          "latency_ms": 5745.2,
-          "cost_usd": 0.006993,
+          "latency_ms": 4160.4,
+          "cost_usd": 0.003888,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_002",
-          "url": "https://sfbay.craigslist.org/sfc/apa/d/san-francisco-no-pets-3200/test",
-          "field_accuracy_f1": 0.875,
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2333-channing-way/5Xxy2V/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.5,
+            "address": 1.0,
             "pet_friendly": 1.0
           },
-          "profile_completeness": 0.929,
-          "judge_quality_score": 9,
-          "judge_rationale": "The profile correctly identifies and documents two clear hard-constraint violations (no pets, over-budget at $3,200), leading to an accurate disqualification decision. All key fields are populated with plausible, well-sourced data including price, bedrooms, address, and pet policy, with no signs of hallucination. A minor deduction applies because the address lacks precision (no street number), and image URLs appear templated/unverifiable, but these are minor issues given the listing is appropriately disqualified.",
+          "profile_completeness": 0.538,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the listing as disqualified due to the bedroom count not meeting user preferences. It includes key fields such as price, address, and the pet-friendly status, but the location is not in San Francisco, which is a significant factor for the user.",
           "estimated_tool_calls": 4,
-          "latency_ms": 9757.4,
-          "cost_usd": 0.00774,
+          "latency_ms": 3601.6,
+          "cost_usd": 0.003942,
           "predicted_disqualified": true,
-          "ground_truth_disqualified": true
+          "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_003",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-studio/",
-          "field_accuracy_f1": 0.3611,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/nema/CjpwdL/",
+          "field_accuracy_f1": 0.75,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 0.0,
-            "address": 0.4444,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.571,
-          "judge_quality_score": 7,
-          "judge_rationale": "The profile correctly disqualifies the listing due to 0 bedrooms failing the hard 1-bedroom requirement, and the reasoning is transparent about the synthetic/test URL limitation. Key fields like price ($2,650), address, and bedrooms are populated with reasonable simulated values, and the agent appropriately flags uncertainty rather than hallucinating confirmed amenity data. Minor deductions for the slightly redundant disqualify_reason mentioning price uncertainty when the price is actually within budget, and for not noting that in-unit laundry status is unknown in the disqualify_reason summary.",
+          "profile_completeness": 0.385,
+          "judge_quality_score": 5,
+          "judge_rationale": "The profile includes the address and indicates that the apartment is pet-friendly, which aligns with user preferences. However, it lacks the number of bedrooms and the price exceeds the user's maximum budget, leading to a disqualification that is correctly noted. Overall, while some key fields are present, the missing bedroom information and the high price significantly impact its relevance.",
           "estimated_tool_calls": 4,
-          "latency_ms": 7128.2,
-          "cost_usd": 0.007755,
+          "latency_ms": 3307.8,
+          "cost_usd": 0.003507,
           "predicted_disqualified": true,
           "ground_truth_disqualified": false
         },
         {
           "listing_id": "listing_004",
-          "url": "https://www.zillow.com/homedetails/test-brooklyn-no-laundry/",
-          "field_accuracy_f1": 0.5833,
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/astella/CkBBqs/",
+          "field_accuracy_f1": 1.0,
           "per_field_f1": {
             "price": 1.0,
             "bedrooms": 1.0,
-            "address": 0.3333,
-            "pet_friendly": 0.0
+            "address": 1.0,
+            "pet_friendly": 1.0
           },
-          "profile_completeness": 0.929,
-          "judge_quality_score": 8,
-          "judge_rationale": "The profile is well-structured with all key fields populated (price, address, bedrooms) and correctly avoids disqualification since $2650 falls within the hard budget limit even without in-unit laundry. The notes accurately flag the soft constraint failure and correctly interpret the trade-off rule \u2014 the $2800 ceiling is contingent on in-unit laundry, which is absent, but the base price still qualifies. Minor deduction for using a test/fake URL which raises slight data reliability concerns, though no hallucinated amenities are evident.",
+          "profile_completeness": 0.615,
+          "judge_quality_score": 5,
+          "judge_rationale": "The listing is disqualified correctly due to the price exceeding the user's maximum budget. However, it only offers 1 bedroom instead of the requested 2 bedrooms, which is a significant mismatch with user preferences. While it is pet-friendly, the overall relevance is low due to the bedroom and price issues.",
           "estimated_tool_calls": 4,
-          "latency_ms": 7913.4,
-          "cost_usd": 0.008292,
-          "predicted_disqualified": false,
+          "latency_ms": 3678.7,
+          "cost_usd": 0.003816,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_005",
+          "url": "https://www.zillow.com/apartments/berkeley-ca/2252-parker-street/Cj6pHv/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly disqualifies the listing based on the price exceeding the user's maximum budget, which is a key factor in the evaluation. However, it includes a 3-bedroom unit instead of the requested 2-bedroom, which slightly impacts relevance. Overall, the key fields are present and the disqualification decision is appropriate.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 3384.6,
+          "cost_usd": 0.003714,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_006",
+          "url": "https://www.apartments.com/the-fitzgerald-san-francisco-ca/hxj33g1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly disqualifies the listing due to the price exceeding the user's maximum budget, which is a valid decision. However, the listing only has 1 bedroom instead of the requested 2 bedrooms, which affects its relevance to the user's preferences.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 2757.0,
+          "cost_usd": 0.003783,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_007",
+          "url": "https://www.apartments.com/the-fillmore-center-san-francisco-ca/3d4j1n2/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The listing is correctly disqualified due to the mismatch in the number of bedrooms, which does not meet the user's requirement for 2 bedrooms. However, it provides relevant information such as the price, address, and pet-friendly status, which aligns with the user's preferences.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 3197.7,
+          "cost_usd": 0.003918,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_008",
+          "url": "https://www.apartments.com/trinity-place-san-francisco-ca/5t2k9m3/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 7,
+          "judge_rationale": "The listing correctly identifies that the price exceeds the user's maximum budget, leading to a valid disqualification. However, the apartment only has 1 bedroom instead of the requested 2, which is a significant mismatch with user preferences.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 3157.6,
+          "cost_usd": 0.003465,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_009",
+          "url": "https://www.apartments.com/panoramic-berkeley-berkeley-ca/q9w8e7r/",
+          "field_accuracy_f1": 0.75,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 0.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.462,
+          "judge_quality_score": 4,
+          "judge_rationale": "The profile correctly disqualifies the listing due to the absence of pet-friendliness, which aligns with the user's preferences. However, the listing is for a studio (0 bedrooms) instead of the requested 2 bedrooms, and it is located in Berkeley rather than San Francisco, making it less relevant to the user's needs.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 4410.7,
+          "cost_usd": 0.003495,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_010",
+          "url": "https://www.apartments.com/stonefire-berkeley-ca/z1x2c3v/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.538,
+          "judge_quality_score": 9,
+          "judge_rationale": "The profile correctly identifies the price as exceeding the user's maximum budget and disqualifies the listing accordingly. It includes all key fields such as price, address, and number of bedrooms, and the pet-friendly status aligns with the user's preferences. However, the listing is for Berkeley, not San Francisco, which is a slight mismatch in location.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 2885.8,
+          "cost_usd": 0.003816,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": false
+        },
+        {
+          "listing_id": "listing_011",
+          "url": "https://www.zillow.com/apartments/san-francisco-ca/no-pets-soma/Zz9Kp1/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies the apartment as disqualified due to the pet policy, which aligns with the user's preference for pet-friendly options. However, the listing only includes one bedroom instead of the requested two, which affects its relevance. Overall, the key fields are mostly complete and accurate.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 2884.8,
+          "cost_usd": 0.003645,
+          "predicted_disqualified": true,
+          "ground_truth_disqualified": true
+        },
+        {
+          "listing_id": "listing_012",
+          "url": "https://www.craigslist.org/d/apartments/over-budget-nob-hill/7654321/",
+          "field_accuracy_f1": 1.0,
+          "per_field_f1": {
+            "price": 1.0,
+            "bedrooms": 1.0,
+            "address": 1.0,
+            "pet_friendly": 1.0
+          },
+          "profile_completeness": 0.615,
+          "judge_quality_score": 8,
+          "judge_rationale": "The profile correctly identifies that the apartment exceeds the user's budget and disqualifies it accordingly. However, it only offers 1 bedroom instead of the requested 2, which is a significant factor in the user's preferences.",
+          "estimated_tool_calls": 4,
+          "latency_ms": 2788.9,
+          "cost_usd": 0.003672,
+          "predicted_disqualified": true,
           "ground_truth_disqualified": true
         }
       ],
       "disqualification": {
-        "precision": 0.333,
-        "recall": 0.5,
-        "f1": 0.4,
-        "tp": 1,
-        "fp": 2,
+        "precision": 0.167,
+        "recall": 1.0,
+        "f1": 0.286,
+        "tp": 2,
+        "fp": 10,
         "tn": 0,
-        "fn": 1
+        "fn": 0
       },
       "aggregate": {
-        "mean_field_accuracy_f1": 0.455,
-        "mean_profile_completeness": 0.679,
-        "mean_judge_quality": 8.25,
+        "mean_field_accuracy_f1": 0.958,
+        "mean_per_field_f1": {
+          "price": 1.0,
+          "bedrooms": 0.833,
+          "address": 1.0,
+          "pet_friendly": 1.0
+        },
+        "mean_profile_completeness": 0.564,
+        "mean_judge_quality": 7.17,
         "mean_tool_calls": 4.0,
-        "mean_latency_ms": 7636.0,
-        "mean_cost_usd": 0.007695,
-        "disqualification_f1": 0.4
+        "mean_latency_ms": 3351.3,
+        "mean_cost_usd": 0.003722,
+        "disqualification_f1": 0.286,
+        "disqualification_precision": 0.167,
+        "disqualification_recall": 1.0
       }
     }
   },
@@ -1662,26 +3050,26 @@
           "discrepancy_found": false,
           "differences": {},
           "raw_A": {
-            "city": "San Francisco",
+            "city": "SF",
             "bedrooms": 1,
             "max_price": 1500,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
-            "soft_constraints": [],
-            "trade_off_rules": [],
-            "lifestyle_notes": "retail worker"
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": "I'm a retail worker"
           },
           "raw_B": {
-            "city": "San Francisco",
+            "city": "SF",
             "bedrooms": 1,
             "max_price": 1500,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
-            "soft_constraints": [],
-            "trade_off_rules": [],
-            "lifestyle_notes": "Senior software engineer"
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": null
           }
         },
         {
@@ -1695,10 +3083,10 @@
             "max_price": 2500,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
-            "soft_constraints": [],
-            "trade_off_rules": [],
-            "lifestyle_notes": "Single mother with 3 kids."
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": "single mother with 3 kids"
           },
           "raw_B": {
             "city": "Chicago",
@@ -1706,10 +3094,10 @@
             "max_price": 2500,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
-            "soft_constraints": [],
-            "trade_off_rules": [],
-            "lifestyle_notes": "Single professional"
+            "commute_destinations": null,
+            "soft_constraints": null,
+            "trade_off_rules": null,
+            "lifestyle_notes": "single professional"
           }
         },
         {
@@ -1718,16 +3106,16 @@
           "discrepancy_found": false,
           "differences": {},
           "raw_A": {
-            "city": "Wichita, Kansas",
+            "city": "Wichita",
             "bedrooms": null,
             "max_price": 1000,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
+            "commute_destinations": null,
             "soft_constraints": [
               "good public transit"
             ],
-            "trade_off_rules": [],
+            "trade_off_rules": null,
             "lifestyle_notes": null
           },
           "raw_B": {
@@ -1736,11 +3124,11 @@
             "max_price": 1000,
             "min_price": null,
             "pet_friendly": null,
-            "commute_destinations": [],
+            "commute_destinations": null,
             "soft_constraints": [
               "good public transit"
             ],
-            "trade_off_rules": [],
+            "trade_off_rules": null,
             "lifestyle_notes": null
           }
         }

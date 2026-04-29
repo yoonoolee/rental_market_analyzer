@@ -61,11 +61,23 @@ def extract_preferences(messages: list[dict], model: str, client: Anthropic) -> 
             messages=[{"role": "user", "content": f"Conversation:\n{convo_text}"}],
         )
     raw = resp.content[0].text.strip()
+    import re
     try:
+        # Standard load
         prefs = json.loads(raw)
     except json.JSONDecodeError:
-        s, e = raw.find("{"), raw.rfind("}") + 1
-        prefs = json.loads(raw[s:e]) if s != -1 and e > s else {}
+        # Robust extraction: find { ... } and strip trailing commas
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if match:
+            clean_json = match.group(0)
+            # Strip trailing commas before } or ]
+            clean_json = re.sub(r',\s*([}\]])', r'\1', clean_json)
+            try:
+                prefs = json.loads(clean_json)
+            except:
+                prefs = {}
+        else:
+            prefs = {}
 
     return prefs, {"latency_ms": timer.elapsed_ms, "tokens": resp.usage.input_tokens + resp.usage.output_tokens}
 

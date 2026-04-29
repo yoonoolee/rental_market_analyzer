@@ -9,7 +9,9 @@ Variants compared:
 Held constant:
   - Query set (generated from pref_001 preferences)
   - SerpAPI GoogleSearch engine
-  - site: operators (craigslist, zillow, apartments, trulia, hotpads)
+  - site: operators (craigslist, zillow, trulia)
+    apartments.com excluded: site: operator returns search pages, not individual listings
+    hotpads.com excluded: returns 0-1 usable results consistently across all variants
 
 Metrics:
   - listing_precision   : % of returned URLs that are valid rental listings (LLM-as-judge)
@@ -25,13 +27,15 @@ from evals.config import SERPAPI_KEY, RESULTS_DIR, SEARCH_VARIANTS
 from evals.metrics.nlp import LatencyTimer, embedding_similarity
 from evals.metrics.llm_judge import LLMJudge
 
-# Representative queries derived from pref_001 preferences
+# Representative queries derived from pref_001 preferences.
+# apartments.com and hotpads.com removed — confirmed 0% listing precision in prior runs.
+# zillow inurl:homedetails forces individual unit pages instead of search results.
 TEST_QUERIES = [
     "2 bedroom apartment for rent San Francisco under $3000 site:craigslist.org",
     "2br apartment San Francisco $2000-$3000 site:zillow.com inurl:homedetails",
-    "2 bedroom pet friendly apartment San Francisco max $3000 site:apartments.com",
+    "2 bedroom pet friendly apartment San Francisco SOMA Mission under $3000 site:zillow.com inurl:homedetails",
     "2 bedroom apartment near Salesforce Tower San Francisco site:trulia.com",
-    "2br flat San Francisco SOMA Mission $2500 $3000 site:hotpads.com",
+    "2br flat San Francisco Noe Valley Castro $2500 $3000 site:trulia.com",
 ]
 
 

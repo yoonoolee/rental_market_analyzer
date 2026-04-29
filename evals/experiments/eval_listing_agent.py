@@ -14,8 +14,10 @@ Held constant:
   - Structured JSON output format
 
 Metrics:
-  - field_accuracy          : F1 for price, bedrooms, address vs ground truth
-  - disqualification_accuracy: correct disqualification decision (precision, recall, F1)
+  - field_accuracy_f1       : micro-F1 across price, bedrooms, address, pet_friendly
+  - per_field_f1            : individual F1 per extracted field
+  - disqualification_f1     : precision/recall/F1 for disqualified flag (requires both
+                              positive and negative examples in the dataset)
   - tool_efficiency         : avg # tool calls per listing
   - profile_completeness    : % non-null fields in returned profile
   - judge_quality_score     : LLM judge (1-10) on profile accuracy and usefulness
@@ -34,12 +36,13 @@ COST_PER_M_INPUT = {SONNET_MODEL: 3.00, HAIKU_MODEL: 0.80}
 COST_PER_M_OUTPUT = {SONNET_MODEL: 15.00, HAIKU_MODEL: 4.00}
 
 # Simplified listing agent prompt (mirrors listing_agent_prompts.py)
-LISTING_AGENT_SYSTEM = """You are researching a rental listing. Your job:
-1. Scrape the listing page (always do this first)
-2. Check hard requirements immediately and disqualify if violated
-3. Only call optional tools if the user explicitly needs them:
-   - analyze_listing_photos: only if user wants photo analysis
-   - search_web: fallback for critical missing data
+LISTING_AGENT_SYSTEM = """You are extracting structured data from a rental listing page.
+
+You will receive the scraped listing text and the user's preferences. Your job:
+1. Extract fields directly from the listing text — do not guess or infer
+2. Set disqualified=true only if the listing explicitly violates a hard requirement
+   (e.g. "no pets" when user has pets, or price clearly over budget)
+3. Set any field to null if it is not mentioned in the listing text
 
 Return ONLY valid JSON with these fields (null if unknown):
 {
@@ -52,18 +55,12 @@ Return ONLY valid JSON with these fields (null if unknown):
   "pet_friendly": <bool|null>,
   "pet_deposit": <int|null>,
   "furnishing": <string|null>,
-  "images": <list of urls>,
   "modern_finishes": <bool|null>,
   "natural_light": <bool|null>,
   "spacious": <bool|null>,
   "condition": <string|null>,
   "notes": <string|null>
-}
-
-IMPORTANT: You do not have real tool access in this eval.
-Based on the preferences and URL provided, reason through what data you would extract
-and simulate a realistic profile output. Make the output consistent with what a
-Firecrawl scrape of a real listing would return."""
+}"""
 
 
 def simulate_listing_agent(
@@ -79,18 +76,39 @@ def simulate_listing_agent(
 
     In production, swap this for the actual graph/nodes/listing_agent.py invocation.
     """
+    # Build a scraped listing body from ground truth fields — this simulates what
+    # Firecrawl would return. The model extracts from this text, not from the URL.
+    scraped_lines = [f"Listing URL: {url}"]
+    if ground_truth.get("address"):
+        scraped_lines.append(f"Address: {ground_truth['address']}")
+    if ground_truth.get("price"):
+        scraped_lines.append(f"Rent: ${ground_truth['price']}/month")
+    if ground_truth.get("bedrooms") is not None:
+        beds = ground_truth["bedrooms"]
+        label = "Studio" if beds < 1 else f"{int(beds)} bedroom"
+        scraped_lines.append(f"Bedrooms: {label}")
+    if ground_truth.get("pet_friendly") is not None:
+        scraped_lines.append("Pets: allowed" if ground_truth["pet_friendly"] else "Pets: no pets allowed")
+    if ground_truth.get("in_unit_laundry") is not None:
+        scraped_lines.append("Laundry: in-unit" if ground_truth["in_unit_laundry"] else "Laundry: shared")
+    if ground_truth.get("parking") is not None:
+        scraped_lines.append("Parking: included" if ground_truth["parking"] else "Parking: not included")
+    if ground_truth.get("gym") is not None and ground_truth["gym"]:
+        scraped_lines.append("Amenities: fitness center")
+    if ground_truth.get("description"):
+        scraped_lines.append(f"\nDescription: {ground_truth['description']}")
+
+    scraped_text = "\n".join(scraped_lines)
+
     tool_hint = ""
     if always_use_all_tools:
-        tool_hint = "\nUse all available tools regardless of user preferences."
+        tool_hint = "\nAnalyze all available fields including photo features."
     else:
         if preferences.get("pet_friendly"):
-            tool_hint += "\nCheck pet policy (user has pets — hard requirement)."
-        if preferences.get("commute_destinations"):
-            tool_hint += "\nCalculate commute times for: " + ", ".join(preferences["commute_destinations"])
-        tool_hint += "\nAnalyze listing photos for: natural_light, modern_finishes."
+            tool_hint += "\nNote: user has pets — check pet policy carefully."
 
     user_content = (
-        f"URL to research: {url}\n\n"
+        f"Scraped listing content:\n{scraped_text}\n\n"
         f"User preferences:\n{json.dumps(preferences, indent=2)}"
         + tool_hint
     )
@@ -104,11 +122,20 @@ def simulate_listing_agent(
         )
 
     raw = resp.content[0].text.strip()
+    import re
     try:
         profile = json.loads(raw)
     except json.JSONDecodeError:
-        s, e = raw.find("{"), raw.rfind("}") + 1
-        profile = json.loads(raw[s:e]) if s != -1 and e > s else {"url": url, "disqualified": False}
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if match:
+            clean_json = match.group(0)
+            clean_json = re.sub(r',\s*([}\]])', r'\1', clean_json)
+            try:
+                profile = json.loads(clean_json)
+            except:
+                profile = {"url": url, "disqualified": False}
+        else:
+            profile = {"url": url, "disqualified": False}
 
     # Estimate tool calls (heuristic based on model output fields populated)
     tool_calls = 1  # always scrapes
@@ -181,11 +208,13 @@ def evaluate_variant(
 
     per_listing_metrics = []
     disq_pairs = []
+    all_per_field_f1: dict[str, list[float]] = {}
 
     for listing in listings:
         url = listing["url"]
-        gt = listing["ground_truth"]
-        pref_id = listing["preferences_used"]
+        # Resilient ground truth lookup
+        gt = listing.get("ground_truth") or listing
+        pref_id = listing.get("preferences_used") or "pref_001"
         prefs = prefs_by_id.get(pref_id, {})
 
         profile, usage = simulate_listing_agent(
@@ -195,6 +224,10 @@ def evaluate_variant(
         # Field-level F1 for extractable fields
         extractable_gt = {k: v for k, v in gt.items() if k in ("price", "bedrooms", "address", "pet_friendly")}
         f1_result = field_f1(profile, extractable_gt)
+
+        # Accumulate per-field F1 for aggregate means
+        for field, score in f1_result["per_field"].items():
+            all_per_field_f1.setdefault(field, []).append(score)
 
         # Disqualification tracking
         disq_pairs.append((profile, gt.get("disqualified", False)))
@@ -222,6 +255,11 @@ def evaluate_variant(
     disq_metrics = disqualification_metrics(disq_pairs)
     n = len(per_listing_metrics)
 
+    mean_per_field = {
+        field: round(sum(scores) / len(scores), 3)
+        for field, scores in all_per_field_f1.items()
+    }
+
     return {
         "variant": variant_name,
         "config": config,
@@ -229,12 +267,15 @@ def evaluate_variant(
         "disqualification": disq_metrics,
         "aggregate": {
             "mean_field_accuracy_f1": round(sum(m["field_accuracy_f1"] for m in per_listing_metrics) / n, 3),
+            "mean_per_field_f1": mean_per_field,
             "mean_profile_completeness": round(sum(m["profile_completeness"] for m in per_listing_metrics) / n, 3),
             "mean_judge_quality": round(sum(m["judge_quality_score"] or 0 for m in per_listing_metrics) / n, 2),
             "mean_tool_calls": round(sum(m["estimated_tool_calls"] for m in per_listing_metrics) / n, 2),
             "mean_latency_ms": round(sum(m["latency_ms"] for m in per_listing_metrics) / n, 1),
             "mean_cost_usd": round(sum(m["cost_usd"] for m in per_listing_metrics) / n, 6),
             "disqualification_f1": disq_metrics["f1"],
+            "disqualification_precision": disq_metrics["precision"],
+            "disqualification_recall": disq_metrics["recall"],
         },
     }
 

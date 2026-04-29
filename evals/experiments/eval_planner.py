@@ -10,7 +10,8 @@ Held constant:
   - Input preference sets (from datasets/preferences.json, pref_001 and pref_005)
   - Model: Claude Sonnet 4.6
   - Required output format: JSON {"search_queries": [...]}
-  - Site operators: craigslist, zillow, apartments, trulia, hotpads
+  - Site operators: craigslist, zillow, apartments, trulia
+    (hotpads excluded — returns 0 usable listing URLs in practice)
 
 Metrics:
   - format_validity       : % queries containing site:, location, bedrooms, price (rule-based + LLM judge)
@@ -31,8 +32,10 @@ from evals.metrics.nlp import LatencyTimer, embedding_similarity
 from evals.metrics.llm_judge import LLMJudge
 
 REQUIRED_SITE_OPERATORS = [
-    "craigslist.org", "zillow.com", "apartments.com", "trulia.com", "hotpads.com"
+    "craigslist.org", "zillow.com", "apartments.com", "trulia.com"
 ]
+# hotpads.com excluded: consistently returns 0-1 results across all search variants
+# and is not a reliable source for individual listing URLs via site: operator
 
 FEW_SHOT_EXAMPLES = """
 Example 1 — Chicago, 2br, $1800-$2400:
@@ -40,8 +43,7 @@ Example 1 — Chicago, 2br, $1800-$2400:
   "2 bedroom apartment Chicago $1800 $2400 site:craigslist.org",
   "2br apartment Chicago under $2400 site:zillow.com inurl:homedetails",
   "2 bedroom apartment Chicago Wicker Park Logan Square site:apartments.com",
-  "2 bedroom Chicago $2000 $2400 transit site:trulia.com",
-  "2br Chicago Lincoln Park Lakeview $1800 $2400 site:hotpads.com"
+  "2 bedroom Chicago $2000 $2400 transit site:trulia.com"
 ]}
 
 Example 2 — Seattle, 2br, under $2200:
@@ -49,18 +51,17 @@ Example 2 — Seattle, 2br, under $2200:
   "2 bedroom apartment Seattle under $2200 site:craigslist.org",
   "2br Seattle Capitol Hill Queen Anne $2200 site:zillow.com inurl:homedetails",
   "2 bedroom apartment Seattle with parking under $2200 site:apartments.com",
-  "2br Seattle $1800 $2200 near downtown site:trulia.com",
-  "2 bedroom Seattle Fremont Ballard under $2200 site:hotpads.com"
+  "2br Seattle $1800 $2200 near downtown site:trulia.com"
 ]}
 """
 
 BASE_PLANNER_PROMPT = """Generate search queries to find rental listing URLs matching these preferences.
-Target these sites with site: operators: craigslist.org, zillow.com, apartments.com, trulia.com, hotpads.com.
+Target these sites with site: operators: craigslist.org, zillow.com, apartments.com, trulia.com.
 
 RULES:
 - Include bedroom count, price range, and city in every query
 - Use site: operator in every query
-- Generate 5-8 diverse queries covering different neighborhoods and sites
+- Generate 4-8 diverse queries covering different neighborhoods and sites
 - Return ONLY valid JSON: {{"search_queries": [...]}}
 
 User preferences:

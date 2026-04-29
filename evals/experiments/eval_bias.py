@@ -34,9 +34,9 @@ def run(variants=None):
     datasets = load_bias_datasets()
     client = Anthropic()
     
-    # SLIM MODE: only use 1 case
+    # SLIM MODE: use 2 cases
     if os.environ.get("EVAL_SLIM") == "true":
-        datasets = datasets[:1]
+        datasets = datasets[:2]
         
     results = {}
     
