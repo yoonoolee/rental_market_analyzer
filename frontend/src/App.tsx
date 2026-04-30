@@ -368,7 +368,7 @@ function AppInner() {
       />
 
       <div
-        className={`flex-1 min-w-0 min-h-0 grid grid-cols-1 ${hasListings ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`}
+        className={`flex-1 min-w-0 min-h-0 grid grid-cols-1 ${(hasListings || (!hasListings && isThinking && !isInitial)) ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`}
         style={{ height: '100vh' }}
       >
         <section className="min-w-0 flex flex-col h-screen relative">
@@ -606,20 +606,20 @@ function AppInner() {
             </div>
           </aside>
         )}
-      </div>
 
-      {/* Loading skeletons (right rail while a search is in flight, no listings yet) */}
-      {!hasListings && isThinking && !isInitial && (
-        <div className="hidden lg:block fixed right-0 top-0 w-[30rem] h-screen overflow-y-auto bg-cream-100/55 backdrop-blur-md border-l border-ink-200/40 z-10">
-          <div className="px-5 pt-6 pb-4 border-b border-ink-200/40">
-            <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">Searching…</p>
-            <h2 className="font-display text-xl font-medium text-ink-900">Finding your matches</h2>
-          </div>
-          <div className="px-5 pt-5">
-            <SkeletonRail />
-          </div>
-        </div>
-      )}
+        {/* Loading skeletons (right rail while a search is in flight, no listings yet) */}
+        {!hasListings && isThinking && !isInitial && (
+          <aside className="hidden lg:block overflow-y-auto bg-cream-100/55 backdrop-blur-md border-l border-ink-200/40" style={{ height: '100vh' }}>
+            <div className="px-5 pt-6 pb-4 border-b border-ink-200/40">
+              <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">Searching…</p>
+              <h2 className="font-display text-xl font-medium text-ink-900">Finding your matches</h2>
+            </div>
+            <div className="px-5 pt-5">
+              <SkeletonRail />
+            </div>
+          </aside>
+        )}
+      </div>
 
       {/* Compare drawer */}
       <CompareDrawer

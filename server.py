@@ -75,19 +75,37 @@ async def abort_session(session_id: str):
     return JSONResponse({"ok": True})
 
 
+_CDN_REFERER = {
+    "zillowstatic.com": "https://www.zillow.com/",
+    "zillow.com": "https://www.zillow.com/",
+    "apartments.com": "https://www.apartments.com/",
+    "apartmentscdn.com": "https://www.apartments.com/",
+    "trulia.com": "https://www.trulia.com/",
+    "realtor.com": "https://www.realtor.com/",
+    "zumper.com": "https://www.zumper.com/",
+    "padmapper.com": "https://www.padmapper.com/",
+    "rent.com": "https://www.rent.com/",
+}
+
+def _referer_for(netloc: str) -> str:
+    for suffix, ref in _CDN_REFERER.items():
+        if netloc == suffix or netloc.endswith("." + suffix):
+            return ref
+    return f"https://{netloc}/"
+
 @app.get("/imgproxy")
 async def image_proxy(url: str = Query(...)):
     """Proxy listing images to bypass hotlink/referrer restrictions."""
     try:
         from urllib.parse import urlparse
         parsed = urlparse(url)
-        origin = f"{parsed.scheme}://{parsed.netloc}"
+        referer = _referer_for(parsed.netloc)
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
-            "Referer": origin + "/",
+            "Referer": referer,
             "Sec-Fetch-Dest": "image",
             "Sec-Fetch-Mode": "no-cors",
             "Sec-Fetch-Site": "same-site",
@@ -95,7 +113,6 @@ async def image_proxy(url: str = Query(...)):
         async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
             r = await client.get(url, headers=headers)
         content_type = r.headers.get("content-type", "image/jpeg")
-        # If we got an HTML page back instead of an image, the CDN blocked us
         if not content_type.startswith("image/"):
             return JSONResponse({"error": "not an image"}, status_code=502)
         return StreamingResponse(iter([r.content]), media_type=content_type)
@@ -427,6 +444,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "round": listing_round,
                             "url": url,
                             "hostname": hostname,
+                            "address": profile.get("address") or "",
                             "status": status,
                             "finished": True,
                             "disqualified": disqualified,

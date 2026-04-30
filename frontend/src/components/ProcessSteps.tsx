@@ -19,7 +19,7 @@ function AgentRow({ agent }: { agent: AgentStatus }) {
     ? agent.disqualified ? 'text-coral-500' : 'text-teal-700'
     : isWaiting ? 'text-coral-500' : 'text-ink-400'
 
-  const slug = (() => {
+  const label = agent.address || (() => {
     try {
       const u = new URL(agent.url)
       const path = u.pathname.replace(/\/$/, '').split('/').filter(Boolean)
@@ -42,10 +42,10 @@ function AgentRow({ agent }: { agent: AgentStatus }) {
         href={agent.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[0.72rem] text-ink-600 hover:text-teal-700 hover:underline truncate max-w-[200px] font-mono"
+        className={`text-[0.72rem] text-ink-600 hover:text-teal-700 hover:underline truncate max-w-[200px] ${agent.address ? '' : 'font-mono'}`}
         title={agent.url}
       >
-        {slug}
+        {label}
       </a>
       <span className={`text-[0.68rem] ml-auto shrink-0 ${statusColor}`}>
         {isWaiting && agent.wait_started_at

@@ -32,9 +32,11 @@ export function ListingCard({
   const [reasonsOpen, setReasonsOpen] = useState(false)
   const [imgIdx, setImgIdx] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set())
   const images = (listing.images?.filter(Boolean) ?? []).map(
     url => `/imgproxy?url=${encodeURIComponent(url)}`
   )
+  const visibleImages = images.filter((_, i) => !failedImgs.has(i))
   const amenities = listing.amenities?.filter(Boolean) ?? []
 
   const prefText = [
@@ -68,7 +70,7 @@ export function ListingCard({
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxOpen(false)
       if (e.key === 'ArrowLeft') setImgIdx(i => Math.max(0, i - 1))
-      if (e.key === 'ArrowRight') setImgIdx(i => Math.min(images.length - 1, i + 1))
+      if (e.key === 'ArrowRight') setImgIdx(i => Math.min(visibleImages.length - 1, i + 1))
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
@@ -99,16 +101,16 @@ export function ListingCard({
 
       {/* Image area */}
       <div className="relative">
-        {images.length > 0 ? (
+        {visibleImages.length > 0 ? (
           <div className="relative h-60 bg-ink-100 overflow-hidden cursor-zoom-in" onClick={() => setLightboxOpen(true)}>
             <img
-              src={images[imgIdx]}
+              src={visibleImages[Math.min(imgIdx, visibleImages.length - 1)]}
               alt="listing"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              onError={() => setFailedImgs(s => { const n = new Set(s); n.add(images.indexOf(visibleImages[Math.min(imgIdx, visibleImages.length - 1)])); return n })}
             />
 
-            {images.length > 1 && (
+            {visibleImages.length > 1 && (
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.max(0, i - 1)) }}
@@ -121,8 +123,8 @@ export function ListingCard({
                   </svg>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(images.length - 1, i + 1)) }}
-                  disabled={imgIdx === images.length - 1}
+                  onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(visibleImages.length - 1, i + 1)) }}
+                  disabled={imgIdx === visibleImages.length - 1}
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-ink-900 shadow-md flex items-center justify-center text-base disabled:opacity-0 hover:scale-110 transition-all"
                   aria-label="Next photo"
                 >
@@ -132,7 +134,7 @@ export function ListingCard({
                 </button>
 
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
-                  {images.slice(0, 6).map((_, i) => (
+                  {visibleImages.slice(0, 6).map((_, i) => (
                     <span
                       key={i}
                       className={`rounded-full transition-all ${
@@ -140,8 +142,8 @@ export function ListingCard({
                       }`}
                     />
                   ))}
-                  {images.length > 6 && (
-                    <span className="text-[0.65rem] text-white ml-1.5 font-medium">+{images.length - 6}</span>
+                  {visibleImages.length > 6 && (
+                    <span className="text-[0.65rem] text-white ml-1.5 font-medium">+{visibleImages.length - 6}</span>
                   )}
                 </div>
               </>
@@ -398,7 +400,7 @@ export function ListingCard({
     </article>
 
     {/* Lightbox */}
-    {lightboxOpen && images.length > 0 && (
+    {lightboxOpen && visibleImages.length > 0 && (
       <div className="fixed inset-0 z-[60] bg-ink-900/95 flex items-center justify-center animate-fade-in" onClick={() => setLightboxOpen(false)}>
         <button
           onClick={(e) => { e.stopPropagation(); setLightboxOpen(false) }}
@@ -410,18 +412,17 @@ export function ListingCard({
           </svg>
         </button>
         <div className="absolute top-5 left-5 text-cream-50 text-sm font-mono">
-          {imgIdx + 1} / {images.length}
+          {imgIdx + 1} / {visibleImages.length}
         </div>
 
         <img
-          src={images[imgIdx]}
+          src={visibleImages[Math.min(imgIdx, visibleImages.length - 1)]}
           alt=""
           className="max-w-[92vw] max-h-[88vh] object-contain rounded-md shadow-2xl"
-          referrerPolicy="no-referrer"
           onClick={(e) => e.stopPropagation()}
         />
 
-        {images.length > 1 && (
+        {visibleImages.length > 1 && (
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.max(0, i - 1)) }}
@@ -434,8 +435,8 @@ export function ListingCard({
               </svg>
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(images.length - 1, i + 1)) }}
-              disabled={imgIdx === images.length - 1}
+              onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(visibleImages.length - 1, i + 1)) }}
+              disabled={imgIdx === visibleImages.length - 1}
               className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-30"
               aria-label="Next"
             >
