@@ -27,24 +27,36 @@ function computeMatchScore(
   let earned = 0
   let total = 0
 
-  const prefText = [
-    ...((preferences.hard_requirements as string[]) || []),
-    ...((preferences.soft_constraints as string[]) || []),
-    ...((preferences.trade_off_rules as string[]) || []),
-    (preferences.lifestyle_notes as string) || '',
-  ].join(' ').toLowerCase()
+  const hardReqs: string[] = (preferences.hard_requirements as string[]) || []
+  const softConstraints: string[] = (preferences.soft_constraints as string[]) || []
+  const tradeOffs: string[] = (preferences.trade_off_rules as string[]) || []
 
+  const prefText = [...hardReqs, ...softConstraints, ...tradeOffs].join(' ').toLowerCase()
   const cares = (term: string) => prefText.includes(term)
 
+  // Parse budget from hard_requirements text e.g. "under $3000", "max $2500", "$3,000/mo"
+  let budget: number | undefined
+  for (const req of [...hardReqs, ...softConstraints]) {
+    const m = req.match(/(?:under|max(?:imum)?|below|up to|budget[:\s]+)?\$?([\d,]+)(?:\/mo)?/i)
+    if (m && req.toLowerCase().match(/under|max|below|budget|afford/)) {
+      const val = parseInt(m[1].replace(/,/g, ''))
+      if (val > 500 && val < 20000) { budget = val; break }
+    }
+  }
+
+  // Parse min bedrooms from hard_requirements e.g. "2 bedrooms", "2BR", "2bed", "at least 2"
+  let minBeds: number | undefined
+  for (const req of hardReqs) {
+    const m = req.match(/(\d)\s*(?:br|bed(?:room)?s?|bd)/i) || req.match(/(?:at least|minimum)\s*(\d)/i)
+    if (m) { minBeds = parseInt(m[1]); break }
+  }
+
   // Price vs. budget
-  const budget = preferences.max_budget as number | undefined
   if (budget && listing.price) {
     total += 25
     if (listing.price <= budget) {
-      const pct = Math.max(0, 1 - (budget - listing.price) / budget)
-      const pts = Math.round(15 + 10 * pct)
-      earned += pts
       const under = budget - listing.price
+      earned += Math.round(15 + Math.min(10, (under / budget) * 50))
       reasons.push(`Within budget ($${under.toLocaleString()} under)`)
     } else {
       const over = listing.price - budget
@@ -53,7 +65,6 @@ function computeMatchScore(
   }
 
   // Bedrooms
-  const minBeds = preferences.min_bedrooms as number | undefined
   if (minBeds != null && listing.bedrooms != null) {
     total += 20
     if (listing.bedrooms >= minBeds) {
@@ -100,6 +111,7 @@ function computeMatchScore(
   if (cares('dishwasher')) wantedAmenities.push('dishwasher')
   if (cares('pool')) wantedAmenities.push('pool')
   if (cares('balcony') || cares('deck') || cares('patio')) wantedAmenities.push('balcony')
+  if (cares('in-unit') || cares('in unit')) wantedAmenities.push('in-unit')
 
   if (wantedAmenities.length > 0 && listing.amenities && listing.amenities.length > 0) {
     total += 20
@@ -114,10 +126,11 @@ function computeMatchScore(
     }
   }
 
-  // Bonus: special lifestyle features
+  // Lifestyle feature bonuses
   if (cares('view') && listing.views) { earned += 5; total += 5; reasons.push('Has great views') }
   if (cares('modern') && listing.modern_finishes) { earned += 5; total += 5; reasons.push('Modern finishes') }
   if (cares('light') && listing.natural_light) { earned += 5; total += 5; reasons.push('Natural light') }
+  if (cares('spacious') && listing.spacious) { earned += 5; total += 5; reasons.push('Spacious layout') }
 
   const score = total > 0 ? Math.min(100, Math.round((earned / total) * 100)) : 0
   return { score, reasons: reasons.slice(0, 5) }
