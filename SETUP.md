@@ -56,22 +56,24 @@ Then open `.env` in a text editor and replace each `your_..._here` placeholder. 
 
 ### Where to get each key
 
-| Env var | Where to get it | Cost notes |
+| Env var | Where to get it | Used for |
 |---|---|---|
-| `GROQ_API_KEY` | https://console.groq.com/keys | Free tier; used for all text LLM nodes by default |
-| `ANTHROPIC_API_KEY` | https://console.anthropic.com/ → API Keys | Required for photo analysis (vision tool) |
-| `SERPAPI_API_KEY` | https://serpapi.com/manage-api-key | 100 free searches/month; paid plans after |
-| `FIRECRAWL_API_KEY` | https://www.firecrawl.dev/app/api-keys | 500 free scrapes/month on the Hobby tier |
-| `GOOGLE_MAPS_API_KEY` | https://console.cloud.google.com/ → APIs & Services → Credentials | $200/mo free credit from Google; **must enable Distance Matrix API, Places API, and Geocoding API on that project** |
-| `LANGCHAIN_API_KEY` (optional) | https://smith.langchain.com/ → Settings → API Keys | Free personal tier is enough for traces |
+| `GROQ_API_KEY` | https://console.groq.com/keys | Intent router, elicitation, planner (Llama 3.1/3.3) — free tier |
+| `OPENAI_API_KEY` | https://platform.openai.com/api-keys | Listing agents + photo analysis (GPT-4o-mini) |
+| `ANTHROPIC_API_KEY` | https://console.anthropic.com/ → API Keys | Reducer + analyzer (Claude Sonnet 4.6) |
+| `SERPAPI_API_KEY` | https://serpapi.com/manage-api-key | Web search — 100 free searches/month |
+| `FIRECRAWL_API_KEY` | https://www.firecrawl.dev/app/api-keys | Listing scraper — 500 free scrapes/month |
+| `GOOGLE_MAPS_API_KEY` | https://console.cloud.google.com/ → APIs & Services → Credentials | Commute times, nearby places, map geocoding — $200/mo free credit; **enable Distance Matrix API, Places API (New), and Geocoding API** |
+| `LANGCHAIN_API_KEY` (optional) | https://smith.langchain.com/ → Settings → API Keys | LangSmith observability traces — free personal tier |
 
-### Minimum keys to boot the app
+### Minimum keys to run a full search
 
-- `GROQ_API_KEY` — required for intent router, elicitation, planner, listing-agent reasoning, reducer, analyzer.
-- `ANTHROPIC_API_KEY` — required for `analyze_listing_photos` (vision).
-- `SERPAPI_API_KEY` — required for the search stage.
-- `FIRECRAWL_API_KEY` — required for the scrape stage.
-- `GOOGLE_MAPS_API_KEY` — required if users mention commutes or nearby places; otherwise the tool-call intent router path will return errors for those specific queries.
+- `GROQ_API_KEY` — intent router, elicitation, planner
+- `OPENAI_API_KEY` — listing agents (reasoning + tool calls) and photo analysis
+- `ANTHROPIC_API_KEY` — reducer and analyzer (ranking + market summary)
+- `SERPAPI_API_KEY` — search stage
+- `FIRECRAWL_API_KEY` — listing scraper
+- `GOOGLE_MAPS_API_KEY` — commute times, nearby places, and map pins in the UI
 
 ### Runtime tuning knobs (optional)
 
@@ -140,30 +142,35 @@ Optional: slow down between intent-router test turns (defaults to 2s) to reduce 
 
 ## 7. Run the web app (FastAPI + React)
 
-**Development (recommended):** run the API and the Vite dev server in two terminals. The dev server proxies WebSocket traffic to the API.
-
-```bash
-# Terminal 1 — project root, venv active
-uvicorn server:app --reload --port 8000
-```
-
-```bash
-# Terminal 2
-cd frontend && npm install && npm run dev
-```
-
-Open **http://localhost:5173** in the browser.
-
-**Maps in the UI:** add `frontend/.env.local` with `VITE_GOOGLE_MAPS_KEY` set to the same value as `GOOGLE_MAPS_API_KEY` in the project root `.env` (Vite only reads env files under `frontend/`). Without it, the rest of the app still works; the map may not load tiles.
-
-**Production-style (API serves the built UI):** only one process, no Vite. Build the frontend once, then start uvicorn:
+Build the frontend once, then start uvicorn. FastAPI serves the built UI from `frontend/dist` — one process, one port.
 
 ```bash
 cd frontend && npm install && npm run build && cd ..
-uvicorn server:app --host 0.0.0.0 --port 8000
+uvicorn server:app --reload --port 8000
 ```
 
-Open **http://localhost:8000** (FastAPI mounts `frontend/dist` when that folder exists).
+Or use the convenience script:
+
+```bash
+./start.sh
+```
+
+Open **http://localhost:8000** in the browser.
+
+**Maps in the UI:** add a `frontend/.env` file with your Google Maps key before building:
+
+```bash
+echo "VITE_GOOGLE_MAPS_KEY=your_key_here" > frontend/.env
+```
+
+Vite bakes this into the built bundle, so it must be set before `npm run build`. Without it, everything works except the map panel.
+
+**After making frontend changes**, rebuild before restarting:
+
+```bash
+cd frontend && npm run build && cd ..
+uvicorn server:app --reload --port 8000
+```
 
 Try these to exercise every path:
 
