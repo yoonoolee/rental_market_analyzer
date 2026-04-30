@@ -29,6 +29,7 @@ export function ListingCard({
   focused,
 }: Props) {
   const [scoreTooltip, setScoreTooltip] = useState(false)
+  const [reasonsOpen, setReasonsOpen] = useState(false)
   const [imgIdx, setImgIdx] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const images = listing.images?.filter(Boolean) ?? []
@@ -347,10 +348,50 @@ export function ListingCard({
           </div>
         )}
 
+        {/* Agent's take */}
         {(listing.notes || listing.description) && (
-          <p className="text-sm text-ink-500 leading-relaxed italic font-display border-l-2 border-teal-600/30 pl-3 mt-1">
-            {listing.notes || listing.description}
-          </p>
+          <div className="rounded-xl bg-cream-100/80 border border-ink-200/50 px-3.5 py-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-teal-700 shrink-0">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm.75 11.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM8 4a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 4z" />
+              </svg>
+              <p className="text-[0.6rem] uppercase tracking-[0.16em] text-teal-700 font-semibold">Agent's take</p>
+            </div>
+            <p className="text-[0.82rem] text-ink-600 leading-relaxed font-display italic">
+              {listing.notes || listing.description}
+            </p>
+          </div>
+        )}
+
+        {/* Inline match reasoning */}
+        {matchScore != null && matchReasons && matchReasons.length > 0 && (
+          <div className="border border-ink-200/50 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setReasonsOpen(v => !v)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 text-left hover:bg-cream-100/60 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${matchScore >= 80 ? 'bg-teal-700' : matchScore >= 60 ? 'bg-teal-600' : 'bg-ink-400'}`} />
+                <span className="text-[0.72rem] font-semibold text-ink-700">
+                  {matchScore}% match
+                </span>
+                <span className="text-[0.68rem] text-ink-400">· why?</span>
+              </div>
+              <svg viewBox="0 0 16 16" fill="currentColor" className={`w-3 h-3 text-ink-400 transition-transform ${reasonsOpen ? 'rotate-180' : ''}`}>
+                <path fillRule="evenodd" d="M4.22 6.22a.75.75 0 011.06 0L8 8.94l2.72-2.72a.75.75 0 111.06 1.06l-3.25 3.25a.75.75 0 01-1.06 0L4.22 7.28a.75.75 0 010-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+            {reasonsOpen && (
+              <div className="px-3.5 pb-3 flex flex-col gap-1 border-t border-ink-200/50 pt-2.5 bg-cream-50/60">
+                {matchReasons.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2 text-[0.75rem] text-ink-600 leading-snug">
+                    <span className="text-teal-600 shrink-0 mt-0.5">✓</span>
+                    <span>{r}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </article>

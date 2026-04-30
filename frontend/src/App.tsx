@@ -190,6 +190,7 @@ function AppInner() {
 
   const latestListings: ListingProfile[] = messages.findLast(m => m.role === 'listings')?.listings ?? []
   const hasListings = latestListings.length > 0
+  const allDisqualified = hasListings && !isThinking && latestListings.every(l => l.disqualified)
 
   // Sort + filter pipeline
   const visibleListings = useMemo(() => {
@@ -514,9 +515,13 @@ function AppInner() {
           <aside className="hidden lg:block overflow-y-auto bg-cream-100/55 backdrop-blur-md border-l border-ink-200/40" style={{ height: '100vh' }}>
             <div className="px-5 pt-6 pb-4 sticky top-0 bg-cream-100/70 backdrop-blur-md z-10 border-b border-ink-200/40 flex flex-col gap-3">
               <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">Curated matches</p>
+                <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">
+                  {allDisqualified ? 'No qualifying matches' : 'Curated matches'}
+                </p>
                 <h2 className="font-display text-xl font-medium text-ink-900">
-                  {latestListings.length} {latestListings.length === 1 ? 'home' : 'homes'} for you
+                  {allDisqualified
+                    ? 'All listings filtered out'
+                    : `${latestListings.length} ${latestListings.length === 1 ? 'home' : 'homes'} for you`}
                 </h2>
               </div>
 
@@ -544,7 +549,27 @@ function AppInner() {
             </div>
 
             <div className="px-5 pb-32 flex flex-col gap-5">
-              {visibleListings.length === 0 ? (
+              {allDisqualified ? (
+                <div className="flex flex-col gap-4">
+                  <EmptyState
+                    icon="alert"
+                    title="No listings passed the filter"
+                    description="The agent found listings but all were filtered out — they didn't meet your hard requirements. Try relaxing a constraint or broadening the search area."
+                    action={{ label: 'Try a new search', onClick: newChat }}
+                  />
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[0.65rem] uppercase tracking-[0.16em] text-ink-400 font-semibold px-1">
+                      Why each was filtered
+                    </p>
+                    {latestListings.map((l, i) => (
+                      <div key={i} className="rounded-xl border border-coral-500/20 bg-coral-500/5 px-4 py-3 flex flex-col gap-1">
+                        <p className="text-xs font-semibold text-ink-700 truncate">{l.address || l.url}</p>
+                        <p className="text-[0.75rem] text-coral-600">{l.disqualify_reason || 'Did not meet hard requirements'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : visibleListings.length === 0 ? (
                 <EmptyState
                   icon="search"
                   title="No matches with these filters"
