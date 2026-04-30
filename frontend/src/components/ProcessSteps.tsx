@@ -67,6 +67,9 @@ export function ProcessSteps({ steps, isRunning }: Props) {
               )}
 
               <span className="text-gray-600">{step.label}</span>
+              {!active && step.elapsed !== undefined && (
+                <span className="text-xs text-gray-400 ml-1">{step.elapsed}s</span>
+              )}
 
               {hasDetail && (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"

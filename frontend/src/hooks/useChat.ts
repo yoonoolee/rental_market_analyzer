@@ -17,6 +17,7 @@ export type ProcessStep = {
   detail: string[]
   done?: number
   total?: number
+  elapsed?: number
   agents?: AgentStatus[]
 }
 
@@ -217,7 +218,7 @@ export function useChat() {
       } else if (data.type === 'process_step') {
         const pid = processId.current
         if (!pid) return
-        const step: ProcessStep = { node: data.node, round: data.round, label: data.label, detail: data.detail || [], done: data.done, total: data.total }
+        const step: ProcessStep = { node: data.node, round: data.round, label: data.label, detail: data.detail || [], done: data.done, total: data.total, elapsed: data.elapsed }
         setMessages(prev => prev.map(m => m.id === pid ? { ...m, steps: [...(m.steps || []), step] } : m))
 
       } else if (data.type === 'process_step_update') {

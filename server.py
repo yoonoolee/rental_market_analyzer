@@ -3,6 +3,7 @@ import json
 import asyncio
 import traceback
 import logging
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -144,6 +145,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             search_done = 0
             search_total = 0
             agent_run_urls: dict[str, str] = {}  # run_id -> url
+            step_start_time = time.monotonic()
 
             TOOL_LABELS = {
                 "scrape_listing": "scraping listing page",
@@ -335,11 +337,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         if queries:
                             search_done = 0
                             search_total = len(queries)
+                            _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                             await websocket.send_json({
                                 "type": "process_step",
                                 "node": "planner",
                                 "label": f"Generated {len(queries)} search queries",
                                 "detail": queries,
+                                "elapsed": _elapsed,
                             })
                             await websocket.send_json({
                                 "type": "process_step",
@@ -349,6 +353,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "done": 0,
                                 "total": len(queries),
                             })
+                            step_start_time = time.monotonic()
                             logger.info("[planner] %s queries generated", len(queries))
 
                     elif name == "search_node":
@@ -370,11 +375,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         listing_round += 1
                         round_done = 0
                         round_total = len(urls)
+                        _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                         await websocket.send_json({
                             "type": "process_step",
                             "node": "supervisor",
                             "label": f"Found {len(urls)} listings to research",
                             "detail": urls,
+                            "elapsed": _elapsed,
                         })
                         logger.info("[supervisor] queued %s listing URLs", len(urls))
                         if urls:
@@ -387,6 +394,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "done": 0,
                                 "total": len(urls),
                             })
+                            step_start_time = time.monotonic()
 
                     elif name == "listing_agent":
                         round_done += 1
@@ -425,11 +433,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             logger.info("[listing_agent] completed %s", url)
 
                     elif name == "reducer":
+                        _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                         await websocket.send_json({
                             "type": "process_step",
                             "node": "reducer",
                             "label": "Ranking results",
                             "detail": [],
+                            "elapsed": _elapsed,
                         })
                         ranked = output.get("ranked_listings", [])
                         if ranked:
@@ -437,11 +447,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             logger.info("[reducer] returned %s ranked listings", len(ranked))
 
                     elif name == "analyzer":
+                        _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                         await websocket.send_json({
                             "type": "process_step",
                             "node": "analyzer",
                             "label": "Analyzing market",
                             "detail": [],
+                            "elapsed": _elapsed,
                         })
                         insights = output.get("analysis_insights", "")
                         if insights:
@@ -450,6 +462,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                     elif name == "elicitation":
                         ready = output.get("ready_to_search", False)
                         prefs = output.get("preferences", {})
+                        _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                         if ready:
                             pref_summary = ", ".join(
                                 f"{k}: {v}" for k, v in prefs.items()
@@ -460,6 +473,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "node": "elicitation",
                                 "label": "Requirements understood — starting search",
                                 "detail": [pref_summary] if pref_summary else [],
+                                "elapsed": _elapsed,
                             })
                             if prefs:
                                 await websocket.send_json({"type": "preferences", "data": prefs})
@@ -469,6 +483,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 "node": "elicitation",
                                 "label": "Clarifying your requirements",
                                 "detail": [],
+                                "elapsed": _elapsed,
                             })
                         batch = output.get("elicitation_batch", [])
                         if batch:
@@ -487,11 +502,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             "tool_call": "Running a quick lookup",
                             "needs_search": "Starting apartment search",
                         }
+                        _elapsed = round(time.monotonic() - step_start_time, 1); step_start_time = time.monotonic()
                         await websocket.send_json({
                             "type": "process_step",
                             "node": "intent_router",
                             "label": intent_labels.get(intent, "Thinking…"),
                             "detail": [],
+                            "elapsed": _elapsed,
                         })
                         messages_out = output.get("messages", [])
                         for m in messages_out:
