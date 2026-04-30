@@ -75,21 +75,32 @@ async def abort_session(session_id: str):
     return JSONResponse({"ok": True})
 
 
-_PROXY_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Referer": "https://www.apartments.com/",
-}
-
 @app.get("/imgproxy")
 async def image_proxy(url: str = Query(...)):
     """Proxy listing images to bypass hotlink/referrer restrictions."""
     try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client:
-            r = await client.get(url, headers=_PROXY_HEADERS)
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Referer": origin + "/",
+            "Sec-Fetch-Dest": "image",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "same-site",
+        }
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
+            r = await client.get(url, headers=headers)
         content_type = r.headers.get("content-type", "image/jpeg")
+        # If we got an HTML page back instead of an image, the CDN blocked us
+        if not content_type.startswith("image/"):
+            return JSONResponse({"error": "not an image"}, status_code=502)
         return StreamingResponse(iter([r.content]), media_type=content_type)
-    except Exception:
-        return JSONResponse({"error": "failed"}, status_code=502)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=502)
 
 
 @app.websocket("/ws/{session_id}")
