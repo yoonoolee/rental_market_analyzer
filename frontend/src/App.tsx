@@ -149,7 +149,7 @@ function computeMatchScore(
 }
 
 const SAMPLE_PROMPTS = [
-  '2BR in Berkeley under $3000, pet friendly, near BART',
+  '2BR in Oakland or Berkeley, under $3000, pet friendly — I commute to UC Berkeley campus',
   'Modern 1BR in Oakland, in-unit laundry, walkable to cafés',
   'Studio in San Francisco, under $2400, near Mission',
   'Family-friendly 3BR in Albany or El Cerrito with parking',
