@@ -26,7 +26,7 @@ Return JSON in exactly this format:
 ranked_urls: best-first, URLs only. Include all qualifying listings.
 
 Ranking rules — apply in order:
-1. Hard constraints first: exclude any listing marked disqualified or that violates budget/bedrooms/pet policy.
+1. Hard constraints first: exclude any listing marked disqualified or that violates any hard constraints.
 2. Soft constraints next: listings that satisfy more of the user's soft_constraints rank higher than those that satisfy fewer.
 3. Trade-off rules: if the user stated explicit trade-offs (e.g. "willing to pay $X more for Y"), apply them to the real numbers in the profiles.
 4. Commute tiebreaker: when soft constraints are equally satisfied, prefer shorter total commute time to the user's stated destinations.
