@@ -1,199 +1,225 @@
-# Real Estate AIgent
+<div align="center">
 
-> A conversational apartment-hunting agent that searches real listings, researches them in parallel, and returns ranked recommendations grounded in your actual preferences — commute times, nearby places, pet policies, and more.
+# 🏠 Real Estate AIgent
 
-Built for [INFO 290: Generative AI](https://www.ischool.berkeley.edu/) at UC Berkeley.
+**A conversational apartment-hunting agent powered by LangGraph, Claude, and GPT-4o**
 
-**New here?** Start with [SETUP.md](SETUP.md) for install, configuration, and run instructions.
+*Searches real listings · Researches them in parallel · Returns recommendations grounded in your actual preferences*
 
 ---
 
-## Overview
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![LangGraph](https://img.shields.io/badge/LangGraph-multi--agent-1C3A5E?style=flat)](https://langchain-ai.github.io/langgraph/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
+[![FastAPI](https://img.shields.io/badge/FastAPI-WebSockets-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-Standard rental search is broken. Filters don't capture what people actually care about — commute to a specific building, noise level, whether the neighborhood has good coffee, or how they'd trade a shorter commute for a bigger space. Results are scattered across a dozen sites, and ranking is just price-sorted ad placement.
+Built for **INFO 290: Generative AI** at UC Berkeley
 
-Real Estate AIgent takes a different approach: it talks with you first, learns your real priorities and trade-offs, then dispatches a fleet of parallel research agents — one per candidate listing — that call real APIs to get real data before anything is ranked. The result is a recommendation list built from verified commute times, actual nearby places, and real listing details, not keyword matches.
+[**Quick Start →**](SETUP.md) · [**Architecture**](#architecture) · [**Features**](#features) · [**Evals**](#evaluation)
+
+</div>
+
+---
+
+## The Problem
+
+Standard rental search is broken. Filters don't capture what people actually care about — commute to a specific building, whether the building is pet-friendly, or how they'd trade a shorter commute for more space. Results are scattered across a dozen sites, and ranking is just price-sorted ad placement.
+
+**Real Estate AIgent** takes a different approach:
+
+1. **Talks with you first** — learns your real priorities, budget, commute destinations, and trade-offs
+2. **Dispatches parallel research agents** — one per candidate listing, each calling real APIs to verify real data
+3. **Returns ranked recommendations** built from verified commute times, actual nearby places, and real listing details — not keyword matches
 
 ---
 
 ## Features
 
-### Conversational Search
-- Asks targeted questions to understand priorities, budget, location, commute destinations, and how you'd trade them off
+<table>
+<tr>
+<td width="50%">
+
+### 🤖 Conversational Search
+- Asks targeted questions to surface priorities, not just keywords
 - Skips elicitation when you've been specific enough upfront
-- Remembers the full conversation across page refreshes via SQLite persistence
+- Full conversation history persists across page refreshes (SQLite)
 
-### Parallel Multi-Agent Research
-- Spawns one ReAct agent per candidate listing — runs all concurrently
-- Each agent decides its own tool calls based on your preferences: someone with a dog gets pet policy checked first; someone who didn't mention gyms doesn't waste an API call on one
-- Tools: listing scraper, web search, photo analysis (GPT-4o-mini vision), commute time, nearby places
+### 🔬 Parallel Multi-Agent Research
+- One ReAct agent per candidate listing, all running concurrently
+- Each agent picks its own tools based on your preferences — a user with a dog gets pet policy checked first; no wasted API calls on irrelevant data
+- Up to 80 candidate listings researched per round
 
-### Ranked Results with Market Analysis
-- Reducer node ranks all researched listings against your trade-off rules using real structured data
-- Analyzer node surfaces cross-cutting patterns: whether your budget is realistic, what's eliminating options, concrete adjustments to try
+### 📊 Ranked Results + Market Analysis
+- Reducer ranks listings against your actual trade-off rules
+- Analyzer surfaces cross-cutting patterns: budget gaps, neighborhood trends, what's eliminating options
 
-### Professional UI
-- **Match score badges** on every card — scored against your preferences with an expandable "why?" breakdown
-- **Side-by-side compare drawer** for up to 3 listings with best-value highlighting
-- **Interactive map** with price-bubble pins that sync with card hover
-- **Sort + filter controls**: price, commute, sqft, saved listings, pet-friendly
-- **Photo lightbox** with keyboard navigation
-- **Agent's take** section on each card with the research agent's own notes
-- **Process visualization**: live progress bar, per-listing agent status, elapsed timing
-- **Keyboard shortcuts**: J/K navigation, F to favorite, C to compare, ⌘K new search
-- **CSV export** and clipboard share
+</td>
+<td width="50%">
+
+### 🎨 Professional UI
+- **Match score badges** — scored per listing with expandable "why?" breakdown
+- **Compare drawer** — side-by-side table for up to 3 listings
+- **Interactive map** — price-bubble pins synced to card hover
+- **Sort + filter** — by price, commute, sqft, saved, pet-friendly
+- **Photo lightbox** — keyboard-navigable fullscreen gallery
+- **Agent's take** — inline research notes per listing
+- **Live process panel** — progress bar, per-agent status, timing
+- **Keyboard shortcuts** — J/K nav, F favorite, C compare, ⌘K new search
+- **CSV export** + clipboard share
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     FastAPI + React UI                          │  [Human in the Loop]
-│              + AsyncSqliteSaver checkpointer                    │  [Persistence]
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ user message (thread_id scoped)
-                            ▼
-                    ┌───────────────┐
-                    │ Intent Router │  Llama 3.1 8B (classify intent)
-                    │     Node      │  [Routing]
-                    └───────┬───────┘
-        ┌──────────┬────────┴───────────┬──────────┐
-        │          │                    │          │
-        ▼          ▼                    ▼          ▼
- off_topic  conversational      get recommendations  tool_call
- decline &  answer directly             │          run commute/places
- END        from context → END          │          directly → END
-                                        ▼
-                                ┌───────────────┐
-                                │  Elicitation  │  Llama 3.1 8B (extract prefs)
-                                │     Node      │  Llama 3.3 70B (generate question)
-                                └───────┬───────┘
-                                        │ ready_to_search = True
-                                        ▼
-                                ┌───────────────┐
-                                │    Planner    │◄──────────────────────┐
-                                │     Node      │                       │
-                                └───────┬───────┘                       │
-                                        │ 8 search queries              │
-                                        ▼                               │
-                        ┌──────────────────────────────┐               │
-                        │     Parallel Search Nodes    │  SerpAPI      │
-                        │   [q1] [q2] ... [up to q8]   │  10 URLs each │
-                        └──────────────┬───────────────┘               │
-                                        │ up to 80 candidate URLs       │
-                                        ▼                               │
-                                ┌───────────────┐                       │
-                                │   Supervisor  │                       │
-                                │     Node      │  deduplicates URLs    │
-                                └───────┬───────┘                       │
-                                        │ one agent per unique URL      │
-                                        ▼                               │
-                ┌───────────────────────────────────────────────────┐   │
-                │          Parallel ReAct Listing Agents            │   │
-                │         (unlimited concurrency, all at once)      │   │
-                │  ┌──────────────────────────────────────────────┐ │   │
-                │  │              Available Tools                  │ │   │
-                │  │  scrape_listing  │  search_web               │ │   │
-                │  │  get_commute_time  │  find_nearby_places      │ │   │
-                │  │  analyze_listing_photos (GPT-4o-mini vision)  │ │   │
-                │  └──────────────────────────────────────────────┘ │   │
-                └───────────────────────┬───────────────────────────┘   │
-                                        │ structured profiles            │
-                                        ▼                               │
-                                ┌───────────────┐                       │
-                                │ Results Check │  < 20 good? ──────────┘
-                                │     Node      │  retry with new queries
-                                └───────┬───────┘
-                                        │ ≥ 20 good results (or max attempts)
-                                        ▼
-                                ┌───────────────┐
-                                │    Reducer    │  ranks with real structured data
-                                │     Node      │  applies trade-off rules
-                                └───────┬───────┘
-                                        │
-                                        ▼
-                                ┌───────────────┐
-                                │    Analyzer   │  surfaces market patterns
-                                │     Node      │  budget gaps, neighborhood trends
-                                └───────┬───────┘
-                                        │
-                                        ▼
-                        ranked recommendations + market analysis
-                        with links, images, map, and match scores
+┌──────────────────────────────────────────────────────────────────┐
+│                   FastAPI + React UI (port 8000)                 │
+│               AsyncSqliteSaver — thread-scoped persistence       │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ WebSocket · user message
+                             ▼
+                     ┌───────────────┐
+                     │ Intent Router │  Llama 3.1 8B — classify
+                     └───────┬───────┘
+         ┌───────────┬───────┴──────────┬───────────┐
+         ▼           ▼                  ▼           ▼
+    off_topic   conversational    needs_search   tool_call
+    → decline   → answer direct        │         → commute/places
+                                       ▼
+                               ┌───────────────┐
+                               │  Elicitation  │  extract prefs · ask questions
+                               └───────┬───────┘
+                                       │ ready_to_search
+                                       ▼
+                               ┌───────────────┐     retry with
+                               │    Planner    │◄────new queries
+                               └───────┬───────┘
+                                       │ 8 search queries
+                                       ▼
+                       ┌───────────────────────────┐
+                       │   Parallel Search Nodes   │  SerpAPI · 10 URLs each
+                       │   [q1] [q2] ... [q8]      │  up to 80 candidates
+                       └──────────────┬────────────┘
+                                      │
+                                      ▼
+                               ┌───────────────┐
+                               │   Supervisor  │  deduplicate URLs
+                               └───────┬───────┘
+                                       │ one agent per unique URL
+                                       ▼
+               ┌───────────────────────────────────────────────┐
+               │        Parallel ReAct Listing Agents          │
+               │           (all running concurrently)          │
+               │                                               │
+               │  scrape_listing  ·  search_web               │
+               │  get_commute_time  ·  find_nearby_places      │
+               │  analyze_listing_photos  (GPT-4o-mini vision) │
+               └───────────────────────┬───────────────────────┘
+                                       │ structured profiles
+                                       ▼
+                               ┌───────────────┐
+                               │ Results Check │  < 20 good? → retry
+                               └───────┬───────┘
+                                       │ ≥ 20 results
+                                       ▼
+                               ┌───────────────┐
+                               │    Reducer    │  rank · apply trade-offs
+                               └───────┬───────┘
+                                       ▼
+                               ┌───────────────┐
+                               │    Analyzer   │  market patterns · budget gaps
+                               └───────┬───────┘
+                                       ▼
+                      ranked recommendations + market analysis
 ```
-
----
-
-## LLM Models by Step
-
-| Step | Role | Provider | Model | Fallback |
-|---|---|---|---|---|
-| Intent classification | `intent_router_classify` | Groq | Llama 3.1 8B Instant | OpenAI gpt-4o-mini |
-| Intent chat response | `intent_router_chat` | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o |
-| Preference extraction | `elicitation_extract` | Groq | Llama 3.1 8B Instant | OpenAI gpt-4o-mini |
-| Preference chat | `elicitation_chat` | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o |
-| Search planning | `planner` | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o-mini |
-| Listing agent | `listing_agent` | OpenAI | gpt-4o-mini | — (pinned) |
-| Result reduction | `reducer` | Anthropic | Claude Sonnet 4.6 | OpenAI gpt-4o-mini |
-| Market analysis | `analyzer` | Anthropic | Claude Sonnet 4.6 | OpenAI gpt-4o-mini |
-| Photo vision | `photo_vision` | OpenAI | gpt-4o-mini | — (pinned) |
-
-Model selection is centralized in [`graph/llm.py`](graph/llm.py). Override per-role via `RENTAL_MODELS` env var or globally via `LLM_PROVIDER`.
 
 ---
 
 ## How Listing Agents Work
 
-Each listing agent is a ReAct (Reason + Act) agent. It receives one URL and your full preference profile, then decides its own tool sequence — not a fixed pipeline.
+Each agent is a [ReAct](https://arxiv.org/abs/2210.03629) (Reason + Act) loop. It receives one listing URL and your full preference profile, then decides its own tool sequence — there's no fixed pipeline.
 
 **Example** — user has a dog, wants bars nearby, commutes to UC Berkeley:
 
 ```
-scrape_listing(url)
-→ price, floor, description found; no pet policy listed
+→ scrape_listing(url)
+  price and floor found; no pet policy listed
 
-user has dog → verify pet policy before continuing
-search_web("pet policy 4521 Telegraph Ave Oakland")
-→ "pets allowed with $500 deposit"
+→ user has dog — need to verify before continuing
+  search_web("pet policy 4521 Telegraph Ave Oakland")
+  result: "pets allowed with $500 deposit"
 
-user listed UC Berkeley as commute destination
-get_commute_time("4521 Telegraph Ave", "UC Berkeley", mode="transit")
-→ "14 min BART"
+→ user listed UC Berkeley as commute destination
+  get_commute_time("4521 Telegraph Ave", "UC Berkeley", mode="transit")
+  result: "14 min BART"
 
-user mentioned bars in soft_constraints
-find_nearby_places("4521 Telegraph Ave", "bars")
-→ "Temescal strip 0.1mi"
+→ user mentioned bars in soft_constraints
+  find_nearby_places("4521 Telegraph Ave", "bars")
+  result: "Temescal strip 0.1mi"
 
-user didn't mention grocery stores → skip that lookup
+→ user didn't mention grocery stores — skip that lookup
 → return structured profile
 ```
 
-A user with different preferences triggers a completely different tool sequence.
+A user who didn't mention pets or bars triggers a completely different sequence of tool calls.
 
 ---
 
 ## Tools
 
-| Tool | API | Description |
+| Tool | API | What it does |
 |---|---|---|
 | `scrape_listing` | Firecrawl | Structured JSON extraction — price, address, amenities, images |
-| `search_web` | SerpAPI + Serpex fallback | Supplemental web search for pet policies, additional details |
-| `analyze_listing_photos` | OpenAI gpt-4o-mini | Vision analysis of listing photos against user preferences |
+| `search_web` | SerpAPI + Serpex fallback | Pet policies, additional listing details |
+| `analyze_listing_photos` | OpenAI GPT-4o-mini | Vision analysis of listing photos against user preferences |
 | `get_commute_time` | Google Distance Matrix | Transit, driving, cycling, walking times to named destinations |
 | `find_nearby_places` | Google Places API (New) | Geocoded proximity search for any place type |
 
 ---
 
-## Search Strategy
+## LLM Models
 
-The planner generates 8 queries per round. Hard requirements appear in every query; what varies per query is the trade-off scenario being explored (e.g. gym proximity vs. grocery proximity, 1-bed vs. 2-bed). Each query returns up to 10 URLs from SerpAPI, giving up to 80 candidate listings per round.
+| Pipeline Step | Provider | Model | Fallback |
+|---|---|---|---|
+| Intent classification | Groq | Llama 3.1 8B Instant | OpenAI gpt-4o-mini |
+| Intent chat response | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o |
+| Preference extraction | Groq | Llama 3.1 8B Instant | OpenAI gpt-4o-mini |
+| Preference chat | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o |
+| Search planning | Groq | Llama 3.3 70B Versatile | OpenAI gpt-4o-mini |
+| Listing agent (ReAct) | OpenAI | gpt-4o-mini | — pinned |
+| Result reduction | Anthropic | Claude Sonnet 4.6 | OpenAI gpt-4o-mini |
+| Market analysis | Anthropic | Claude Sonnet 4.6 | OpenAI gpt-4o-mini |
+| Photo vision | OpenAI | gpt-4o-mini | — pinned |
 
-Active listing sites: **Zillow** and **Apartments.com**. The supervisor deduplicates URLs across all query results — the same listing surfaced by multiple queries is researched exactly once. If fewer than 20 good profiles come back, the results check node triggers a retry round with the planner generating fresh queries that avoid already-seen URLs.
+Model selection is centralized in [`graph/llm.py`](graph/llm.py). Override per-role via `RENTAL_MODELS` or globally via `LLM_PROVIDER`.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19 · TypeScript · Tailwind CSS v4 · Vite |
+| **Backend** | FastAPI · WebSockets |
+| **Orchestration** | LangGraph (multi-agent graph) |
+| **LLMs** | Groq (Llama) · Anthropic (Claude) · OpenAI (GPT-4o-mini) |
+| **Web search** | SerpAPI · Serpex (fallback) |
+| **Scraping** | Firecrawl |
+| **Maps** | Google Maps Platform — Distance Matrix · Places API · Geocoding |
+| **LLM framework** | LangChain |
+| **Observability** | LangSmith |
+| **Persistence** | LangGraph AsyncSqliteSaver |
 
 ---
 
 ## Example Listing Profile
+
+Each ReAct agent returns a structured JSON profile. Only preference-relevant fields are populated — no wasted API calls.
 
 ```json
 {
@@ -206,10 +232,7 @@ Active listing sites: **Zillow** and **Apartments.com**. The supervisor deduplic
   "sqft": 850,
   "pet_friendly": true,
   "pet_deposit": 400,
-  "furnishing": "unfurnished",
-  "commute_times": {
-    "UC Berkeley, Soda Hall": "13 min BART"
-  },
+  "commute_times": { "UC Berkeley, Soda Hall": "13 min BART" },
   "nearby_places": {
     "bars": "Temescal strip 0.1mi",
     "coffee shop": "Bicycle Coffee 0.1mi"
@@ -217,57 +240,31 @@ Active listing sites: **Zillow** and **Apartments.com**. The supervisor deduplic
   "natural_light": true,
   "spacious": true,
   "condition": "good",
-  "notes": "Classic bungalow with a small yard, walkable to Temescal restaurants",
-  "images": ["https://images.apartments.com/..."]
+  "notes": "Classic bungalow with a small yard, walkable to Temescal restaurants"
 }
 ```
-
-Only preference-relevant fields are populated. A user who didn't mention commute or bars receives a profile without those entries — the agent skips unnecessary API calls.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 19 + TypeScript + Tailwind CSS v4 (Vite) |
-| Backend | FastAPI + WebSockets |
-| Graph / Orchestration | LangGraph |
-| LLM — classify / extract | Groq — Llama 3.1 8B Instant |
-| LLM — chat / plan | Groq — Llama 3.3 70B Versatile |
-| LLM — reduce / analyze | Anthropic — Claude Sonnet 4.6 |
-| LLM — listing agents + vision | OpenAI — GPT-4o-mini |
-| Web search | SerpAPI (Google) + Serpex (fallback) |
-| Listing scraper | Firecrawl |
-| Maps / commute / places | Google Maps Platform (Distance Matrix, Places API New, Geocoding) |
-| LLM framework | LangChain |
-| Observability | LangSmith |
-| Persistence | LangGraph AsyncSqliteSaver |
 
 ---
 
 ## Evaluation
 
-The evaluation suite in [`evals/`](evals/) covers six component experiments and one end-to-end pipeline experiment:
+The evaluation suite in [`evals/`](evals/) covers 6 component experiments and 1 end-to-end pipeline experiment.
 
-| Experiment | What it tests |
+| Experiment | What it measures |
 |---|---|
-| `elicitation` | Preference extraction accuracy, question quality |
-| `planner` | Search query format, diversity, retry novelty |
-| `search` | SerpAPI result precision, yield, relevance |
-| `listing_agent` | Field extraction F1, disqualification accuracy, tool efficiency |
+| `elicitation` | Preference extraction accuracy · question quality |
+| `planner` | Query format · diversity · retry novelty |
+| `search` | SerpAPI result precision · yield · relevance |
+| `listing_agent` | Field extraction F1 · disqualification accuracy · tool efficiency |
 | `image` | Photo analysis accuracy vs. human labels |
-| `reducer` | Ranking accuracy, trade-off application |
-| `end_to_end` | Full pipeline — Kendall τ vs. human gold rankings on 30-listing static corpus |
+| `reducer` | Ranking accuracy · trade-off application |
+| `end_to_end` | Kendall τ vs. human gold rankings on 30-listing static corpus |
 
-The end-to-end experiment runs against a fixed 30-listing corpus ([`evals/datasets/static_listings.json`](evals/datasets/static_listings.json)) with human-labeled gold rankings. All LLM judges run on Claude Sonnet 4.6.
+All LLM judges use Claude Sonnet 4.6. The end-to-end experiment runs against a fixed 30-listing corpus with human-labeled rankings for reproducibility.
 
 ```bash
-# Run everything
-python -m evals.run_evals
-
-# Just the end-to-end experiment
-python -m evals.run_evals --experiments end_to_end
+python -m evals.run_evals                                    # all experiments
+python -m evals.run_evals --experiments end_to_end           # just end-to-end
 ```
 
 See [`evals/README.md`](evals/README.md) for full documentation.
@@ -278,42 +275,63 @@ See [`evals/README.md`](evals/README.md) for full documentation.
 
 ```
 rental_market_analyzer/
-├── server.py                  # FastAPI app, WebSocket handler, session management
+├── server.py                    # FastAPI app, WebSocket handler, session management
 ├── graph/
-│   ├── builder.py             # LangGraph graph definition and compilation
-│   ├── state.py               # TypedDicts: RentalState, PreferenceState, ListingProfile
-│   ├── llm.py                 # Centralized model/provider resolution
-│   └── nodes/
-│       ├── intent_router.py   # Classify → route to elicitation/chat/tool/off-topic
-│       ├── elicitation.py     # Extract preferences, generate follow-up questions
-│       ├── planner.py         # Generate search queries from preferences
-│       ├── search_node.py     # SerpAPI search, URL filtering
-│       ├── supervisor.py      # Deduplicate URLs, spawn listing agents via Send()
-│       ├── listing_agent.py   # ReAct agent per listing
-│       ├── results_check.py   # Gate: enough good results? retry or proceed
-│       ├── reducer.py         # Rank and filter final profiles
-│       └── analyzer.py        # Market pattern analysis
-├── graph/tools/
-│   ├── scraper.py             # Firecrawl listing extraction
-│   ├── search.py              # SerpAPI + Serpex web search
-│   ├── commute.py             # Google Distance Matrix
-│   ├── places.py              # Google Places API
-│   └── photos.py              # GPT-4o-mini vision analysis
+│   ├── builder.py               # LangGraph graph definition and compilation
+│   ├── state.py                 # RentalState, PreferenceState, ListingProfile TypedDicts
+│   ├── llm.py                   # Centralized model/provider resolution with fallbacks
+│   ├── nodes/
+│   │   ├── intent_router.py     # Classify → route to elicitation/chat/tool/off-topic
+│   │   ├── elicitation.py       # Extract preferences, generate follow-up questions
+│   │   ├── planner.py           # Generate diverse search queries from preferences
+│   │   ├── search_node.py       # SerpAPI search, URL filtering per listing site
+│   │   ├── supervisor.py        # Deduplicate URLs, spawn agents via Send()
+│   │   ├── listing_agent.py     # ReAct agent — one per listing URL
+│   │   ├── results_check.py     # Gate: enough results? retry or proceed
+│   │   ├── reducer.py           # Rank and filter final listing profiles
+│   │   └── analyzer.py          # Market pattern analysis across all results
+│   └── tools/
+│       ├── scraper.py           # Firecrawl structured extraction
+│       ├── search.py            # SerpAPI + Serpex web search
+│       ├── commute.py           # Google Distance Matrix API
+│       ├── places.py            # Google Places API (New)
+│       └── photos.py            # GPT-4o-mini vision analysis
 ├── frontend/src/
-│   ├── App.tsx                # Main layout, sort/filter, keyboard shortcuts, match scoring
+│   ├── App.tsx                  # Layout, sort/filter pipeline, match scoring, shortcuts
 │   ├── hooks/
-│   │   ├── useChat.ts         # WebSocket client, session management, message state
-│   │   ├── useListingPrefs.ts # Favorites + compare list (localStorage)
-│   │   └── useToast.tsx       # Toast notification system
+│   │   ├── useChat.ts           # WebSocket client, session state, message handling
+│   │   ├── useListingPrefs.ts   # Favorites + compare list via localStorage
+│   │   └── useToast.tsx         # Toast notification context
 │   └── components/
-│       ├── ListingCard.tsx    # Card with photo lightbox, match score, agent's take
-│       ├── ListingMap.tsx     # Google Maps with price-bubble pins, hover sync
-│       ├── ListingControls.tsx# Sort dropdown, filter pills, CSV export
-│       ├── CompareDrawer.tsx  # Side-by-side comparison table
-│       ├── ProcessSteps.tsx   # Live pipeline progress visualization
-│       ├── Sidebar.tsx        # Session history, click-to-toggle
+│       ├── ListingCard.tsx      # Card: photo lightbox, match score, agent's take
+│       ├── ListingMap.tsx       # Google Maps: price-bubble pins, hover sync
+│       ├── ListingControls.tsx  # Sort dropdown, filter pills, CSV export
+│       ├── CompareDrawer.tsx    # Side-by-side comparison table (up to 3 listings)
+│       ├── ProcessSteps.tsx     # Live pipeline progress: agents, progress bar, timing
+│       ├── Sidebar.tsx          # Session history, click-to-toggle
 │       └── KeyboardShortcuts.tsx
-├── evals/                     # Evaluation suite (7 experiments)
-├── scripts/                   # Smoke tests, graph printer
-└── SETUP.md                   # Full setup and run instructions
+├── evals/                       # 7-experiment evaluation suite
+├── scripts/                     # Smoke tests (tools, graph, end-to-end)
+└── SETUP.md                     # Full setup, API keys, and run instructions
 ```
+
+---
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Configure API keys
+cp .env.example .env   # then fill in your keys
+
+# 3. Build frontend and start
+cd frontend && npm install && npm run build && cd ..
+uvicorn server:app --reload --port 8000
+```
+
+Open **http://localhost:8000** → type what you're looking for → get results.
+
+Full setup guide with API key instructions, smoke tests, and eval commands: **[SETUP.md](SETUP.md)**
