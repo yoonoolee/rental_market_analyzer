@@ -101,12 +101,12 @@ def _resolve_role_config(role: str) -> dict:
     if base["provider"] == "groq" and not _valid_key("GROQ_API_KEY"):
         base["provider"] = "openai"
 
-    # If provider switched away from anthropic/groq, swap model to openai equivalent
-    if base["provider"] == "openai" and (
-        str(base.get("model", "")).startswith("llama")
-        or str(base.get("model", "")).startswith("claude")
-    ):
+    # If provider doesn't match the model family, swap to the right model
+    model = str(base.get("model", ""))
+    if base["provider"] == "openai" and (model.startswith("llama") or model.startswith("claude")):
         base["model"] = _OPENAI_ROLE_MODELS[role]
+    if base["provider"] == "groq" and model.startswith("claude"):
+        base["model"] = "llama-3.3-70b-versatile"
 
     return base
 

@@ -39,7 +39,7 @@ async def analyzer_node(state: RentalState) -> dict:
                 f"Disqualified listings ({len(disqualified_profiles)}):\n"
                 f"{json.dumps(disqualified_profiles, indent=2)}"
             ))
-        ]), timeout=20)
+        ]), timeout=60)
     except Exception as e:
         await adispatch_custom_event("error_log", {
             "node": "analyzer",

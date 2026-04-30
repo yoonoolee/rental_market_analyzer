@@ -9,11 +9,11 @@ from ..state import RentalState
 TRUSTED_DOMAINS = {
     "zillow.com",
     "apartments.com",
-    # "trulia.com",  # scraping auth issues
-    # "realtor.com",
-    # "rent.com",
-    # "zumper.com",
-    # "padmapper.com",
+    "trulia.com",  # scraping auth issues
+    "realtor.com",
+    "rent.com",
+    "zumper.com",
+    "padmapper.com",
 }
 
 # how many good (non-disqualified) listing profiles we want before proceeding to reducer

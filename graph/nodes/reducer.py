@@ -2,7 +2,7 @@ import json
 import json_repair
 import re
 import asyncio
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.callbacks.manager import adispatch_custom_event
 from ..llm import make_llm
 from ..state import RentalState
@@ -52,7 +52,7 @@ async def reducer_node(state: RentalState) -> dict:
                 f"{json.dumps(disqualified_profiles, indent=2)}"
                 + context_note
             ))
-        ]), timeout=20)
+        ]), timeout=60)
     except Exception as e:
         await adispatch_custom_event("error_log", {
             "node": "reducer",

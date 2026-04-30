@@ -59,18 +59,24 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
 
   const makeBubbleIcon = (price: number | undefined) => {
     const text = price ? `$${price.toLocaleString()}` : '?'
-    const w = Math.max(52, text.length * 8 + 16)
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="28">
-      <rect x="0" y="0" width="${w}" height="28" rx="14" fill="#111827"/>
-      <text x="${w / 2}" y="19" text-anchor="middle" fill="white" font-size="12"
-        font-family="system-ui,-apple-system,sans-serif" font-weight="700">${text}</text>
+    const w = Math.max(56, text.length * 8 + 18)
+    const h = 30
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w + 4}" height="${h + 6}">
+      <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.25"/>
+      </filter>
+      <g filter="url(#s)">
+        <rect x="2" y="2" width="${w}" height="${h}" rx="${h / 2}" fill="#115e59" stroke="white" stroke-width="2"/>
+        <text x="${(w / 2) + 2}" y="${(h / 2) + 6}" text-anchor="middle" fill="white" font-size="12.5"
+          font-family="Inter,system-ui,-apple-system,sans-serif" font-weight="700" letter-spacing="-0.02em">${text}</text>
+      </g>
     </svg>`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const g = (window as any).google?.maps
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: g ? new g.Size(w, 28) : undefined,
-      anchor: g ? new g.Point(w / 2, 14) : undefined,
+      scaledSize: g ? new g.Size(w + 4, h + 6) : undefined,
+      anchor: g ? new g.Point((w + 4) / 2, (h + 6) / 2) : undefined,
     }
   }
 
@@ -91,17 +97,17 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
           position={{ lat: selected.lat, lng: selected.lng }}
           onCloseClick={() => setSelected(null)}
         >
-          <div className="text-xs flex flex-col gap-0.5 min-w-32">
-            <p className="font-semibold text-gray-900">${selected.listing.price?.toLocaleString()}/mo</p>
+          <div className="text-xs flex flex-col gap-1 min-w-36 py-0.5" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+            <p className="font-semibold text-gray-900 text-sm">${selected.listing.price?.toLocaleString()}<span className="font-normal text-gray-500"> /mo</span></p>
             {(selected.listing.bedrooms != null || selected.listing.bathrooms != null) && (
-              <p className="text-gray-500">
+              <p className="text-gray-600 text-[0.7rem]">
                 {selected.listing.bedrooms != null ? `${selected.listing.bedrooms} bd` : ''}
                 {selected.listing.bedrooms != null && selected.listing.bathrooms != null ? ' · ' : ''}
                 {selected.listing.bathrooms != null ? `${selected.listing.bathrooms} ba` : ''}
               </p>
             )}
-            <p className="text-gray-500">{selected.listing.address}</p>
-            <a href={selected.listing.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline mt-1">
+            <p className="text-gray-500 text-[0.7rem] leading-snug">{selected.listing.address}</p>
+            <a href={selected.listing.url} target="_blank" rel="noreferrer" className="text-teal-700 font-medium hover:underline mt-0.5 inline-flex items-center gap-1">
               View listing →
             </a>
           </div>

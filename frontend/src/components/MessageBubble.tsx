@@ -14,10 +14,16 @@ type Props = {
 export function MessageBubble({ message, onSend }: Props) {
   if (message.role === 'listings') {
     return (
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400">Found {message.listings?.length} listings</p>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {message.listings?.map((l, i) => <ListingCard key={i} listing={l} />)}
+      <div className="flex flex-col gap-3">
+        <p className="text-[0.7rem] uppercase tracking-[0.16em] text-ink-400 font-medium">
+          {message.listings?.length} matches found
+        </p>
+        <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+          {message.listings?.map((l, i) => (
+            <div key={i} className="shrink-0 w-80">
+              <ListingCard listing={l} />
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -58,7 +64,7 @@ export function MessageBubble({ message, onSend }: Props) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[75%] bg-[#f7f6f3] rounded-2xl px-4 py-3 text-sm text-gray-800 leading-relaxed text-left">
+        <div className="max-w-[78%] bg-teal-700 text-cream-50 rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed shadow-[0_2px_8px_-2px_rgba(15,118,110,0.25)]">
           {message.content}
         </div>
       </div>
@@ -66,8 +72,11 @@ export function MessageBubble({ message, onSend }: Props) {
   }
 
   return (
-    <div className="flex items-start">
-      <div className="assistant-message flex-1 min-w-0 overflow-hidden">
+    <div className="flex items-start gap-3">
+      <div className="w-7 h-7 rounded-full bg-teal-700 text-cream-50 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+        <span className="font-display text-xs font-semibold">R</span>
+      </div>
+      <div className="assistant-message flex-1 min-w-0 overflow-hidden pt-0.5">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
       </div>
     </div>

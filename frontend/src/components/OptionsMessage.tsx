@@ -33,67 +33,91 @@ export function OptionsMessage({ id, content, options, answered, onSend }: Props
 
   if (answered) {
     return (
-      <div className="flex justify-start">
-        <p className="text-sm text-gray-800 leading-relaxed">{content}</p>
+      <div className="flex items-start gap-3">
+        <div className="w-7 h-7 rounded-full bg-teal-700 text-cream-50 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+          <span className="font-display text-xs font-semibold">R</span>
+        </div>
+        <p className="text-sm text-ink-700 leading-relaxed pt-1">{content}</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm text-gray-800 leading-relaxed">{content}</p>
-
-      <div className="flex flex-col gap-2">
-        {options.map((opt) => (
-          <label
-            key={opt}
-            onClick={() => toggle(opt)}
-            className="flex items-center gap-2.5 cursor-pointer group"
-          >
-            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-              selected.has(opt)
-                ? 'bg-[#1a3f6f] border-[#1a3f6f]'
-                : 'border-gray-300 group-hover:border-[#1a3f6f]'
-            }`}>
-              {selected.has(opt) && (
-                <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
-                  <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
-            <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">{opt}</span>
-          </label>
-        ))}
-
-        {/* Type your own row */}
-        <div className="flex items-center gap-2.5">
-          <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-            text.trim() ? 'bg-[#1a3f6f] border-[#1a3f6f]' : 'border-gray-300'
-          }`}>
-            {text.trim() && (
-              <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
-                <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </div>
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="Type your own..."
-            className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
-          />
-        </div>
+    <div className="flex items-start gap-3">
+      <div className="w-7 h-7 rounded-full bg-teal-700 text-cream-50 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+        <span className="font-display text-xs font-semibold">R</span>
       </div>
 
-      <button
-        onClick={submit}
-        disabled={selected.size === 0 && !text.trim()}
-        className="self-start px-4 py-1.5 rounded-full text-sm bg-[#1a3f6f] text-white disabled:opacity-30 hover:bg-[#15315a] transition-colors"
-      >
-        Submit
-      </button>
+      <div className="flex-1 min-w-0 flex flex-col gap-4 pt-0.5">
+        <p className="text-sm text-ink-900 leading-relaxed">{content}</p>
+
+        <div className="rounded-2xl border border-ink-200/70 bg-white p-4 flex flex-col gap-3 shadow-sm">
+          <div className="flex flex-col gap-1">
+            {options.map((opt) => (
+              <Option
+                key={opt}
+                label={opt}
+                checked={selected.has(opt)}
+                onToggle={() => toggle(opt)}
+              />
+            ))}
+
+            <div className="flex items-center gap-3 px-1.5 py-1.5">
+              <Checkbox checked={!!text.trim()} />
+              <input
+                type="text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="Type your own answer…"
+                className="flex-1 bg-transparent outline-none text-sm text-ink-900 placeholder-ink-400"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              onClick={submit}
+              disabled={selected.size === 0 && !text.trim()}
+              className="px-5 py-2 rounded-full text-sm font-medium bg-teal-700 text-cream-50 hover:bg-teal-600 disabled:bg-ink-200 disabled:text-ink-400 disabled:cursor-not-allowed transition-all"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Option({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) {
+  return (
+    <label
+      onClick={onToggle}
+      className={`flex items-center gap-3 px-1.5 py-1.5 rounded-lg cursor-pointer transition-colors ${
+        checked ? 'bg-teal-50' : 'hover:bg-cream-100'
+      }`}
+    >
+      <Checkbox checked={checked} />
+      <span className={`text-sm transition-colors ${checked ? 'text-teal-700 font-medium' : 'text-ink-700'}`}>
+        {label}
+      </span>
+    </label>
+  )
+}
+
+function Checkbox({ checked }: { checked: boolean }) {
+  return (
+    <div className={`w-4 h-4 rounded-md border-[1.5px] flex items-center justify-center shrink-0 transition-all ${
+      checked
+        ? 'bg-teal-700 border-teal-700'
+        : 'border-ink-300'
+    }`}>
+      {checked && (
+        <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
+          <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
     </div>
   )
 }
