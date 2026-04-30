@@ -29,7 +29,7 @@ function FitBounds({ pinned }: { pinned: PinnedListing[] }) {
   return null
 }
 
-function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void }) {
+function Markers({ listings, onSelect, hoveredUrl }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void, hoveredUrl?: string | null }) {
   const geocodingLib = useMapsLibrary('geocoding')
   const [pinned, setPinned] = useState<PinnedListing[]>([])
   const [selected, setSelected] = useState<PinnedListing | null>(null)
@@ -57,17 +57,21 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
     Promise.all(tasks).then(() => setPinned([...results]))
   }, [geocodingLib, listings])
 
-  const makeBubbleIcon = (price: number | undefined) => {
+  const makeBubbleIcon = (price: number | undefined, highlighted = false) => {
     const text = price ? `$${price.toLocaleString()}` : '?'
+    const scale = highlighted ? 1.18 : 1
     const w = Math.max(56, text.length * 8 + 18)
     const h = 30
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w + 4}" height="${h + 6}">
+    const sw = w * scale
+    const sh = h * scale
+    const fill = highlighted ? '#e35d4f' : '#115e59'
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sw + 4}" height="${sh + 6}">
       <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.25"/>
+        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.3"/>
       </filter>
       <g filter="url(#s)">
-        <rect x="2" y="2" width="${w}" height="${h}" rx="${h / 2}" fill="#115e59" stroke="white" stroke-width="2"/>
-        <text x="${(w / 2) + 2}" y="${(h / 2) + 6}" text-anchor="middle" fill="white" font-size="12.5"
+        <rect x="2" y="2" width="${sw}" height="${sh}" rx="${sh / 2}" fill="${fill}" stroke="white" stroke-width="2"/>
+        <text x="${(sw / 2) + 2}" y="${(sh / 2) + 6}" text-anchor="middle" fill="white" font-size="${12.5 * scale}"
           font-family="Inter,system-ui,-apple-system,sans-serif" font-weight="700" letter-spacing="-0.02em">${text}</text>
       </g>
     </svg>`
@@ -75,22 +79,26 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
     const g = (window as any).google?.maps
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: g ? new g.Size(w + 4, h + 6) : undefined,
-      anchor: g ? new g.Point((w + 4) / 2, (h + 6) / 2) : undefined,
+      scaledSize: g ? new g.Size(sw + 4, sh + 6) : undefined,
+      anchor: g ? new g.Point((sw + 4) / 2, (sh + 6) / 2) : undefined,
     }
   }
 
   return (
     <>
       <FitBounds pinned={pinned} />
-      {pinned.map((p, i) => (
-        <Marker
-          key={i}
-          position={{ lat: p.lat, lng: p.lng }}
-          onClick={() => { setSelected(p); onSelect?.(p.listing) }}
-          icon={makeBubbleIcon(p.listing.price)}
-        />
-      ))}
+      {pinned.map((p, i) => {
+        const highlighted = hoveredUrl != null && p.listing.url === hoveredUrl
+        return (
+          <Marker
+            key={i}
+            position={{ lat: p.lat, lng: p.lng }}
+            onClick={() => { setSelected(p); onSelect?.(p.listing) }}
+            icon={makeBubbleIcon(p.listing.price, highlighted)}
+            zIndex={highlighted ? 999 : undefined}
+          />
+        )
+      })}
 
       {selected && (
         <InfoWindow
@@ -117,7 +125,7 @@ function Markers({ listings, onSelect }: { listings: ListingProfile[], onSelect?
   )
 }
 
-export function ListingMap({ listings, onSelect }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void }) {
+export function ListingMap({ listings, onSelect, hoveredUrl }: { listings: ListingProfile[], onSelect?: (l: ListingProfile) => void, hoveredUrl?: string | null }) {
   const addressedListings = listings.filter(l => l.address)
   if (!addressedListings.length) return null
 
@@ -130,7 +138,7 @@ export function ListingMap({ listings, onSelect }: { listings: ListingProfile[],
         disableDefaultUI
         zoomControl
       >
-        <Markers listings={addressedListings} onSelect={onSelect} />
+        <Markers listings={addressedListings} onSelect={onSelect} hoveredUrl={hoveredUrl} />
       </Map>
     </APIProvider>
   )

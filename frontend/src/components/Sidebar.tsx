@@ -18,6 +18,12 @@ export function Sidebar({ sessions, currentId, onNewChat, onSwitch, onDelete }: 
     try { localStorage.setItem('sidebar_expanded', expanded ? '1' : '0') } catch { /* noop */ }
   }, [expanded])
 
+  useEffect(() => {
+    const handler = () => setExpanded(v => !v)
+    window.addEventListener('toggle-sidebar', handler)
+    return () => window.removeEventListener('toggle-sidebar', handler)
+  }, [])
+
   return (
     <aside
       className={`h-screen bg-cream-100/60 backdrop-blur-md border-r border-ink-200/40 flex flex-col shrink-0 transition-all duration-300 overflow-hidden ${

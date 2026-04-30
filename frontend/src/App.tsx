@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useChat } from './hooks/useChat'
+import { useListingPrefs } from './hooks/useListingPrefs'
+import { ToastProvider, useToast } from './hooks/useToast'
 import { MessageBubble } from './components/MessageBubble'
 import { InputBar } from './components/InputBar'
 import { Sidebar } from './components/Sidebar'
 import { ListingCard } from './components/ListingCard'
 import { ListingMap } from './components/ListingMap'
+import { ListingControls, type SortKey, type FilterState } from './components/ListingControls'
+import { CompareDrawer } from './components/CompareDrawer'
+import { KeyboardShortcuts } from './components/KeyboardShortcuts'
+import { EmptyState } from './components/EmptyState'
+import { SkeletonRail } from './components/SkeletonCard'
 import type { ListingProfile } from './hooks/useChat'
 import './index.css'
 
@@ -15,11 +22,12 @@ const SAMPLE_PROMPTS = [
   'Family-friendly 3BR in Albany or El Cerrito with parking',
 ]
 
-export default function App() {
+function AppInner() {
   const {
     messages,
     isThinking,
     connected,
+    connectionState,
     sessions,
     preferences,
     sendMessage,
@@ -28,29 +36,181 @@ export default function App() {
     deleteSession,
     deleteAllSessions,
   } = useChat()
+  const { notify } = useToast()
+  const prefs = useListingPrefs()
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
   const [showMobileListings, setShowMobileListings] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [sort, setSort] = useState<SortKey>('best')
+  const [filter, setFilter] = useState<FilterState>({ petsOnly: false, favoritesOnly: false, hideDisqualified: false })
+  const [compareOpen, setCompareOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [sidebarKey, setSidebarKey] = useState(0)
+  const [hoveredUrl, setHoveredUrl] = useState<string | null>(null)
+  const [focusedIdx, setFocusedIdx] = useState<number>(-1)
 
-  const scrollToListing = (url: string) => {
-    cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
   const currentId = localStorage.getItem('rental_session_id') ?? ''
   const isInitial = messages.length === 0
 
   const latestListings: ListingProfile[] = messages.findLast(m => m.role === 'listings')?.listings ?? []
   const hasListings = latestListings.length > 0
 
-  useEffect(() => {
-    if (!isInitial) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  // Sort + filter pipeline
+  const visibleListings = useMemo(() => {
+    let result = [...latestListings]
+    if (filter.favoritesOnly) result = result.filter(l => prefs.favorites.includes(l.url))
+    if (filter.petsOnly) result = result.filter(l => l.pet_friendly === true)
+    if (filter.hideDisqualified) result = result.filter(l => !l.disqualified)
+
+    const cmp = (a: ListingProfile, b: ListingProfile) => {
+      if (sort === 'price-asc') return (a.price ?? Infinity) - (b.price ?? Infinity)
+      if (sort === 'price-desc') return (b.price ?? -Infinity) - (a.price ?? -Infinity)
+      if (sort === 'sqft-desc') return (b.sqft ?? 0) - (a.sqft ?? 0)
+      if (sort === 'commute') {
+        const minCommute = (l: ListingProfile) => {
+          const vals = Object.values(l.commute_times || {})
+          if (!vals.length) return Infinity
+          const mins = vals.map(v => {
+            const m = String(v).match(/(\d+)\s*min/i)
+            return m ? parseInt(m[1]) : Infinity
+          })
+          return Math.min(...mins)
+        }
+        return minCommute(a) - minCommute(b)
+      }
+      // best match — keep server order, push disqualified to bottom
+      if (a.disqualified && !b.disqualified) return 1
+      if (!a.disqualified && b.disqualified) return -1
+      return 0
     }
+    return result.sort(cmp)
+  }, [latestListings, sort, filter, prefs.favorites])
+
+  const compareListings = useMemo(
+    () => prefs.compare.map(url => latestListings.find(l => l.url === url)).filter(Boolean) as ListingProfile[],
+    [prefs.compare, latestListings],
+  )
+
+  const scrollToListing = (url: string) => {
+    cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const idx = visibleListings.findIndex(l => l.url === url)
+    if (idx >= 0) setFocusedIdx(idx)
+  }
+
+  const handleShareList = useCallback(() => {
+    const lines = compareListings.length > 0 ? compareListings : visibleListings.slice(0, 5)
+    const text = lines.map(l => `• ${l.address || l.url}${l.price ? ` — $${l.price.toLocaleString()}/mo` : ''}\n  ${l.url}`).join('\n')
+    navigator.clipboard.writeText(text || latestListings.map(l => l.url).join('\n'))
+      .then(() => notify('Shortlist copied to clipboard', 'success'))
+      .catch(() => notify('Could not copy to clipboard', 'error'))
+  }, [compareListings, visibleListings, latestListings, notify])
+
+  const handleExport = useCallback(() => {
+    const headers = ['address', 'price', 'bedrooms', 'bathrooms', 'sqft', 'pet_friendly', 'url']
+    const rows = visibleListings.map(l => [
+      l.address || '',
+      l.price ?? '',
+      l.bedrooms ?? '',
+      l.bathrooms ?? '',
+      l.sqft ?? '',
+      l.pet_friendly ?? '',
+      l.url,
+    ])
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `listings-${Date.now()}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    notify(`Exported ${rows.length} listings`, 'success')
+  }, [visibleListings, notify])
+
+  const handleShareOne = useCallback((url: string) => {
+    navigator.clipboard.writeText(url)
+      .then(() => notify('Link copied', 'success'))
+      .catch(() => notify('Could not copy', 'error'))
+  }, [notify])
+
+  const handleToggleFavorite = useCallback((url: string) => {
+    prefs.toggleFavorite(url)
+    notify(prefs.isFavorite(url) ? 'Removed from saved' : 'Saved to your shortlist', 'success')
+  }, [prefs, notify])
+
+  const handleToggleCompare = useCallback((url: string) => {
+    const wasIn = prefs.isComparing(url)
+    prefs.toggleCompare(url)
+    if (!wasIn && prefs.compare.length >= prefs.MAX_COMPARE) {
+      notify(`Compare is full — replaced oldest`, 'info')
+    }
+  }, [prefs, notify])
+
+  // Connection state toasts
+  useEffect(() => {
+    if (connectionState === 'error') notify('Connection lost — retrying', 'error')
+  }, [connectionState, notify])
+
+  // Auto-scroll
+  useEffect(() => {
+    if (!isInitial) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isThinking, isInitial])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't capture when typing
+      const tag = (e.target as HTMLElement)?.tagName
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable
+      const meta = e.metaKey || e.ctrlKey
+
+      if (meta && e.key === 'k') { e.preventDefault(); newChat(); return }
+      if (meta && e.key === 'b') { e.preventDefault(); setSidebarKey(k => k + 1); window.dispatchEvent(new Event('toggle-sidebar')); return }
+      if ((meta && e.key === '/') || (e.key === '?' && !isTyping)) { e.preventDefault(); setShortcutsOpen(true); return }
+      if (e.key === 'Escape') { setCompareOpen(false); setShortcutsOpen(false); return }
+
+      if (isTyping) return
+
+      if (e.key === 'j') {
+        e.preventDefault()
+        setFocusedIdx(i => {
+          const next = Math.min(visibleListings.length - 1, i + 1)
+          const url = visibleListings[next]?.url
+          if (url) cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return next
+        })
+      }
+      if (e.key === 'k') {
+        e.preventDefault()
+        setFocusedIdx(i => {
+          const next = Math.max(0, i - 1)
+          const url = visibleListings[next]?.url
+          if (url) cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return next
+        })
+      }
+      if (e.key === 'f' && focusedIdx >= 0) {
+        const url = visibleListings[focusedIdx]?.url
+        if (url) handleToggleFavorite(url)
+      }
+      if (e.key === 'c' && focusedIdx >= 0) {
+        const url = visibleListings[focusedIdx]?.url
+        if (url) handleToggleCompare(url)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [newChat, visibleListings, focusedIdx, handleToggleFavorite, handleToggleCompare])
+
+  const compareCount = prefs.compare.length
 
   return (
     <div className="flex h-screen bg-transparent">
       <Sidebar
+        key={sidebarKey}
         sessions={sessions}
         currentId={currentId}
         onNewChat={newChat}
@@ -63,25 +223,29 @@ export default function App() {
         style={{ height: '100vh' }}
       >
         <section className="min-w-0 flex flex-col h-screen relative">
-          {/* Top bar */}
           <header className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-ink-200/40 bg-cream-50/40 backdrop-blur-md">
             <div className="flex items-center gap-2">
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  connected ? 'bg-teal-600' : 'bg-coral-500'
-                }`}
-              />
+              <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-teal-600' : 'bg-coral-500'}`} />
               <span className="text-xs text-ink-500 tracking-wide">
                 {connected ? 'Connected' : 'Reconnecting…'}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShortcutsOpen(true)}
+                className="text-xs px-2.5 py-1.5 rounded-full text-ink-500 hover:text-ink-900 hover:bg-cream-100 transition-colors flex items-center gap-1.5"
+                title="Keyboard shortcuts (?)"
+              >
+                <kbd className="font-mono text-[0.65rem] font-semibold bg-cream-100 text-ink-700 border border-ink-200/70 px-1 py-0.5 rounded">?</kbd>
+                Shortcuts
+              </button>
+
               {confirmReset ? (
                 <>
                   <span className="text-xs text-ink-500">Clear all chats?</span>
                   <button
-                    onClick={() => { deleteAllSessions(); setConfirmReset(false) }}
+                    onClick={() => { deleteAllSessions(); setConfirmReset(false); notify('All chats cleared', 'success') }}
                     className="text-xs px-3 py-1.5 rounded-full bg-coral-500 text-white hover:bg-coral-600 transition-colors font-medium"
                   >
                     Yes, clear
@@ -97,7 +261,6 @@ export default function App() {
                 <button
                   onClick={() => setConfirmReset(true)}
                   className="text-xs px-3 py-1.5 rounded-full text-ink-500 hover:text-coral-600 hover:bg-coral-500/5 transition-colors font-medium"
-                  title="Delete all sessions"
                 >
                   Reset all
                 </button>
@@ -107,7 +270,6 @@ export default function App() {
 
           {isInitial ? (
             <div className="flex-1 relative overflow-hidden flex flex-col items-center justify-center px-6 pb-12">
-              {/* Soft hero backdrop */}
               <div className="hero-backdrop absolute inset-0 pointer-events-none" aria-hidden="true">
                 <div className="hero-photo" />
                 <div className="hero-photo-tint" />
@@ -143,6 +305,12 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+
+                <div className="mt-10 flex items-center gap-6 text-[0.7rem] uppercase tracking-[0.16em] text-ink-400 font-medium">
+                  <span className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-teal-700" />Zillow</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-teal-700" />Apartments.com</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-teal-700" />Live commute data</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -171,7 +339,18 @@ export default function App() {
               </button>
               {showMobileListings && (
                 <div className="mt-3 max-h-96 overflow-y-auto flex flex-col gap-3">
-                  {latestListings.map((l, i) => <ListingCard key={i} listing={l} preferences={preferences} />)}
+                  {visibleListings.map((l, i) => (
+                    <ListingCard
+                      key={i}
+                      listing={l}
+                      preferences={preferences}
+                      isFavorite={prefs.isFavorite(l.url)}
+                      isComparing={prefs.isComparing(l.url)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onToggleCompare={handleToggleCompare}
+                      onShare={handleShareOne}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -180,36 +359,120 @@ export default function App() {
 
         {hasListings && (
           <aside className="hidden lg:block overflow-y-auto bg-cream-100/55 backdrop-blur-md border-l border-ink-200/40" style={{ height: '100vh' }}>
-            <div className="px-5 pt-6 pb-4 sticky top-0 bg-cream-100/70 backdrop-blur-md z-10 border-b border-ink-200/40">
-              <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">
-                Curated matches
-              </p>
-              <h2 className="font-display text-xl font-medium text-ink-900">
-                {latestListings.length} {latestListings.length === 1 ? 'home' : 'homes'} for you
-              </h2>
+            <div className="px-5 pt-6 pb-4 sticky top-0 bg-cream-100/70 backdrop-blur-md z-10 border-b border-ink-200/40 flex flex-col gap-3">
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">Curated matches</p>
+                <h2 className="font-display text-xl font-medium text-ink-900">
+                  {latestListings.length} {latestListings.length === 1 ? 'home' : 'homes'} for you
+                </h2>
+              </div>
+
+              <ListingControls
+                total={latestListings.length}
+                visible={visibleListings.length}
+                sort={sort}
+                onSortChange={setSort}
+                filter={filter}
+                onFilterChange={setFilter}
+                favoritesCount={prefs.favorites.length}
+                onShare={handleShareList}
+                onExport={handleExport}
+              />
             </div>
 
             <div className="px-5 pt-4 mb-5">
               <div className="w-full h-72 rounded-2xl overflow-hidden border border-ink-200/60 shadow-sm">
-                <ListingMap listings={latestListings} onSelect={l => scrollToListing(l.url)} />
+                <ListingMap
+                  listings={visibleListings}
+                  onSelect={l => scrollToListing(l.url)}
+                  hoveredUrl={hoveredUrl}
+                />
               </div>
             </div>
 
-            <div className="px-5 pb-10 flex flex-col gap-5">
-              {latestListings.map((l, i) => (
-                <div
-                  key={i}
-                  ref={el => { if (el) cardRefs.current.set(l.url, el); else cardRefs.current.delete(l.url) }}
-                  className="fade-up"
-                  style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
-                >
-                  <ListingCard listing={l} preferences={preferences} />
-                </div>
-              ))}
+            <div className="px-5 pb-32 flex flex-col gap-5">
+              {visibleListings.length === 0 ? (
+                <EmptyState
+                  icon="search"
+                  title="No matches with these filters"
+                  description="Try removing a filter or expanding the criteria."
+                  action={{
+                    label: 'Reset filters',
+                    onClick: () => setFilter({ petsOnly: false, favoritesOnly: false, hideDisqualified: false }),
+                  }}
+                />
+              ) : (
+                visibleListings.map((l, i) => (
+                  <div
+                    key={i}
+                    ref={el => { if (el) cardRefs.current.set(l.url, el); else cardRefs.current.delete(l.url) }}
+                    className="fade-up"
+                    style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+                  >
+                    <ListingCard
+                      listing={l}
+                      preferences={preferences}
+                      isFavorite={prefs.isFavorite(l.url)}
+                      isComparing={prefs.isComparing(l.url)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onToggleCompare={handleToggleCompare}
+                      onShare={handleShareOne}
+                      onHover={setHoveredUrl}
+                      focused={focusedIdx === i}
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </aside>
         )}
       </div>
+
+      {/* Loading skeletons (right rail while a search is in flight, no listings yet) */}
+      {!hasListings && isThinking && !isInitial && (
+        <div className="hidden lg:block fixed right-0 top-0 w-[30rem] h-screen overflow-y-auto bg-cream-100/55 backdrop-blur-md border-l border-ink-200/40 z-10">
+          <div className="px-5 pt-6 pb-4 border-b border-ink-200/40">
+            <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-400 mb-1 font-medium">Searching…</p>
+            <h2 className="font-display text-xl font-medium text-ink-900">Finding your matches</h2>
+          </div>
+          <div className="px-5 pt-5">
+            <SkeletonRail />
+          </div>
+        </div>
+      )}
+
+      {/* Compare drawer */}
+      <CompareDrawer
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+        listings={compareListings}
+        onRemove={(url) => prefs.toggleCompare(url)}
+      />
+
+      {/* Floating compare button */}
+      {compareCount > 0 && !compareOpen && (
+        <button
+          onClick={() => setCompareOpen(true)}
+          className="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-full bg-teal-700 text-cream-50 shadow-lg hover:bg-teal-600 transition-all hover:scale-105 flex items-center gap-2 animate-toast-in"
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
+            <rect x="2" y="3" width="5" height="10" rx="1" />
+            <rect x="9" y="3" width="5" height="10" rx="1" />
+          </svg>
+          <span className="text-sm font-medium">Compare</span>
+          <span className="bg-cream-50 text-teal-700 text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">{compareCount}</span>
+        </button>
+      )}
+
+      <KeyboardShortcuts open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   )
 }

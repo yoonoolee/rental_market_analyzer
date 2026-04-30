@@ -188,6 +188,60 @@ body::after {
   animation: fadeUp 0.35s ease-out backwards;
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in { animation: fadeIn 0.18s ease-out; }
+
+@keyframes drawerUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-drawer-up { animation: drawerUp 0.25s ease-out; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-toast-in { animation: toastIn 0.22s ease-out; }
+
+/* Card focus ring (J/K nav) */
+.listing-focused {
+  outline: 2px solid #0f766e;
+  outline-offset: 4px;
+  border-radius: 1rem;
+}
+
+/* Compare highlight glow */
+.listing-comparing {
+  box-shadow: 0 0 0 2px #0f766e, 0 12px 30px -12px rgba(15,118,110,0.4);
+}
+
+/* Pin pulse for sync hover */
+@keyframes pinPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+.pin-pulse { animation: pinPulse 0.6s ease-in-out; }
+
 /* ---- Hero backdrop for empty/home state ---- */
 .hero-backdrop {
   background: linear-gradient(180deg, #fdfbf7 0%, #faf6ed 100%);

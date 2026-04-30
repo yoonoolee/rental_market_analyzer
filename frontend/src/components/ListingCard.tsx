@@ -1,9 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ListingProfile } from '../hooks/useChat'
 
-export function ListingCard({ listing, preferences }: { listing: ListingProfile, preferences?: Record<string, unknown> }) {
+type Props = {
+  listing: ListingProfile
+  preferences?: Record<string, unknown>
+  isFavorite?: boolean
+  isComparing?: boolean
+  onToggleFavorite?: (url: string) => void
+  onToggleCompare?: (url: string) => void
+  onShare?: (url: string) => void
+  onHover?: (url: string | null) => void
+  matchScore?: number
+  focused?: boolean
+}
+
+export function ListingCard({
+  listing,
+  preferences,
+  isFavorite,
+  isComparing,
+  onToggleFavorite,
+  onToggleCompare,
+  onShare,
+  onHover,
+  matchScore,
+  focused,
+}: Props) {
   const [imgIdx, setImgIdx] = useState(0)
-  const [favorited, setFavorited] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const images = listing.images?.filter(Boolean) ?? []
   const amenities = listing.amenities?.filter(Boolean) ?? []
 
@@ -32,8 +56,32 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
     (listing.natural_light === true && cares('light')) ||
     (listing.spacious === true && cares('spacious'))
 
+  // Lightbox keyboard nav
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false)
+      if (e.key === 'ArrowLeft') setImgIdx(i => Math.max(0, i - 1))
+      if (e.key === 'ArrowRight') setImgIdx(i => Math.min(images.length - 1, i + 1))
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [lightboxOpen, images.length])
+
+  const cardClasses = [
+    'group rounded-2xl bg-white overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_-12px_rgba(0,0,0,0.18)] border',
+    listing.disqualified ? 'border-coral-500/30 opacity-90' : 'border-ink-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.06)]',
+    isComparing ? 'listing-comparing' : '',
+    focused ? 'listing-focused' : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <article className={`group rounded-2xl bg-white overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_-12px_rgba(0,0,0,0.18)] border ${listing.disqualified ? 'border-coral-500/30 opacity-90' : 'border-ink-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.06)]'}`}>
+    <>
+    <article
+      className={cardClasses}
+      onMouseEnter={() => onHover?.(listing.url)}
+      onMouseLeave={() => onHover?.(null)}
+    >
       {listing.disqualified && (
         <div className="px-4 py-2 bg-coral-500/5 border-b border-coral-500/20 text-[0.7rem] text-coral-600 flex items-center gap-1.5">
           <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 shrink-0">
@@ -46,7 +94,7 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
       {/* Image area */}
       <div className="relative">
         {images.length > 0 ? (
-          <div className="relative h-60 bg-ink-100 overflow-hidden">
+          <div className="relative h-60 bg-ink-100 overflow-hidden cursor-zoom-in" onClick={() => setLightboxOpen(true)}>
             <img
               src={images[imgIdx]}
               alt="listing"
@@ -58,7 +106,7 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
             {images.length > 1 && (
               <>
                 <button
-                  onClick={() => setImgIdx(i => Math.max(0, i - 1))}
+                  onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.max(0, i - 1)) }}
                   disabled={imgIdx === 0}
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-ink-900 shadow-md flex items-center justify-center text-base disabled:opacity-0 hover:scale-110 transition-all"
                   aria-label="Previous photo"
@@ -68,7 +116,7 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
                   </svg>
                 </button>
                 <button
-                  onClick={() => setImgIdx(i => Math.min(images.length - 1, i + 1))}
+                  onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(images.length - 1, i + 1)) }}
                   disabled={imgIdx === images.length - 1}
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-ink-900 shadow-md flex items-center justify-center text-base disabled:opacity-0 hover:scale-110 transition-all"
                   aria-label="Next photo"
@@ -78,7 +126,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
                   </svg>
                 </button>
 
-                {/* Dot indicators */}
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
                   {images.slice(0, 6).map((_, i) => (
                     <span
@@ -95,30 +142,72 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
               </>
             )}
 
-            {/* Favorite */}
-            <button
-              onClick={() => setFavorited(f => !f)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors"
-              aria-label="Save"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill={favorited ? '#e35d4f' : 'none'}
-                stroke={favorited ? '#e35d4f' : '#404040'}
-                strokeWidth="2"
-                className="w-4 h-4 transition-colors"
+            {/* Top-right action stack */}
+            <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(listing.url) }}
+                className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors"
+                aria-label={isFavorite ? 'Remove from saved' : 'Save'}
+                title={isFavorite ? 'Saved' : 'Save'}
               >
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill={isFavorite ? '#e35d4f' : 'none'}
+                  stroke={isFavorite ? '#e35d4f' : '#404040'}
+                  strokeWidth="2"
+                  className="w-4 h-4 transition-colors"
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {onToggleCompare && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleCompare(listing.url) }}
+                  className={`w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all ${
+                    isComparing
+                      ? 'bg-teal-700 text-white'
+                      : 'bg-white/85 text-ink-700 hover:bg-white'
+                  }`}
+                  aria-label={isComparing ? 'Remove from compare' : 'Add to compare'}
+                  title={isComparing ? 'In compare' : 'Compare'}
+                >
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-3.5 h-3.5">
+                    <rect x="2" y="3" width="5" height="10" rx="1" />
+                    <rect x="9" y="3" width="5" height="10" rx="1" />
+                  </svg>
+                </button>
+              )}
+              {onShare && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onShare(listing.url) }}
+                  className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors text-ink-700"
+                  aria-label="Copy link"
+                  title="Copy link"
+                >
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-3.5 h-3.5">
+                    <path d="M6.5 9.5l3-3M5 8l-1.5 1.5a2.5 2.5 0 003.5 3.5L8.5 11.5M11 8l1.5-1.5a2.5 2.5 0 00-3.5-3.5L7.5 4.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-            {/* Bedroom pill */}
-            {listing.bedrooms != null && (
-              <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[0.7rem] font-semibold text-ink-900 px-2.5 py-1 rounded-full shadow-sm">
-                {listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bd`}
-                {listing.bathrooms != null && ` · ${listing.bathrooms} ba`}
-              </span>
-            )}
+            {/* Top-left: bedrooms + match score */}
+            <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
+              {listing.bedrooms != null && (
+                <span className="bg-white/95 backdrop-blur-sm text-[0.7rem] font-semibold text-ink-900 px-2.5 py-1 rounded-full shadow-sm">
+                  {listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bd`}
+                  {listing.bathrooms != null && ` · ${listing.bathrooms} ba`}
+                </span>
+              )}
+              {matchScore != null && (
+                <span
+                  className="bg-teal-700 text-cream-50 text-[0.7rem] font-bold px-2.5 py-1 rounded-full shadow-sm"
+                  title={`Match score: ${matchScore}/100`}
+                >
+                  {matchScore} match
+                </span>
+              )}
+            </div>
           </div>
         ) : (
           <div className="h-60 bg-ink-100 flex items-center justify-center text-ink-400 text-sm">
@@ -136,7 +225,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
 
       {/* Body */}
       <div className="p-5 flex flex-col gap-3.5">
-        {/* Header — price + address + CTA */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             {listing.price != null ? (
@@ -166,31 +254,17 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
           </a>
         </div>
 
-        {/* Feature pills */}
         {hasFeaturePills && (
           <div className="flex flex-wrap gap-1.5">
-            {listing.pet_friendly === true && cares('pet') && (
-              <Pill icon="🐾">Pets welcome</Pill>
-            )}
-            {listing.views === true && cares('view') && (
-              <Pill icon="✦">Great views</Pill>
-            )}
-            {listing.furnishing && cares('furnish') && (
-              <Pill>{listing.furnishing}</Pill>
-            )}
-            {listing.modern_finishes === true && cares('modern') && (
-              <Pill>Modern finishes</Pill>
-            )}
-            {listing.natural_light === true && cares('light') && (
-              <Pill icon="☀">Natural light</Pill>
-            )}
-            {listing.spacious === true && cares('spacious') && (
-              <Pill>Spacious</Pill>
-            )}
+            {listing.pet_friendly === true && cares('pet') && <Pill icon="🐾">Pets welcome</Pill>}
+            {listing.views === true && cares('view') && <Pill icon="✦">Great views</Pill>}
+            {listing.furnishing && cares('furnish') && <Pill>{listing.furnishing}</Pill>}
+            {listing.modern_finishes === true && cares('modern') && <Pill>Modern finishes</Pill>}
+            {listing.natural_light === true && cares('light') && <Pill icon="☀">Natural light</Pill>}
+            {listing.spacious === true && cares('spacious') && <Pill>Spacious</Pill>}
           </div>
         )}
 
-        {/* Commute */}
         {listing.commute_times && Object.keys(listing.commute_times).length > 0 && (
           <div className="rounded-xl bg-cream-100 px-3.5 py-3 flex flex-col gap-1.5">
             <p className="text-[0.62rem] uppercase tracking-[0.16em] text-ink-400 font-semibold">Commute</p>
@@ -207,7 +281,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
           </div>
         )}
 
-        {/* Nearby */}
         {listing.nearby_places && Object.keys(listing.nearby_places).length > 0 && (
           <div className="rounded-xl bg-cream-100 px-3.5 py-3 flex flex-col gap-1.5">
             <p className="text-[0.62rem] uppercase tracking-[0.16em] text-ink-400 font-semibold">Nearby</p>
@@ -230,7 +303,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
           </div>
         )}
 
-        {/* Details grid */}
         {details.some(([, v]) => v) && (
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-1">
             {details.map(([label, value]) => value ? (
@@ -242,7 +314,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
           </dl>
         )}
 
-        {/* Amenities */}
         {amenities.length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-1">
             {amenities.slice(0, 8).map((item) => (
@@ -253,7 +324,6 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
           </div>
         )}
 
-        {/* Description */}
         {(listing.notes || listing.description) && (
           <p className="text-sm text-ink-500 leading-relaxed italic font-display border-l-2 border-teal-600/30 pl-3 mt-1">
             {listing.notes || listing.description}
@@ -261,6 +331,58 @@ export function ListingCard({ listing, preferences }: { listing: ListingProfile,
         )}
       </div>
     </article>
+
+    {/* Lightbox */}
+    {lightboxOpen && images.length > 0 && (
+      <div className="fixed inset-0 z-[60] bg-ink-900/95 flex items-center justify-center animate-fade-in" onClick={() => setLightboxOpen(false)}>
+        <button
+          onClick={(e) => { e.stopPropagation(); setLightboxOpen(false) }}
+          className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
+          aria-label="Close"
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+            <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
+          </svg>
+        </button>
+        <div className="absolute top-5 left-5 text-cream-50 text-sm font-mono">
+          {imgIdx + 1} / {images.length}
+        </div>
+
+        <img
+          src={images[imgIdx]}
+          alt=""
+          className="max-w-[92vw] max-h-[88vh] object-contain rounded-md shadow-2xl"
+          referrerPolicy="no-referrer"
+          onClick={(e) => e.stopPropagation()}
+        />
+
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.max(0, i - 1)) }}
+              disabled={imgIdx === 0}
+              className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-30"
+              aria-label="Previous"
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                <path d="M10 3L5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setImgIdx(i => Math.min(images.length - 1, i + 1)) }}
+              disabled={imgIdx === images.length - 1}
+              className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors disabled:opacity-30"
+              aria-label="Next"
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+    )}
+    </>
   )
 }
 
