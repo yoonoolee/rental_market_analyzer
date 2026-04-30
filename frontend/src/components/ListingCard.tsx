@@ -32,7 +32,9 @@ export function ListingCard({
   const [reasonsOpen, setReasonsOpen] = useState(false)
   const [imgIdx, setImgIdx] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
-  const images = listing.images?.filter(Boolean) ?? []
+  const images = (listing.images?.filter(Boolean) ?? []).map(
+    url => `/imgproxy?url=${encodeURIComponent(url)}`
+  )
   const amenities = listing.amenities?.filter(Boolean) ?? []
 
   const prefText = [
@@ -103,7 +105,6 @@ export function ListingCard({
               src={images[imgIdx]}
               alt="listing"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
 
