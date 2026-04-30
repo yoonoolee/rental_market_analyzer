@@ -19,10 +19,6 @@ function computeMatchScore(
   listing: ListingProfile,
   preferences: Record<string, unknown>,
 ): { score: number; reasons: string[] } {
-  if (!preferences || Object.keys(preferences).length === 0) {
-    return { score: 0, reasons: [] }
-  }
-
   const reasons: string[] = []
   let earned = 0
   let total = 0
@@ -30,24 +26,40 @@ function computeMatchScore(
   const hardReqs: string[] = (preferences.hard_requirements as string[]) || []
   const softConstraints: string[] = (preferences.soft_constraints as string[]) || []
   const tradeOffs: string[] = (preferences.trade_off_rules as string[]) || []
+  const rawQuery: string = (preferences.raw_query as string) || ''
 
-  const prefText = [...hardReqs, ...softConstraints, ...tradeOffs].join(' ').toLowerCase()
-  const cares = (term: string) => prefText.includes(term)
+  // Use structured fields when available, fall back to raw_query for no-elicitation searches
+  const allPrefText = [...hardReqs, ...softConstraints, ...tradeOffs, rawQuery].join(' ').toLowerCase()
+  const searchText = allPrefText || ''
+  if (!searchText.trim()) return { score: 0, reasons: [] }
 
-  // Parse budget from hard_requirements text e.g. "under $3000", "max $2500", "$3,000/mo"
+  const cares = (term: string) => searchText.includes(term)
+
+  // Parse budget — check structured fields first, then raw query
+  // matches: "under $3000", "max $2500", "$3,000/mo", "below 3000", "budget 2800"
   let budget: number | undefined
-  for (const req of [...hardReqs, ...softConstraints]) {
-    const m = req.match(/(?:under|max(?:imum)?|below|up to|budget[:\s]+)?\$?([\d,]+)(?:\/mo)?/i)
-    if (m && req.toLowerCase().match(/under|max|below|budget|afford/)) {
+  const budgetSources = hardReqs.length ? [...hardReqs, ...softConstraints] : [rawQuery]
+  for (const src of budgetSources) {
+    const m = src.match(/\$?([\d,]+)\s*(?:\/mo)?/i)
+    if (m && src.toLowerCase().match(/under|max|below|budget|afford|up to/)) {
       const val = parseInt(m[1].replace(/,/g, ''))
       if (val > 500 && val < 20000) { budget = val; break }
     }
   }
+  // Fallback: any dollar amount in the raw query that looks like rent
+  if (!budget && rawQuery) {
+    const m = rawQuery.match(/\$?([\d,]+)\s*(?:\/mo|per month)?/i)
+    if (m) {
+      const val = parseInt(m[1].replace(/,/g, ''))
+      if (val > 500 && val < 20000) budget = val
+    }
+  }
 
-  // Parse min bedrooms from hard_requirements e.g. "2 bedrooms", "2BR", "2bed", "at least 2"
+  // Parse bedrooms — structured first, then raw query
   let minBeds: number | undefined
-  for (const req of hardReqs) {
-    const m = req.match(/(\d)\s*(?:br|bed(?:room)?s?|bd)/i) || req.match(/(?:at least|minimum)\s*(\d)/i)
+  const bedSources = hardReqs.length ? hardReqs : [rawQuery]
+  for (const src of bedSources) {
+    const m = src.match(/(\d)\s*(?:br|bed(?:room)?s?|bd)/i) || src.match(/(?:at least|minimum)\s*(\d)/i)
     if (m) { minBeds = parseInt(m[1]); break }
   }
 
@@ -217,10 +229,17 @@ function AppInner() {
 
   const matchScores = useMemo(() => {
     const map = new Map<string, { score: number; reasons: string[] }>()
-    if (Object.keys(preferences).length === 0) return map
-    latestListings.forEach(l => map.set(l.url, computeMatchScore(l, preferences)))
+    // If the backend hasn't sent a preferences event yet, fall back to the first user message
+    const firstUserMsg = messages.find(m => m.role === 'user')?.content ?? ''
+    const effectivePrefs = Object.keys(preferences).length > 0
+      ? preferences
+      : firstUserMsg ? { raw_query: firstUserMsg } : {}
+    latestListings.forEach(l => {
+      const result = computeMatchScore(l, effectivePrefs)
+      if (result.score > 0) map.set(l.url, result)
+    })
     return map
-  }, [latestListings, preferences])
+  }, [latestListings, preferences, messages])
 
   const scrollToListing = (url: string) => {
     cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
