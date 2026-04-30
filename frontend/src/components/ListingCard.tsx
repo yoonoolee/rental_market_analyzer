@@ -11,6 +11,7 @@ type Props = {
   onShare?: (url: string) => void
   onHover?: (url: string | null) => void
   matchScore?: number
+  matchReasons?: string[]
   focused?: boolean
 }
 
@@ -24,8 +25,10 @@ export function ListingCard({
   onShare,
   onHover,
   matchScore,
+  matchReasons,
   focused,
 }: Props) {
+  const [scoreTooltip, setScoreTooltip] = useState(false)
   const [imgIdx, setImgIdx] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const images = listing.images?.filter(Boolean) ?? []
@@ -200,12 +203,32 @@ export function ListingCard({
                 </span>
               )}
               {matchScore != null && (
-                <span
-                  className="bg-teal-700 text-cream-50 text-[0.7rem] font-bold px-2.5 py-1 rounded-full shadow-sm"
-                  title={`Match score: ${matchScore}/100`}
-                >
-                  {matchScore} match
-                </span>
+                <div className="relative">
+                  <button
+                    className={`text-cream-50 text-[0.7rem] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1 transition-colors ${
+                      matchScore >= 80 ? 'bg-teal-700 hover:bg-teal-600' : matchScore >= 60 ? 'bg-teal-600 hover:bg-teal-700' : 'bg-ink-500 hover:bg-ink-700'
+                    }`}
+                    onMouseEnter={() => setScoreTooltip(true)}
+                    onMouseLeave={() => setScoreTooltip(false)}
+                    onClick={(e) => { e.stopPropagation(); setScoreTooltip(v => !v) }}
+                    aria-label={`Match score ${matchScore}%`}
+                  >
+                    {matchScore}% match
+                  </button>
+                  {scoreTooltip && matchReasons && matchReasons.length > 0 && (
+                    <div className="absolute left-0 top-full mt-1.5 z-30 bg-ink-900 text-cream-50 rounded-xl p-3 shadow-xl min-w-[180px] max-w-[220px] animate-fade-in">
+                      <p className="text-[0.6rem] uppercase tracking-wider text-ink-400 mb-1.5 font-semibold">Why this score</p>
+                      <ul className="flex flex-col gap-1">
+                        {matchReasons.map((r, i) => (
+                          <li key={i} className="text-[0.72rem] leading-snug flex items-start gap-1.5">
+                            <span className="text-teal-400 mt-0.5 shrink-0">✓</span>
+                            <span>{r}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

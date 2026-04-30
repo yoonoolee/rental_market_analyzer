@@ -15,6 +15,114 @@ import { SkeletonRail } from './components/SkeletonCard'
 import type { ListingProfile } from './hooks/useChat'
 import './index.css'
 
+function computeMatchScore(
+  listing: ListingProfile,
+  preferences: Record<string, unknown>,
+): { score: number; reasons: string[] } {
+  if (!preferences || Object.keys(preferences).length === 0) {
+    return { score: 0, reasons: [] }
+  }
+
+  const reasons: string[] = []
+  let earned = 0
+  let total = 0
+
+  const prefText = [
+    ...((preferences.hard_requirements as string[]) || []),
+    ...((preferences.soft_constraints as string[]) || []),
+    ...((preferences.trade_off_rules as string[]) || []),
+    (preferences.lifestyle_notes as string) || '',
+  ].join(' ').toLowerCase()
+
+  const cares = (term: string) => prefText.includes(term)
+
+  // Price vs. budget
+  const budget = preferences.max_budget as number | undefined
+  if (budget && listing.price) {
+    total += 25
+    if (listing.price <= budget) {
+      const pct = Math.max(0, 1 - (budget - listing.price) / budget)
+      const pts = Math.round(15 + 10 * pct)
+      earned += pts
+      const under = budget - listing.price
+      reasons.push(`Within budget ($${under.toLocaleString()} under)`)
+    } else {
+      const over = listing.price - budget
+      reasons.push(`$${over.toLocaleString()} over budget`)
+    }
+  }
+
+  // Bedrooms
+  const minBeds = preferences.min_bedrooms as number | undefined
+  if (minBeds != null && listing.bedrooms != null) {
+    total += 20
+    if (listing.bedrooms >= minBeds) {
+      earned += 20
+      reasons.push(`${listing.bedrooms} bd meets the ${minBeds} bd minimum`)
+    } else {
+      reasons.push(`Only ${listing.bedrooms} bd (need ${minBeds}+)`)
+    }
+  }
+
+  // Pet friendly
+  if (cares('pet')) {
+    total += 15
+    if (listing.pet_friendly === true) {
+      earned += 15
+      reasons.push('Pet friendly')
+    } else {
+      reasons.push('No pet policy confirmed')
+    }
+  }
+
+  // Commute
+  const commuteTimes = listing.commute_times ? Object.values(listing.commute_times) : []
+  if (commuteTimes.length > 0) {
+    total += 20
+    const mins = commuteTimes.map(v => {
+      const m = String(v).match(/(\d+)\s*min/i)
+      return m ? parseInt(m[1]) : null
+    }).filter((v): v is number => v !== null)
+    if (mins.length > 0) {
+      const shortest = Math.min(...mins)
+      if (shortest <= 20) { earned += 20; reasons.push(`Fast commute (${shortest} min)`) }
+      else if (shortest <= 35) { earned += 14; reasons.push(`Reasonable commute (${shortest} min)`) }
+      else if (shortest <= 50) { earned += 8; reasons.push(`Long commute (${shortest} min)`) }
+      else { reasons.push(`Very long commute (${shortest} min)`) }
+    }
+  }
+
+  // Amenity matches
+  const wantedAmenities: string[] = []
+  if (cares('laundry') || cares('washer')) wantedAmenities.push('laundry')
+  if (cares('gym') || cares('fitness')) wantedAmenities.push('gym')
+  if (cares('parking')) wantedAmenities.push('parking')
+  if (cares('dishwasher')) wantedAmenities.push('dishwasher')
+  if (cares('pool')) wantedAmenities.push('pool')
+  if (cares('balcony') || cares('deck') || cares('patio')) wantedAmenities.push('balcony')
+
+  if (wantedAmenities.length > 0 && listing.amenities && listing.amenities.length > 0) {
+    total += 20
+    const listingAm = listing.amenities.join(' ').toLowerCase()
+    const matched = wantedAmenities.filter(a => listingAm.includes(a))
+    const pts = Math.round((matched.length / wantedAmenities.length) * 20)
+    earned += pts
+    if (matched.length > 0) {
+      reasons.push(`Has ${matched.join(', ')}`)
+    } else {
+      reasons.push('Missing desired amenities')
+    }
+  }
+
+  // Bonus: special lifestyle features
+  if (cares('view') && listing.views) { earned += 5; total += 5; reasons.push('Has great views') }
+  if (cares('modern') && listing.modern_finishes) { earned += 5; total += 5; reasons.push('Modern finishes') }
+  if (cares('light') && listing.natural_light) { earned += 5; total += 5; reasons.push('Natural light') }
+
+  const score = total > 0 ? Math.min(100, Math.round((earned / total) * 100)) : 0
+  return { score, reasons: reasons.slice(0, 5) }
+}
+
 const SAMPLE_PROMPTS = [
   '2BR in Berkeley under $3000, pet friendly, near BART',
   'Modern 1BR in Oakland, in-unit laundry, walkable to cafés',
@@ -94,6 +202,13 @@ function AppInner() {
     [prefs.compare, latestListings],
   )
 
+  const matchScores = useMemo(() => {
+    const map = new Map<string, { score: number; reasons: string[] }>()
+    if (Object.keys(preferences).length === 0) return map
+    latestListings.forEach(l => map.set(l.url, computeMatchScore(l, preferences)))
+    return map
+  }, [latestListings, preferences])
+
   const scrollToListing = (url: string) => {
     cardRefs.current.get(url)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     const idx = visibleListings.findIndex(l => l.url === url)
@@ -143,9 +258,10 @@ function AppInner() {
 
   const handleToggleCompare = useCallback((url: string) => {
     const wasIn = prefs.isComparing(url)
+    const wasFull = prefs.compare.length >= prefs.MAX_COMPARE
     prefs.toggleCompare(url)
-    if (!wasIn && prefs.compare.length >= prefs.MAX_COMPARE) {
-      notify(`Compare is full — replaced oldest`, 'info')
+    if (!wasIn && wasFull) {
+      notify('Compare is full — replaced oldest', 'info')
     }
   }, [prefs, notify])
 
@@ -339,18 +455,23 @@ function AppInner() {
               </button>
               {showMobileListings && (
                 <div className="mt-3 max-h-96 overflow-y-auto flex flex-col gap-3">
-                  {visibleListings.map((l, i) => (
-                    <ListingCard
-                      key={i}
-                      listing={l}
-                      preferences={preferences}
-                      isFavorite={prefs.isFavorite(l.url)}
-                      isComparing={prefs.isComparing(l.url)}
-                      onToggleFavorite={handleToggleFavorite}
-                      onToggleCompare={handleToggleCompare}
-                      onShare={handleShareOne}
-                    />
-                  ))}
+                  {visibleListings.map((l, i) => {
+                    const ms = matchScores.get(l.url)
+                    return (
+                      <ListingCard
+                        key={i}
+                        listing={l}
+                        preferences={preferences}
+                        isFavorite={prefs.isFavorite(l.url)}
+                        isComparing={prefs.isComparing(l.url)}
+                        onToggleFavorite={handleToggleFavorite}
+                        onToggleCompare={handleToggleCompare}
+                        onShare={handleShareOne}
+                        matchScore={ms?.score}
+                        matchReasons={ms?.reasons}
+                      />
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -419,6 +540,8 @@ function AppInner() {
                       onShare={handleShareOne}
                       onHover={setHoveredUrl}
                       focused={focusedIdx === i}
+                      matchScore={matchScores.get(l.url)?.score}
+                      matchReasons={matchScores.get(l.url)?.reasons}
                     />
                   </div>
                 ))
