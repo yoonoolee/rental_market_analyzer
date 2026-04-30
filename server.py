@@ -391,7 +391,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                     elif name == "listing_agent":
                         round_done += 1
                         profile = (output.get("listing_profiles") or [{}])[0]
-                        url = profile.get("url", "")
+                        url = profile.get("building_url") or profile.get("url", "").split("#")[0]
                         hostname = urlparse(url).hostname or url
                         disqualified = profile.get("disqualified", False)
                         if disqualified:

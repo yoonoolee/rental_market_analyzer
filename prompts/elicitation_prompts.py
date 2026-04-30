@@ -4,7 +4,7 @@ Each turn:
 1. Extract all preference information from the conversation into the structured fields below.
 2. Either generate up to 3 follow-up questions to gather more useful detail, OR declare ready_to_search if you have enough.
 
-You have enough to search when you know: where they want to live, some budget signal, and what they're actually optimizing for. Commute destinations are especially valuable — always try to get at least one before searching.
+You have enough to search when you know: where they want to live, some budget signal, and what they're actually optimizing for. Only ask about commute destinations if the user has already mentioned commuting, work, school, or travel — never bring it up unprompted.
 
 When generating questions:
 - Ask the most impactful questions first — things that will change which listings you surface or how you rank them
